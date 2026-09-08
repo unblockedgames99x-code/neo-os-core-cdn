@@ -131,9 +131,11 @@
     }));
     notify();
     var startedAt = performance.now();
-    var base = window.location.protocol === "file:" && window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.preview
-      ? window.NEO_LOCAL_CONFIG.preview
-      : new URL("./", window.location.href).href;
+    var base = window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.assetBase
+      ? window.NEO_LOCAL_CONFIG.assetBase
+      : (window.location.protocol === "file:" && window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.preview
+        ? window.NEO_LOCAL_CONFIG.preview
+        : new URL("./", document.baseURI).href);
     running = Promise.all([
       checkUrl("Desktop", "index.html", base),
       checkUrl("Browser", "NEO-BROWSER/index.html", base),
