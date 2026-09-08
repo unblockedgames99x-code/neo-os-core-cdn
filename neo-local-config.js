@@ -6,7 +6,8 @@
   // Edit this relative path or absolute asset origin; routes and resolve() both use it.
   var configuredAssetBase = "./";
   var base = new URL(configuredAssetBase, document.currentScript.src);
-  var previewBase = new URL("http://127.0.0.1:3092/neo-os/");\n  var isCdnRunner = Boolean(document.querySelector('meta[name=\"neo-runner\"]'));
+  var previewBase = new URL("http://127.0.0.1:3092/neo-os/");
+  var isCdnRunner = Boolean(document.querySelector('meta[name=\"neo-runner\"]'));
   window.NEO_LOCAL_CONFIG = Object.freeze({
     enabled: !isCdnRunner,
     externalIntegrations: isCdnRunner,
