@@ -6,6 +6,8 @@
   var localOnly = Boolean(localConfig && localConfig.enabled);
   var localOnlineApps = new Set(localConfig && Array.isArray(localConfig.onlineApps) ? localConfig.onlineApps : []);
   var WIDGET_LAYOUT_KEY = "neo_os_widget_layout_v1";
+  var DESKTOP_SHORTCUT_LAYOUT_KEY = "neo_os_desktop_shortcut_layout_v1";
+  var DESKTOP_VIEW_KEY = "neo_os_desktop_view_v1";
   var RECENT_APPS_KEY = "neo_os_recent_apps_v1";
   var WINDOW_STATE_KEY = "neo_os_window_states_v2";
   var DEFAULT_WINDOW_WIDTH = 1180;
@@ -35,6 +37,7 @@
   var launcherSearchEmpty = document.getElementById("launcher-search-empty");
   var toastRegion = document.getElementById("toast-region");
   var widgetLayer = document.getElementById("widget-layer");
+  var desktopShortcutLayer = document.getElementById("desktop-shortcuts");
   var activeAppLabel = document.getElementById("active-app-label");
   var nowPlayingWidget = document.querySelector("[data-widget='now-playing']");
   var nowPlayingState = null;
@@ -46,8 +49,11 @@
   var autoPerformanceActive = false;
   var connectionState = document.getElementById("connection-state");
   var openWindows = new Map();
-  var dockContextMenu = null;
-  var dockContextAppId = "";
+  var desktopShortcutContextMenu = null;
+  var desktopShortcutContextAppId = "";
+  var desktopShortcutDrag = null;
+  var desktopShortcutRenderFrame = 0;
+  var desktopShortcutSuppressOpenUntil = 0;
   var musicRuntime = window.NEO_MUSIC_RUNTIME;
   var zIndex = 100;
   var windowSequence = 0;
@@ -134,7 +140,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 15,
+    designVersion: 16,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -152,8 +158,8 @@
     batterySaver: false,
     widgets: true,
     widgetLock: true,
-    dockMagnify: true,
-    dockIconSize: "large",
+    dockMagnify: false,
+    dockIconSize: "normal",
     taskbarPosition: "left",
     taskbarStyle: "current",
     taskbarSurface: "glass",
@@ -199,6 +205,10 @@
     savedSettings.taskbarTint = "#767c84";
     savedSettings.taskbarTintStrength = 38;
   }
+  if (savedDesignVersion < 16) {
+    savedSettings.dockMagnify = false;
+    savedSettings.dockIconSize = "normal";
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -225,7 +235,7 @@
   delete savedSettings.taskbarMaterial;
   delete savedSettings.taskbarOpacity;
   delete savedSettings.taskbarBlur;
-  savedSettings.designVersion = 15;
+  savedSettings.designVersion = 16;
   var settings = Object.assign({}, defaultSettings, savedSettings);
   var appliedTabAppearanceSignature = "";
   // Keep imported wallpapers and the local reactive scene. Remote workshop defaults
@@ -235,6 +245,8 @@
   var widgetLayout = readJson(WIDGET_LAYOUT_KEY, {});
   var windowStates = readJson(WINDOW_STATE_KEY, {});
   if (!windowStates || typeof windowStates !== "object" || Array.isArray(windowStates)) windowStates = {};
+  var desktopShortcutLayout = readJson(DESKTOP_SHORTCUT_LAYOUT_KEY, {});
+  if (!desktopShortcutLayout || typeof desktopShortcutLayout !== "object" || Array.isArray(desktopShortcutLayout)) desktopShortcutLayout = {};
 
   var apps = {
     browser: {
@@ -1189,9 +1201,10 @@
     root.dataset.weather = settings.weather && mode === "normal" && !effectiveReducedMotion() ? "true" : "false";
     root.dataset.widgets = settings.widgets && mode !== "ultimate" ? "true" : "false";
     root.dataset.widgetLock = settings.widgetLock ? "true" : "false";
-    root.dataset.dockMagnify = settings.dockMagnify && mode === "normal" ? "true" : "false";
-    settings.dockIconSize = normalizeDockIconSize(settings.dockIconSize);
-    root.dataset.dockIconSize = settings.dockIconSize;
+    settings.dockMagnify = false;
+    settings.dockIconSize = "normal";
+    root.dataset.dockMagnify = "false";
+    root.dataset.dockIconSize = "normal";
     settings.taskbarPosition = normalizeTaskbarPosition(settings.taskbarPosition);
     settings.taskbarStyle = normalizeTaskbarStyle(settings.taskbarStyle);
     settings.taskbarSurface = normalizeTaskbarSurface(settings.taskbarSurface);
@@ -1284,6 +1297,7 @@
     if (previousTaskbarPosition !== settings.taskbarPosition || previousTaskbarStyle !== settings.taskbarStyle) {
       window.requestAnimationFrame(function () {
         fitDockToViewport(document.getElementById("neo-dock"));
+        layoutDesktopShortcuts();
         window.dispatchEvent(new CustomEvent("neo-taskbar-layout-change", {
           detail: {
             previous: { position: previousTaskbarPosition, style: previousTaskbarStyle },
@@ -1546,7 +1560,7 @@
     button.className = "dock-button";
     button.type = "button";
     button.dataset.app = app.id;
-    button.draggable = !window.matchMedia("(pointer: coarse)").matches;
+    button.draggable = false;
     var accessibleName = appAccessibleName(app);
     if (!app.hideName) button.dataset.tooltip = app.title;
     button.setAttribute("aria-label", (minimized ? "Restore " : (win ? "Switch to " : "Open ")) + accessibleName);
@@ -1558,80 +1572,6 @@
     button.classList.toggle("is-running", Boolean(win));
     button.classList.toggle("is-minimized", minimized);
     return button;
-  }
-
-  function closeDockContextMenu() {
-    if (!dockContextMenu) return;
-    dockContextMenu.hidden = true;
-    dockContextAppId = "";
-  }
-
-  function ensureDockContextMenu() {
-    if (dockContextMenu) return dockContextMenu;
-    var menu = document.createElement("div");
-    menu.id = "dock-app-context-menu";
-    menu.className = "desktop-context-menu dock-app-context-menu";
-    menu.setAttribute("role", "menu");
-    menu.setAttribute("aria-label", "Dock app options");
-    menu.hidden = true;
-    menu.innerHTML =
-      '<button type="button" role="menuitem" data-dock-menu-action="open"><span class="dock-menu-app-icon" aria-hidden="true"></span><span data-dock-menu-open>Open app</span></button>' +
-      '<span class="context-separator" role="separator"></span>' +
-      '<button type="button" role="menuitemcheckbox" aria-checked="false" data-dock-menu-action="size"><span class="context-check" aria-hidden="true"></span><span>Large app icons</span></button>' +
-      '<button type="button" role="menuitemcheckbox" aria-checked="false" data-dock-menu-action="magnify"><span class="context-check" aria-hidden="true"></span><span>Magnify on hover</span></button>';
-    menu.addEventListener("contextmenu", function (event) { event.preventDefault(); });
-    menu.addEventListener("click", function (event) {
-      var actionButton = event.target.closest("[data-dock-menu-action]");
-      if (!actionButton) return;
-      var action = actionButton.dataset.dockMenuAction;
-      var appId = dockContextAppId;
-      if (action === "open" && appId) openApp(appId);
-      if (action === "size") {
-        setSetting("dockIconSize", settings.dockIconSize === "large" ? "normal" : "large");
-        showToast("Dock icon size changed", settings.dockIconSize === "large" ? "All app icons are now larger." : "All app icons use the normal size.", "apps");
-      }
-      if (action === "magnify") {
-        setSetting("dockMagnify", !settings.dockMagnify);
-        showToast("Dock magnification changed", settings.dockMagnify ? "App icons grow when you point to them." : "Hover magnification is off.", "apps");
-      }
-      closeDockContextMenu();
-    });
-    document.body.appendChild(menu);
-    dockContextMenu = menu;
-    return menu;
-  }
-
-  function syncDockContextMenu(menu, app) {
-    var art = menu.querySelector(".dock-menu-app-icon");
-    var label = menu.querySelector("[data-dock-menu-open]");
-    if (art && app) {
-      art.className = "dock-menu-app-icon app-icon-shape " + appIconClass(app.icon);
-      art.innerHTML = iconMarkup(app.icon);
-      art.querySelectorAll("img").forEach(function (image) { image.draggable = false; });
-    }
-    if (label && app) label.textContent = "Open " + appAccessibleName(app);
-    var size = menu.querySelector('[data-dock-menu-action="size"]');
-    var magnify = menu.querySelector('[data-dock-menu-action="magnify"]');
-    if (size) size.setAttribute("aria-checked", settings.dockIconSize === "large" ? "true" : "false");
-    if (magnify) magnify.setAttribute("aria-checked", settings.dockMagnify ? "true" : "false");
-  }
-
-  function openDockContextMenu(button, x, y) {
-    var app = button && apps[button.dataset.app];
-    if (!app) return;
-    if (window.NEO_FEATURES && typeof window.NEO_FEATURES.closeOverlays === "function") window.NEO_FEATURES.closeOverlays();
-    setLauncherOpen(false);
-    var menu = ensureDockContextMenu();
-    dockContextAppId = app.id;
-    syncDockContextMenu(menu, app);
-    menu.hidden = false;
-    requestAnimationFrame(function () {
-      var rect = menu.getBoundingClientRect();
-      menu.style.left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8)) + "px";
-      menu.style.top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8)) + "px";
-      var first = menu.querySelector("button:not([disabled])");
-      if (first) first.focus({ preventScroll: true });
-    });
   }
 
   function fitDockToViewport(dock) {
@@ -1705,170 +1645,6 @@
     writeJson(PINNED_APPS_KEY, normalizePinnedAppOrder());
   }
 
-  function reorderDockApp(sourceId, targetId, placeAfter) {
-    var source = apps[sourceId];
-    if (!source || !source.launcher || !source.installed || sourceId === targetId) return;
-    source.pinned = true;
-    var order = normalizePinnedAppOrder().filter(function (id) { return id !== sourceId; });
-    var targetIndex = order.indexOf(targetId);
-    if (targetIndex === -1) order.push(sourceId);
-    else order.splice(targetIndex + (placeAfter ? 1 : 0), 0, sourceId);
-    pinnedAppOrder = order;
-    savePinnedAppOrder();
-    renderDock();
-    renderLauncher();
-  }
-
-  function enableDockReordering() {
-    var dock = document.getElementById("neo-dock");
-    if (!dock || dock.dataset.reorderReady === "true") return;
-    dock.dataset.reorderReady = "true";
-    var draggedId = "";
-    var dropTarget = null;
-    var touchTimer = 0;
-    var touchPointerId = null;
-    var touchStart = null;
-    var touchActive = false;
-    var suppressClickUntil = 0;
-
-    function clearDropState() {
-      dock.querySelectorAll(".is-dragging, .is-drop-before, .is-drop-after").forEach(function (button) {
-        button.classList.remove("is-dragging", "is-drop-before", "is-drop-after");
-      });
-      dropTarget = null;
-    }
-
-    function markDropTarget(button, clientX, clientY) {
-      if (!button || button.dataset.app === draggedId) return;
-      if (dropTarget && dropTarget !== button) dropTarget.classList.remove("is-drop-before", "is-drop-after");
-      dropTarget = button;
-      var rect = button.getBoundingClientRect();
-      var vertical = getComputedStyle(dock).flexDirection === "column";
-      var placeAfter = vertical ? clientY >= rect.top + rect.height / 2 : clientX >= rect.left + rect.width / 2;
-      button.classList.toggle("is-drop-before", !placeAfter);
-      button.classList.toggle("is-drop-after", placeAfter);
-    }
-
-    function clearTouchTimer() {
-      if (touchTimer) window.clearTimeout(touchTimer);
-      touchTimer = 0;
-    }
-
-    function finishTouchReorder(event) {
-      if (touchPointerId == null || (event.pointerId != null && event.pointerId !== touchPointerId)) return;
-      clearTouchTimer();
-      if (touchActive) suppressClickUntil = Date.now() + 450;
-      if (touchActive && draggedId && dropTarget) {
-        reorderDockApp(draggedId, dropTarget.dataset.app, dropTarget.classList.contains("is-drop-after"));
-      }
-      draggedId = "";
-      touchPointerId = null;
-      touchStart = null;
-      touchActive = false;
-      clearDropState();
-    }
-
-    dock.addEventListener("dragstart", function (event) {
-      var button = event.target.closest(".dock-button[data-app]");
-      if (!button) return;
-      closeDockContextMenu();
-      draggedId = button.dataset.app;
-      button.classList.add("is-dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedId);
-    });
-
-    dock.addEventListener("dragover", function (event) {
-      if (!draggedId) return;
-      var button = event.target.closest(".dock-button[data-app]");
-      if (!button || button.dataset.app === draggedId) return;
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      markDropTarget(button, event.clientX, event.clientY);
-    });
-
-    dock.addEventListener("drop", function (event) {
-      if (!draggedId || !dropTarget) return;
-      event.preventDefault();
-      reorderDockApp(draggedId, dropTarget.dataset.app, dropTarget.classList.contains("is-drop-after"));
-      draggedId = "";
-      clearDropState();
-    });
-
-    dock.addEventListener("dragend", function () {
-      draggedId = "";
-      clearDropState();
-    });
-
-    dock.addEventListener("pointerdown", function (event) {
-      if ((event.pointerType !== "touch" && event.pointerType !== "pen") || !event.isPrimary) return;
-      var button = event.target.closest(".dock-button[data-app]");
-      if (!button) return;
-      clearTouchTimer();
-      touchPointerId = event.pointerId;
-      touchStart = { x: event.clientX, y: event.clientY, button: button };
-      touchTimer = window.setTimeout(function () {
-        if (!touchStart) return;
-        closeDockContextMenu();
-        touchActive = true;
-        draggedId = button.dataset.app;
-        button.classList.add("is-dragging");
-        try { button.setPointerCapture(touchPointerId); } catch (error) {}
-        if (navigator.vibrate) {
-          try { navigator.vibrate(16); } catch (error) {}
-        }
-      }, 420);
-    }, { passive: true });
-
-    dock.addEventListener("pointermove", function (event) {
-      if (event.pointerId !== touchPointerId || !touchStart) return;
-      var distance = Math.hypot(event.clientX - touchStart.x, event.clientY - touchStart.y);
-      if (!touchActive && distance > 12) {
-        clearTouchTimer();
-        touchPointerId = null;
-        touchStart = null;
-        return;
-      }
-      if (!touchActive) return;
-      event.preventDefault();
-      var target = document.elementFromPoint(event.clientX, event.clientY);
-      markDropTarget(target && target.closest ? target.closest(".dock-button[data-app]") : null, event.clientX, event.clientY);
-    }, { passive: false });
-
-    dock.addEventListener("pointerup", finishTouchReorder);
-    dock.addEventListener("pointercancel", finishTouchReorder);
-    dock.addEventListener("lostpointercapture", finishTouchReorder);
-    dock.addEventListener("click", function (event) {
-      if (Date.now() < suppressClickUntil) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }
-    }, true);
-    dock.addEventListener("contextmenu", function (event) {
-      var button = event.target.closest(".dock-button[data-app]");
-      if (!button) return;
-      event.preventDefault();
-      event.stopPropagation();
-      openDockContextMenu(button, event.clientX, event.clientY);
-    });
-    dock.addEventListener("keydown", function (event) {
-      var button = event.target.closest(".dock-button[data-app]");
-      if (!button || (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10"))) return;
-      event.preventDefault();
-      event.stopPropagation();
-      var rect = button.getBoundingClientRect();
-      openDockContextMenu(button, rect.left + rect.width / 2, rect.top + rect.height / 2);
-    });
-    document.addEventListener("pointerdown", function (event) {
-      if (!dockContextMenu || dockContextMenu.hidden || event.target.closest("#dock-app-context-menu")) return;
-      closeDockContextMenu();
-    }, true);
-    document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && dockContextMenu && !dockContextMenu.hidden) closeDockContextMenu();
-    });
-    window.addEventListener("resize", closeDockContextMenu, { passive: true });
-  }
-
   function setAppPinned(id, pinned) {
     var app = apps[id];
     if (!app || !app.launcher || !app.installed) return false;
@@ -1900,13 +1676,337 @@
     writeJson(INSTALLED_APPS_KEY, Array.from(installedAppIds));
     savePinnedAppOrder();
     renderDock();
-    enableDockReordering();
+    renderDesktopShortcuts();
     renderLauncher();
     return app.installed;
   }
 
   function launcherApps() {
     return storeApps().filter(function (app) { return app.installed; });
+  }
+
+  function desktopShortcutView() {
+    var value = String(root.dataset.desktopIconSize || "").toLowerCase();
+    if (value === "large" || value === "small" || value === "medium") return value;
+    try { value = String(localStorage.getItem(DESKTOP_VIEW_KEY) || "").toLowerCase(); } catch (error) { value = ""; }
+    return value === "large" || value === "small" ? value : "medium";
+  }
+
+  function desktopShortcutMetrics() {
+    var view = desktopShortcutView();
+    if (view === "large") return { width: 94, height: 88, columnGap: 8, rowGap: 8 };
+    if (view === "small") return { width: 74, height: 76, columnGap: 8, rowGap: 6 };
+    return { width: 86, height: 94, columnGap: 8, rowGap: 6 };
+  }
+
+  function desktopShortcutBounds(metrics) {
+    var desktop = document.getElementById("neo-desktop");
+    var rect = desktop && desktop.getBoundingClientRect();
+    var width = rect && rect.width ? rect.width : Math.max(320, window.innerWidth || 1280);
+    var height = rect && rect.height ? rect.height : Math.max(320, window.innerHeight || 720);
+    var bounds = { left: 10, top: 42, right: width - metrics.width - 10, bottom: height - metrics.height - 10 };
+    var topbar = document.querySelector(".topbar");
+    var taskbar = document.querySelector(".taskbar");
+    var topbarRect = topbar && topbar.getBoundingClientRect();
+    var taskbarRect = taskbar && taskbar.getBoundingClientRect();
+    if (rect && topbarRect && topbarRect.height) bounds.top = Math.max(bounds.top, topbarRect.bottom - rect.top + 8);
+    if (rect && taskbarRect && taskbarRect.width && taskbarRect.height) {
+      if (settings.taskbarPosition === "left") bounds.left = Math.max(bounds.left, taskbarRect.right - rect.left + 8);
+      if (settings.taskbarPosition === "right") bounds.right = Math.min(bounds.right, taskbarRect.left - rect.left - metrics.width - 8);
+      if (settings.taskbarPosition === "top") bounds.top = Math.max(bounds.top, taskbarRect.bottom - rect.top + 8);
+      if (settings.taskbarPosition === "bottom") bounds.bottom = Math.min(bounds.bottom, taskbarRect.top - rect.top - metrics.height - 8);
+    }
+    bounds.right = Math.max(bounds.left, bounds.right);
+    bounds.bottom = Math.max(bounds.top, bounds.bottom);
+    return bounds;
+  }
+
+  function clampDesktopShortcutPosition(position, metrics, bounds) {
+    var x = Number(position && position.x);
+    var y = Number(position && position.y);
+    if (!Number.isFinite(x)) x = bounds.left;
+    if (!Number.isFinite(y)) y = bounds.top;
+    return {
+      x: Math.round(clamp(x, bounds.left, bounds.right)),
+      y: Math.round(clamp(y, bounds.top, bounds.bottom))
+    };
+  }
+
+  function defaultDesktopShortcutPosition(index, metrics, bounds) {
+    var rowStep = metrics.height + metrics.rowGap;
+    var columnStep = metrics.width + metrics.columnGap;
+    var rowCount = Math.max(1, Math.floor((bounds.bottom - bounds.top + rowStep) / rowStep));
+    var row = index % rowCount;
+    var column = Math.floor(index / rowCount);
+    return clampDesktopShortcutPosition({
+      x: bounds.left + column * columnStep,
+      y: bounds.top + row * rowStep
+    }, metrics, bounds);
+  }
+
+  function desktopShortcutTitle(app) {
+    if (!app) return "Application";
+    if (app.id === "browser") return "Browser";
+    return String(app.title || appAccessibleName(app));
+  }
+
+  function createDesktopShortcut(app, index) {
+    var button = document.createElement("button");
+    button.className = "desktop-shortcut";
+    button.type = "button";
+    button.dataset.desktopShortcut = app.id;
+    button.dataset.desktopShortcutIndex = String(index);
+    button.dataset.title = desktopShortcutTitle(app);
+    button.dataset.category = app.category || "Applications";
+    button.setAttribute("aria-label", "Open " + appAccessibleName(app));
+    button.draggable = false;
+    var icon = createLauncherIcon(app, "desktop-shortcut-icon");
+    icon.setAttribute("aria-hidden", "true");
+    icon.querySelectorAll("img").forEach(function (image) { image.draggable = false; });
+    var label = document.createElement("span");
+    label.className = "desktop-shortcut-label";
+    label.textContent = desktopShortcutTitle(app);
+    button.append(icon, label);
+    return button;
+  }
+
+  function layoutDesktopShortcuts() {
+    if (!desktopShortcutLayer) return;
+    var metrics = desktopShortcutMetrics();
+    var bounds = desktopShortcutBounds(metrics);
+    desktopShortcutLayer.querySelectorAll(".desktop-shortcut[data-desktop-shortcut]").forEach(function (button) {
+      var id = button.dataset.desktopShortcut;
+      var saved = desktopShortcutLayout[id];
+      var index = Number(button.dataset.desktopShortcutIndex) || 0;
+      var position = saved && Number.isFinite(Number(saved.x)) && Number.isFinite(Number(saved.y))
+        ? clampDesktopShortcutPosition(saved, metrics, bounds)
+        : defaultDesktopShortcutPosition(index, metrics, bounds);
+      button.style.left = position.x + "px";
+      button.style.top = position.y + "px";
+    });
+  }
+
+  function renderDesktopShortcuts() {
+    if (!desktopShortcutLayer) return;
+    var focusedId = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.desktopShortcut;
+    var fragment = document.createDocumentFragment();
+    launcherApps().forEach(function (app, index) { fragment.appendChild(createDesktopShortcut(app, index)); });
+    desktopShortcutLayer.textContent = "";
+    desktopShortcutLayer.appendChild(fragment);
+    layoutDesktopShortcuts();
+    if (focusedId) {
+      var focused = desktopShortcutLayer.querySelector('[data-desktop-shortcut="' + CSS.escape(focusedId) + '"]');
+      if (focused) focused.focus({ preventScroll: true });
+    }
+  }
+
+  function scheduleDesktopShortcutRender() {
+    if (desktopShortcutRenderFrame) cancelAnimationFrame(desktopShortcutRenderFrame);
+    desktopShortcutRenderFrame = requestAnimationFrame(function () {
+      desktopShortcutRenderFrame = 0;
+      renderDesktopShortcuts();
+    });
+  }
+
+  function setDesktopShortcutView(value) {
+    value = value === "large" || value === "small" ? value : "medium";
+    try { localStorage.setItem(DESKTOP_VIEW_KEY, value); } catch (error) {}
+    root.dataset.desktopIconSize = value;
+    scheduleDesktopShortcutRender();
+  }
+
+  function closeDesktopShortcutContextMenu() {
+    if (!desktopShortcutContextMenu) return;
+    desktopShortcutContextMenu.hidden = true;
+    desktopShortcutContextAppId = "";
+  }
+
+  function ensureDesktopShortcutContextMenu() {
+    if (desktopShortcutContextMenu) return desktopShortcutContextMenu;
+    var menu = document.createElement("div");
+    menu.id = "desktop-shortcut-context-menu";
+    menu.className = "desktop-context-menu desktop-shortcut-context-menu";
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", "Desktop application options");
+    menu.hidden = true;
+    menu.innerHTML =
+      '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="open"><span class="desktop-menu-app-icon" aria-hidden="true"></span><span data-desktop-shortcut-menu-open>Open app</span></button>' +
+      '<span class="context-separator" role="separator"></span>' +
+      '<button type="button" role="menuitemcheckbox" aria-checked="false" data-desktop-shortcut-menu-action="size"><span class="context-check" aria-hidden="true"></span><span>Large icons (hide names)</span></button>' +
+      '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="reset"><svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg><span>Reset icon position</span></button>';
+    menu.addEventListener("contextmenu", function (event) { event.preventDefault(); });
+    menu.addEventListener("click", function (event) {
+      var actionButton = event.target.closest("[data-desktop-shortcut-menu-action]");
+      if (!actionButton) return;
+      var action = actionButton.dataset.desktopShortcutMenuAction;
+      var appId = desktopShortcutContextAppId;
+      if (action === "open" && appId) openApp(appId);
+      if (action === "size") {
+        var large = desktopShortcutView() !== "large";
+        setDesktopShortcutView(large ? "large" : "medium");
+        showToast(large ? "Large desktop icons" : "Normal desktop icons", large ? "All desktop apps are larger and their names are hidden." : "Desktop app names are visible again.", "apps");
+      }
+      if (action === "reset" && appId) {
+        delete desktopShortcutLayout[appId];
+        writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
+        renderDesktopShortcuts();
+      }
+      closeDesktopShortcutContextMenu();
+    });
+    document.body.appendChild(menu);
+    desktopShortcutContextMenu = menu;
+    return menu;
+  }
+
+  function syncDesktopShortcutContextMenu(menu, app) {
+    var art = menu.querySelector(".desktop-menu-app-icon");
+    var label = menu.querySelector("[data-desktop-shortcut-menu-open]");
+    if (art && app) {
+      art.className = "desktop-menu-app-icon app-icon-shape " + appIconClass(app.icon);
+      art.innerHTML = iconMarkup(app.icon);
+      art.querySelectorAll("img").forEach(function (image) { image.draggable = false; });
+    }
+    if (label && app) label.textContent = "Open " + desktopShortcutTitle(app);
+    var size = menu.querySelector('[data-desktop-shortcut-menu-action="size"]');
+    if (size) size.setAttribute("aria-checked", desktopShortcutView() === "large" ? "true" : "false");
+  }
+
+  function openDesktopShortcutContextMenu(button, x, y) {
+    var app = button && apps[button.dataset.desktopShortcut];
+    if (!app) return;
+    if (window.NEO_FEATURES && typeof window.NEO_FEATURES.closeOverlays === "function") window.NEO_FEATURES.closeOverlays();
+    setLauncherOpen(false);
+    var menu = ensureDesktopShortcutContextMenu();
+    desktopShortcutContextAppId = app.id;
+    syncDesktopShortcutContextMenu(menu, app);
+    menu.hidden = false;
+    requestAnimationFrame(function () {
+      var rect = menu.getBoundingClientRect();
+      menu.style.left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8)) + "px";
+      menu.style.top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8)) + "px";
+      var first = menu.querySelector("button:not([disabled])");
+      if (first) first.focus({ preventScroll: true });
+    });
+  }
+
+  function openDesktopShortcut(button) {
+    if (!button || Date.now() < desktopShortcutSuppressOpenUntil) return;
+    button.dataset.openedAt = String(Date.now());
+    openApp(button.dataset.desktopShortcut);
+  }
+
+  function bindDesktopShortcutInteractions() {
+    if (!desktopShortcutLayer || desktopShortcutLayer.dataset.interactionsReady === "true") return;
+    desktopShortcutLayer.dataset.interactionsReady = "true";
+
+    desktopShortcutLayer.addEventListener("pointerdown", function (event) {
+      if (event.button !== 0 || !event.isPrimary) return;
+      var button = event.target.closest(".desktop-shortcut[data-desktop-shortcut]");
+      if (!button) return;
+      closeDesktopShortcutContextMenu();
+      desktopShortcutLayer.querySelectorAll(".desktop-shortcut.is-selected").forEach(function (item) { item.classList.remove("is-selected"); });
+      button.classList.add("is-selected");
+      button.focus({ preventScroll: true });
+      desktopShortcutDrag = {
+        button: button,
+        id: button.dataset.desktopShortcut,
+        pointerId: event.pointerId,
+        pointerType: event.pointerType,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: button.offsetLeft,
+        originY: button.offsetTop,
+        x: button.offsetLeft,
+        y: button.offsetTop,
+        moved: false
+      };
+      try { button.setPointerCapture(event.pointerId); } catch (error) {}
+    });
+
+    desktopShortcutLayer.addEventListener("pointermove", function (event) {
+      var drag = desktopShortcutDrag;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      var dx = event.clientX - drag.startX;
+      var dy = event.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      drag.moved = true;
+      event.preventDefault();
+      drag.button.classList.add("is-dragging");
+      var metrics = desktopShortcutMetrics();
+      var position = clampDesktopShortcutPosition({ x: drag.originX + dx, y: drag.originY + dy }, metrics, desktopShortcutBounds(metrics));
+      drag.x = position.x;
+      drag.y = position.y;
+      drag.button.style.left = position.x + "px";
+      drag.button.style.top = position.y + "px";
+    }, { passive: false });
+
+    function finishDesktopShortcutDrag(event) {
+      var drag = desktopShortcutDrag;
+      if (!drag || (event.pointerId != null && event.pointerId !== drag.pointerId)) return;
+      desktopShortcutDrag = null;
+      drag.button.classList.remove("is-dragging");
+      if (drag.moved) {
+        desktopShortcutSuppressOpenUntil = Date.now() + 500;
+        desktopShortcutLayout[drag.id] = { x: Math.round(drag.x), y: Math.round(drag.y) };
+        writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
+      } else if (drag.pointerType === "touch" || drag.pointerType === "pen") {
+        openDesktopShortcut(drag.button);
+      }
+    }
+
+    desktopShortcutLayer.addEventListener("pointerup", finishDesktopShortcutDrag);
+    desktopShortcutLayer.addEventListener("pointercancel", finishDesktopShortcutDrag);
+    desktopShortcutLayer.addEventListener("lostpointercapture", finishDesktopShortcutDrag);
+    desktopShortcutLayer.addEventListener("dblclick", function (event) {
+      var button = event.target.closest(".desktop-shortcut[data-desktop-shortcut]");
+      if (!button) return;
+      event.preventDefault();
+      openDesktopShortcut(button);
+    });
+    desktopShortcutLayer.addEventListener("keydown", function (event) {
+      var button = event.target.closest(".desktop-shortcut[data-desktop-shortcut]");
+      if (!button) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openDesktopShortcut(button);
+      }
+      if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+        event.preventDefault();
+        var rect = button.getBoundingClientRect();
+        openDesktopShortcutContextMenu(button, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+    });
+    desktopShortcutLayer.addEventListener("contextmenu", function (event) {
+      var button = event.target.closest(".desktop-shortcut[data-desktop-shortcut]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openDesktopShortcutContextMenu(button, event.clientX, event.clientY);
+    });
+    document.addEventListener("pointerdown", function (event) {
+      if (!event.target.closest(".desktop-shortcut")) {
+        desktopShortcutLayer.querySelectorAll(".desktop-shortcut.is-selected").forEach(function (item) { item.classList.remove("is-selected"); });
+      }
+      if (!desktopShortcutContextMenu || desktopShortcutContextMenu.hidden || event.target.closest("#desktop-shortcut-context-menu")) return;
+      closeDesktopShortcutContextMenu();
+    }, true);
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && desktopShortcutContextMenu && !desktopShortcutContextMenu.hidden) closeDesktopShortcutContextMenu();
+    });
+  }
+
+  function initializeDesktopShortcuts() {
+    var view = "medium";
+    try {
+      var storedView = String(localStorage.getItem(DESKTOP_VIEW_KEY) || "").toLowerCase();
+      if (storedView === "large" || storedView === "small" || storedView === "medium") view = storedView;
+    } catch (error) {}
+    root.dataset.desktopIconSize = view;
+    bindDesktopShortcutInteractions();
+    if (typeof MutationObserver === "function") {
+      new MutationObserver(function () { scheduleDesktopShortcutRender(); }).observe(root, { attributes: true, attributeFilter: ["data-desktop-icon-size"] });
+    }
+    renderDesktopShortcuts();
   }
 
   function normalizeSearchValue(value) {
@@ -7147,6 +7247,7 @@
     window.addEventListener("resize", function () {
       containWindows();
       fitDockToViewport(document.getElementById("neo-dock"));
+      layoutDesktopShortcuts();
       if (gameNowPlayingOverlay && gameNowPlayingOverlay.isConnected) positionGameNowPlayingOverlay();
       if (isSmallScreen()) {
         openWindows.forEach(function (win) {
@@ -7237,7 +7338,7 @@
       });
     }
     renderDock();
-    enableDockReordering();
+    initializeDesktopShortcuts();
     if (window.NEO_TASKBAR_PREVIEW) window.NEO_TASKBAR_PREVIEW.start(document.getElementById("neo-dock"), openWindows, apps, openApp, closeWindow);
     renderLauncher();
     applySettings();
