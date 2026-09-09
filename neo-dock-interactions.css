@@ -1,0 +1,97 @@
+/* Mac-style dock behavior shared by every app icon. */
+.taskbar .dock-button {
+  cursor: grab;
+  font-size: 0;
+}
+
+.taskbar .dock-button:active,
+.taskbar .dock-button.is-dragging {
+  cursor: grabbing;
+}
+
+.taskbar .dock-button .dock-app-art,
+.taskbar .dock-button .dock-app-art * {
+  pointer-events: none;
+}
+
+html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .dock-app-art,
+html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .app-image-icon,
+html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .spotify-vector {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+}
+
+html[data-dock-magnify="true"] .taskbar .dock-button:hover,
+html[data-dock-magnify="true"] .taskbar .dock-button:focus-visible {
+  z-index: 4;
+  transform: scale(1.24) !important;
+}
+
+html[data-dock-magnify="true"] .taskbar .dock-button:has(+ .dock-button:hover),
+html[data-dock-magnify="true"] .taskbar .dock-button:hover + .dock-button {
+  z-index: 3;
+  transform: scale(1.09) !important;
+}
+
+.taskbar .dock-button.is-dragging {
+  z-index: 5;
+  opacity: 0.58;
+  transform: scale(1.14) !important;
+}
+
+html:is([data-taskbar-position="top"], [data-taskbar-position="bottom"]) .taskbar .dock-button.is-drop-before {
+  box-shadow: inset 3px 0 var(--neo-taskbar-accent) !important;
+}
+
+html:is([data-taskbar-position="top"], [data-taskbar-position="bottom"]) .taskbar .dock-button.is-drop-after {
+  box-shadow: inset -3px 0 var(--neo-taskbar-accent) !important;
+}
+
+html:is([data-taskbar-position="left"], [data-taskbar-position="right"]) .taskbar .dock-button.is-drop-before {
+  box-shadow: inset 0 3px var(--neo-taskbar-accent) !important;
+}
+
+html:is([data-taskbar-position="left"], [data-taskbar-position="right"]) .taskbar .dock-button.is-drop-after {
+  box-shadow: inset 0 -3px var(--neo-taskbar-accent) !important;
+}
+
+.dock-app-context-menu {
+  z-index: 7200;
+}
+
+.dock-app-context-menu .dock-menu-app-icon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.dock-app-context-menu .dock-menu-app-icon :is(img, svg),
+.dock-app-context-menu .dock-menu-app-icon.app-icon-shape {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .dock-app-art,
+  html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .app-image-icon,
+  html[data-dock-icon-size="large"][data-taskbar-position] .taskbar .dock-button .spotify-vector {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-dock-magnify="true"] .taskbar .dock-button {
+    transform: none !important;
+  }
+}

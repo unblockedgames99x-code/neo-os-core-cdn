@@ -46,6 +46,8 @@
   var autoPerformanceActive = false;
   var connectionState = document.getElementById("connection-state");
   var openWindows = new Map();
+  var dockContextMenu = null;
+  var dockContextAppId = "";
   var musicRuntime = window.NEO_MUSIC_RUNTIME;
   var zIndex = 100;
   var windowSequence = 0;
@@ -91,6 +93,10 @@
   function normalizeTaskbarSurface(value) {
     value = String(value || "").toLowerCase();
     return value === "solid" || value === "gradient" ? value : "glass";
+  }
+
+  function normalizeDockIconSize(value) {
+    return String(value || "").toLowerCase() === "normal" ? "normal" : "large";
   }
 
   function normalizeWindowBarStyle(value) {
@@ -147,6 +153,7 @@
     widgets: true,
     widgetLock: true,
     dockMagnify: true,
+    dockIconSize: "large",
     taskbarPosition: "left",
     taskbarStyle: "current",
     taskbarSurface: "glass",
@@ -196,6 +203,7 @@
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
   savedSettings.taskbarSurface = normalizeTaskbarSurface(savedSettings.taskbarSurface);
+  savedSettings.dockIconSize = normalizeDockIconSize(savedSettings.dockIconSize);
   savedSettings.windowBarStyle = normalizeWindowBarStyle(savedSettings.windowBarStyle);
   savedSettings.interfaceStyle = normalizeInterfaceStyle(savedSettings.interfaceStyle);
   savedSettings.tabAppearance = normalizeTabAppearance(savedSettings.tabAppearance);
@@ -1182,6 +1190,8 @@
     root.dataset.widgets = settings.widgets && mode !== "ultimate" ? "true" : "false";
     root.dataset.widgetLock = settings.widgetLock ? "true" : "false";
     root.dataset.dockMagnify = settings.dockMagnify && mode === "normal" ? "true" : "false";
+    settings.dockIconSize = normalizeDockIconSize(settings.dockIconSize);
+    root.dataset.dockIconSize = settings.dockIconSize;
     settings.taskbarPosition = normalizeTaskbarPosition(settings.taskbarPosition);
     settings.taskbarStyle = normalizeTaskbarStyle(settings.taskbarStyle);
     settings.taskbarSurface = normalizeTaskbarSurface(settings.taskbarSurface);
@@ -1543,10 +1553,85 @@
     var art = document.createElement("span");
     art.className = "dock-app-tile dock-app-art app-icon-shape " + appIconClass(app.icon);
     art.innerHTML = iconMarkup(app.icon);
+    art.querySelectorAll("img").forEach(function (image) { image.draggable = false; });
     button.appendChild(art);
     button.classList.toggle("is-running", Boolean(win));
     button.classList.toggle("is-minimized", minimized);
     return button;
+  }
+
+  function closeDockContextMenu() {
+    if (!dockContextMenu) return;
+    dockContextMenu.hidden = true;
+    dockContextAppId = "";
+  }
+
+  function ensureDockContextMenu() {
+    if (dockContextMenu) return dockContextMenu;
+    var menu = document.createElement("div");
+    menu.id = "dock-app-context-menu";
+    menu.className = "desktop-context-menu dock-app-context-menu";
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", "Dock app options");
+    menu.hidden = true;
+    menu.innerHTML =
+      '<button type="button" role="menuitem" data-dock-menu-action="open"><span class="dock-menu-app-icon" aria-hidden="true"></span><span data-dock-menu-open>Open app</span></button>' +
+      '<span class="context-separator" role="separator"></span>' +
+      '<button type="button" role="menuitemcheckbox" aria-checked="false" data-dock-menu-action="size"><span class="context-check" aria-hidden="true"></span><span>Large app icons</span></button>' +
+      '<button type="button" role="menuitemcheckbox" aria-checked="false" data-dock-menu-action="magnify"><span class="context-check" aria-hidden="true"></span><span>Magnify on hover</span></button>';
+    menu.addEventListener("contextmenu", function (event) { event.preventDefault(); });
+    menu.addEventListener("click", function (event) {
+      var actionButton = event.target.closest("[data-dock-menu-action]");
+      if (!actionButton) return;
+      var action = actionButton.dataset.dockMenuAction;
+      var appId = dockContextAppId;
+      if (action === "open" && appId) openApp(appId);
+      if (action === "size") {
+        setSetting("dockIconSize", settings.dockIconSize === "large" ? "normal" : "large");
+        showToast("Dock icon size changed", settings.dockIconSize === "large" ? "All app icons are now larger." : "All app icons use the normal size.", "apps");
+      }
+      if (action === "magnify") {
+        setSetting("dockMagnify", !settings.dockMagnify);
+        showToast("Dock magnification changed", settings.dockMagnify ? "App icons grow when you point to them." : "Hover magnification is off.", "apps");
+      }
+      closeDockContextMenu();
+    });
+    document.body.appendChild(menu);
+    dockContextMenu = menu;
+    return menu;
+  }
+
+  function syncDockContextMenu(menu, app) {
+    var art = menu.querySelector(".dock-menu-app-icon");
+    var label = menu.querySelector("[data-dock-menu-open]");
+    if (art && app) {
+      art.className = "dock-menu-app-icon app-icon-shape " + appIconClass(app.icon);
+      art.innerHTML = iconMarkup(app.icon);
+      art.querySelectorAll("img").forEach(function (image) { image.draggable = false; });
+    }
+    if (label && app) label.textContent = "Open " + appAccessibleName(app);
+    var size = menu.querySelector('[data-dock-menu-action="size"]');
+    var magnify = menu.querySelector('[data-dock-menu-action="magnify"]');
+    if (size) size.setAttribute("aria-checked", settings.dockIconSize === "large" ? "true" : "false");
+    if (magnify) magnify.setAttribute("aria-checked", settings.dockMagnify ? "true" : "false");
+  }
+
+  function openDockContextMenu(button, x, y) {
+    var app = button && apps[button.dataset.app];
+    if (!app) return;
+    if (window.NEO_FEATURES && typeof window.NEO_FEATURES.closeOverlays === "function") window.NEO_FEATURES.closeOverlays();
+    setLauncherOpen(false);
+    var menu = ensureDockContextMenu();
+    dockContextAppId = app.id;
+    syncDockContextMenu(menu, app);
+    menu.hidden = false;
+    requestAnimationFrame(function () {
+      var rect = menu.getBoundingClientRect();
+      menu.style.left = Math.max(8, Math.min(x, window.innerWidth - rect.width - 8)) + "px";
+      menu.style.top = Math.max(8, Math.min(y, window.innerHeight - rect.height - 8)) + "px";
+      var first = menu.querySelector("button:not([disabled])");
+      if (first) first.focus({ preventScroll: true });
+    });
   }
 
   function fitDockToViewport(dock) {
@@ -1686,6 +1771,7 @@
     dock.addEventListener("dragstart", function (event) {
       var button = event.target.closest(".dock-button[data-app]");
       if (!button) return;
+      closeDockContextMenu();
       draggedId = button.dataset.app;
       button.classList.add("is-dragging");
       event.dataTransfer.effectAllowed = "move";
@@ -1723,6 +1809,7 @@
       touchStart = { x: event.clientX, y: event.clientY, button: button };
       touchTimer = window.setTimeout(function () {
         if (!touchStart) return;
+        closeDockContextMenu();
         touchActive = true;
         draggedId = button.dataset.app;
         button.classList.add("is-dragging");
@@ -1757,6 +1844,29 @@
         event.stopImmediatePropagation();
       }
     }, true);
+    dock.addEventListener("contextmenu", function (event) {
+      var button = event.target.closest(".dock-button[data-app]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openDockContextMenu(button, event.clientX, event.clientY);
+    });
+    dock.addEventListener("keydown", function (event) {
+      var button = event.target.closest(".dock-button[data-app]");
+      if (!button || (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10"))) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var rect = button.getBoundingClientRect();
+      openDockContextMenu(button, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    });
+    document.addEventListener("pointerdown", function (event) {
+      if (!dockContextMenu || dockContextMenu.hidden || event.target.closest("#dock-app-context-menu")) return;
+      closeDockContextMenu();
+    }, true);
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && dockContextMenu && !dockContextMenu.hidden) closeDockContextMenu();
+    });
+    window.addEventListener("resize", closeDockContextMenu, { passive: true });
   }
 
   function setAppPinned(id, pinned) {
