@@ -13,7 +13,7 @@
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "cinehd", "neo-cloud", "discord", "youtube-app", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@fd2cd03e4ee5cd063bd14b36c2ad62deabf360a7/music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@dd63ea593c86d5a2ec32c9308b881165e2544d32/music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1", base).href,
     browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f463b30e796a80a3182fc0ec855e091a45755146/NEO-BROWSER/index.html?v=20260908-audio-performance-v1" : new URL("NEO-BROWSER/index.html?v=20260908-audio-performance-v1", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
