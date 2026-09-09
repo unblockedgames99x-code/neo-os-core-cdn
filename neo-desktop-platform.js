@@ -227,7 +227,62 @@
     button('Import',()=>picker.click(),toolbar);picker.onchange=async()=>{for(const file of picker.files){const name=cleanName(file.name);if(!name||file.size>2*1024*1024){notify('Use text files smaller than 2 MB.');continue;}if(Object.hasOwn(workspace,name)){notify(name+' already exists; rename it before importing.');continue;}workspace[name]=await file.text();drafts[name]=workspace[name];if(saveFiles())open(name);}picker.value='';};
     function save(){if(!active)return;workspace[active]=input.value;drafts[active]=input.value;if(saveFiles()){dirty.delete(active);renderTabs();updateStatus('Saved on this device');}}
     button('Save',save,toolbar);button('Export',()=>active&&download(active,input.value),toolbar);
-    button('Preview HTML',()=>{ if(!active)return; const d=modal('Sandbox preview · no network or system access'), f=el('iframe','editor-preview');f.title='HTML preview';f.sandbox='allow-scripts';const policy='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; img-src data: blob:; media-src data: blob:; connect-src \'none\'; form-action \'none\'">';f.srcdoc=policy+input.value;d.append(f);button('Close',()=>d.close(),d); },toolbar);
+    function openHtmlPreview(){
+      if(!active)return;
+      const d=modal('HTML preview'),header=el('header','editor-preview-header'),titleGroup=el('div','editor-preview-title-group'),actions=el('div','editor-preview-actions'),f=el('iframe','editor-preview');
+      const heading=d.querySelector('h2'),network=el('span','editor-preview-network','Network enabled');
+      d.classList.add('editor-preview-dialog');
+      heading.textContent=active+' preview';
+      network.title='Web requests are allowed. Standard browser security and CORS rules still apply.';
+      titleGroup.append(heading,network);
+      f.title=active+' live HTML preview';
+      f.setAttribute('sandbox','allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads allow-pointer-lock allow-presentation');
+      f.setAttribute('allow','autoplay; fullscreen; picture-in-picture; clipboard-read; clipboard-write; encrypted-media; gamepad');
+      f.setAttribute('allowfullscreen','');
+      const policy='<meta http-equiv="Content-Security-Policy" content="default-src https: http: data: blob:; script-src https: http: data: blob: \'unsafe-inline\' \'unsafe-eval\'; style-src https: http: data: blob: \'unsafe-inline\'; img-src https: http: data: blob:; media-src https: http: data: blob:; font-src https: http: data: blob:; connect-src https: http: wss: ws: data: blob:; worker-src https: http: data: blob:; frame-src https: http: data: blob:; form-action https: http:;">';
+      const render=()=>{f.srcdoc=policy+input.value;};
+      const reload=button('Reload',render,actions);
+      reload.title='Reload the current editor contents';
+      const maximize=button('Maximize',()=>{
+        const active=d.classList.toggle('is-maximized');
+        maximize.textContent=active?'Restore':'Maximize';
+        maximize.setAttribute('aria-pressed',String(active));
+      },actions);
+      maximize.setAttribute('aria-pressed','false');
+      let previewOwnsFullscreen=false;
+      const fullscreen=button('Full screen',()=>{
+        if(d.classList.contains('is-browser-fullscreen')){
+          d.classList.remove('is-browser-fullscreen');
+          if(previewOwnsFullscreen&&document.fullscreenElement)Promise.resolve(document.exitFullscreen()).catch(()=>notify('Full screen could not be closed.'));
+          else syncFullscreen();
+          return;
+        }
+        d.classList.add('is-browser-fullscreen');
+        if(document.fullscreenElement){syncFullscreen();return;}
+        if(!document.documentElement.requestFullscreen){d.classList.remove('is-browser-fullscreen');notify('Full screen is unavailable in this browser.');return;}
+        Promise.resolve(document.documentElement.requestFullscreen({navigationUI:'hide'})).then(()=>{previewOwnsFullscreen=true;syncFullscreen();}).catch(()=>{d.classList.remove('is-browser-fullscreen');syncFullscreen();notify('Full screen could not be opened.');});
+      },actions);
+      const closePreview=()=>{
+        const finish=()=>{if(d.open)d.close();};
+        d.classList.remove('is-browser-fullscreen');
+        if(previewOwnsFullscreen&&document.fullscreenElement)Promise.resolve(document.exitFullscreen()).then(finish,finish);
+        else finish();
+      };
+      button('Close',closePreview,actions);
+      const syncFullscreen=()=>{
+        if(!document.fullscreenElement&&previewOwnsFullscreen){previewOwnsFullscreen=false;d.classList.remove('is-browser-fullscreen');}
+        const active=d.classList.contains('is-browser-fullscreen');
+        fullscreen.textContent=active?'Exit full screen':'Full screen';
+        fullscreen.setAttribute('aria-pressed',String(active));
+      };
+      fullscreen.setAttribute('aria-pressed','false');
+      document.addEventListener('fullscreenchange',syncFullscreen);
+      d.addEventListener('close',()=>document.removeEventListener('fullscreenchange',syncFullscreen),{once:true});
+      header.append(titleGroup,actions);
+      d.replaceChildren(header,f);
+      render();
+    }
+    button('Preview HTML',openHtmlPreview,toolbar);
     function palette(){ const d=modal('Command palette'), q=el('input');q.placeholder='Search commands';q.setAttribute('aria-label','Search commands');d.append(q);const list=el('div','desktop-grid');d.append(list);const commands=[['Save file',save],['Export file',()=>download(active,input.value)],['Open terminal',()=>window.NEO_SHELL.openApp('terminal')],['Open settings',()=>window.NEO_SHELL.openApp('control')],['About this editor',()=>{notify('Local editor simulation inspired by VS Code. No Microsoft extensions, services or system shell.');}]];function draw(){list.replaceChildren();commands.filter(c=>c[0].toLowerCase().includes(q.value.toLowerCase())).forEach(c=>button(c[0],()=>{d.close();c[1]();},list));}q.oninput=draw;draw();q.focus(); }
     button('Commands',palette,toolbar);
     button('Delete file',()=>{if(!active)return;const d=modal('Delete '+active+'?');d.append(el('p','','This removes the file from this device workspace. Export it first if you need a copy.'));button('Cancel',()=>d.close(),d);button('Delete',()=>{delete workspace[active];delete drafts[active];opened=opened.filter(x=>x!==active);saveFiles();d.close();open(opened[0]||Object.keys(workspace)[0]||'');},d);},toolbar);
