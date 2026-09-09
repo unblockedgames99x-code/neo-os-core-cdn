@@ -8,6 +8,7 @@
   var running = null;
   var sequence = 0;
   var timer = 0;
+  var started = false;
   var state = Object.freeze({
     status: "checking",
     label: "Checking connection",
@@ -37,10 +38,9 @@
     var controller = new AbortController();
     var timeout = window.setTimeout(function () { controller.abort(); }, CHECK_TIMEOUT);
     var url = new URL(path, base);
-    url.searchParams.set("neo_health", String(Date.now()));
     var options = {
       method: "HEAD",
-      cache: "no-store",
+      cache: "force-cache",
       signal: controller.signal
     };
     if (url.origin !== window.location.origin) options.mode = "no-cors";
@@ -131,15 +131,14 @@
     }));
     notify();
     var startedAt = performance.now();
-    var base = window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.assetBase
-      ? window.NEO_LOCAL_CONFIG.assetBase
-      : (window.location.protocol === "file:" && window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.preview
-        ? window.NEO_LOCAL_CONFIG.preview
-        : new URL("./", document.baseURI).href);
+    var config = window.NEO_LOCAL_CONFIG || {};
+    var base = config.assetBase || (window.location.protocol === "file:" && config.preview
+      ? config.preview
+      : new URL("./", document.baseURI).href);
     running = Promise.all([
       checkUrl("Desktop", "index.html", base),
-      checkUrl("Browser", "NEO-BROWSER/index.html", base),
-      checkUrl("Music", "music-v2/index.html", base),
+      checkUrl("Browser", config.browser || "NEO-BROWSER/index.html", base),
+      checkUrl("Music", config.music || "music-v2/index.html", base),
       checkUrl("Wallpapers", "wallpaper-full-media.json", base),
       checkRelay()
     ]).then(function (services) {
@@ -161,6 +160,8 @@
   }
 
   function start() {
+    if (started) return;
+    started = true;
     refresh();
     window.clearInterval(timer);
     timer = window.setInterval(function () {
@@ -170,8 +171,8 @@
 
   window.addEventListener("online", function () { refresh(true); });
   window.addEventListener("offline", function () { refresh(true); });
-  window.addEventListener("pageshow", function () { refresh(); });
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
+  window.addEventListener("pageshow", function () { if (started) refresh(); });
+  document.addEventListener("visibilitychange", function () { if (started && !document.hidden) refresh(); });
 
   window.NEO_CONNECTION_MONITOR = {
     start: start,
@@ -179,5 +180,9 @@
     subscribe: subscribe,
     getState: getState
   };
-  start();
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(start, { timeout: 5000 });
+  } else {
+    window.setTimeout(start, 2500);
+  }
 })();

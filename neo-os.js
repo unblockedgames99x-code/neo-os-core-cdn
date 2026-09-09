@@ -236,7 +236,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@main/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f463b30e796a80a3182fc0ec855e091a45755146/NEO-BROWSER/index.html?v=20260908-audio-performance-v1",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -280,7 +280,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@main/neo-chat/index.html?v=20260907-neo-chat-images-v2",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@751c788b4e3e23e828ec261a16e2427930919f12/neo-chat/index.html?v=20260908-audio-performance-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -2302,11 +2302,11 @@
     var idleId = 0;
     var timeoutId = 0;
     function prewarmOnPointer(event) {
-      if (!event.target.closest('[data-app="browser"], [data-app="stream"]')) return;
+      if (!event.target.closest('[data-app="browser"]')) return;
       warm();
     }
     function prewarmOnFocus(event) {
-      if (!event.target.closest('[data-app="browser"], [data-app="stream"]')) return;
+      if (!event.target.closest('[data-app="browser"]')) return;
       warm();
     }
     function cleanupTriggers() {
@@ -2334,8 +2334,6 @@
 
     document.addEventListener("pointerover", prewarmOnPointer, { passive: true });
     document.addEventListener("focusin", prewarmOnFocus);
-    if ("requestIdleCallback" in window) idleId = window.requestIdleCallback(warm, { timeout: 1400 });
-    else timeoutId = window.setTimeout(warm, 450);
   }
 
   function mountLazyApp(app, body) {
@@ -2376,6 +2374,7 @@
     var frame = document.createElement("iframe");
     frame.title = "NEO Music";
     frame.allow = "autoplay; fullscreen";
+    frame.loading = "eager";
     frame.dataset.neoLocalMusic = "true";
     frame.dataset.neoMusicSource = localConfig.music;
     frame.style.cssText = "width:100%;height:100%;border:0;display:block;background:#080808";
@@ -2407,17 +2406,20 @@
       fallback.classList.remove("is-visible");
       armRuntimeTimeout();
       var target = new URL(localConfig.music);
-      target.searchParams.set("runtime", "20260907-recovery-v1");
-      target.searchParams.set("attempt", String(Date.now()));
+      target.searchParams.set("runtime", "20260908-audio-performance-v1");
       if (window.NEOFrameLoader && window.NEOFrameLoader.isRunner()) {
-        window.NEOFrameLoader.load(frame, target.href, { cache: "no-store" }).catch(showRuntimeError);
+        window.NEOFrameLoader.load(frame, target.href, { cache: "force-cache" }).catch(showRuntimeError);
       } else {
         frame.src = target.href;
       }
     }
     function command(action, value) {
       if (!frame.contentWindow) return;
-      frame.contentWindow.postMessage({ neoMusicControl: { action: action, value: value } }, location.origin);
+      var targetOrigin = "*";
+      if (!frame.hasAttribute("srcdoc")) {
+        try { targetOrigin = new URL(frame.src, document.baseURI).origin; } catch (_) {}
+      }
+      frame.contentWindow.postMessage({ neoMusicControl: { action: action, value: value } }, targetOrigin);
     }
     function state(event) {
       var trustedOpaqueFrame = event.origin === "null" && frame.hasAttribute("srcdoc");
@@ -6358,7 +6360,7 @@
 
   function performBoot() {
     var image = new Image();
-    image.src = "./assets/universal-loading-screen-white.png";
+    image.src = "./assets/universal-loading-screen-white.webp";
     var ready = typeof image.decode === "function" ? image.decode().catch(function () {}) : Promise.resolve();
     var timeout = new Promise(function (resolve) { window.setTimeout(resolve, 650); });
     Promise.race([ready, timeout]).then(function () {

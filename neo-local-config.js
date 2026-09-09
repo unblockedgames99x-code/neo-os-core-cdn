@@ -13,13 +13,13 @@
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "cinehd", "neo-cloud", "discord", "youtube-app", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@main/music-v2/index.html?v=20260907-runtime-recovery-v2&search=fast-v1&playback=normal-speed-v1&artwork=stable-cover-v2&equalizer=efficient-v1&ui=retro-consistency-v1" : new URL("music-v2/index.html?v=20260907-runtime-recovery-v2&search=fast-v1&playback=normal-speed-v1&artwork=stable-cover-v2&equalizer=efficient-v1&ui=retro-consistency-v1", base).href,
-    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@main/NEO-BROWSER/index.html?v=20260907-runtime-recovery-v2" : new URL("NEO-BROWSER/index.html?v=20260907-runtime-recovery-v2", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@437f2ac482d89a28b986687564cc0923de53a8ba/music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1", base).href,
+    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f463b30e796a80a3182fc0ec855e091a45755146/NEO-BROWSER/index.html?v=20260908-audio-performance-v1" : new URL("NEO-BROWSER/index.html?v=20260908-audio-performance-v1", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
     previewBrowser: new URL("NEO-BROWSER/", previewBase).href,
-    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@main/local-browser/support.html" : new URL("local-browser/support.html", base).href,
-    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@main/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
+    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f463b30e796a80a3182fc0ec855e091a45755146/local-browser/support.html" : new URL("local-browser/support.html", base).href,
+    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f463b30e796a80a3182fc0ec855e091a45755146/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });
