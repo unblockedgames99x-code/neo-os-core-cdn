@@ -2975,3 +2975,11 @@ html[data-interface-style="modern"] .desktop-context-menu button:is(:hover,:focu
 html[data-interface-style="modern"] :is(.desktop-context-menu,.context-submenu) button:disabled {
   color: rgba(243, 247, 248, .48) !important;
 }
+
+/* Optical alignment for every icon shown in the Ctrl app launcher. Keep the
+   icon frame slightly above its geometric center so artwork and text share the
+   same visual baseline in both tile and list layouts. */
+.app-launcher :is(.launcher-app-icon,.launcher-detail-icon,.launcher-category-icon) {
+  position: relative;
+  top: -2px;
+}
