@@ -7,6 +7,7 @@
   var localOnlineApps = new Set(localConfig && Array.isArray(localConfig.onlineApps) ? localConfig.onlineApps : []);
   var WIDGET_LAYOUT_KEY = "neo_os_widget_layout_v1";
   var DESKTOP_SHORTCUT_LAYOUT_KEY = "neo_os_desktop_shortcut_layout_v1";
+  var DESKTOP_SHORTCUT_HIDDEN_KEY = "neo_os_desktop_shortcut_hidden_v1";
   var DESKTOP_VIEW_KEY = "neo_os_desktop_view_v1";
   var RECENT_APPS_KEY = "neo_os_recent_apps_v1";
   var WINDOW_STATE_KEY = "neo_os_window_states_v2";
@@ -247,6 +248,8 @@
   if (!windowStates || typeof windowStates !== "object" || Array.isArray(windowStates)) windowStates = {};
   var desktopShortcutLayout = readJson(DESKTOP_SHORTCUT_LAYOUT_KEY, {});
   if (!desktopShortcutLayout || typeof desktopShortcutLayout !== "object" || Array.isArray(desktopShortcutLayout)) desktopShortcutLayout = {};
+  var storedHiddenDesktopShortcuts = readJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
+  var hiddenDesktopShortcutIds = new Set(Array.isArray(storedHiddenDesktopShortcuts) ? storedHiddenDesktopShortcuts.map(String) : []);
 
   var apps = {
     browser: {
@@ -1627,6 +1630,7 @@
       dock.scrollLeft = previousScrollLeft;
       dock.scrollTop = previousScrollTop;
     });
+    syncDesktopShortcutVisibility();
   }
 
   function normalizePinnedAppOrder() {
@@ -1664,8 +1668,15 @@
   function setAppInstalled(id, installed) {
     var app = apps[id];
     if (!app || !app.launcher || (app.core && !installed)) return false;
+    var wasInstalled = Boolean(app.installed);
     app.installed = Boolean(installed);
-    if (app.installed) installedAppIds.add(id);
+    if (app.installed) {
+      installedAppIds.add(id);
+      if (!wasInstalled) {
+        hiddenDesktopShortcutIds.delete(id);
+        writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, Array.from(hiddenDesktopShortcutIds));
+      }
+    }
     else installedAppIds.delete(id);
     if (!app.installed) {
       app.pinned = false;
@@ -1744,6 +1755,37 @@
     }, metrics, bounds);
   }
 
+  function snapDesktopShortcutPosition(position, metrics, bounds, ignoreId) {
+    var columnStep = metrics.width + metrics.columnGap;
+    var rowStep = metrics.height + metrics.rowGap;
+    var columnCount = Math.max(1, Math.floor((bounds.right - bounds.left) / columnStep) + 1);
+    var rowCount = Math.max(1, Math.floor((bounds.bottom - bounds.top) / rowStep) + 1);
+    var targetColumn = Math.round((Number(position.x) - bounds.left) / columnStep);
+    var targetRow = Math.round((Number(position.y) - bounds.top) / rowStep);
+    targetColumn = clamp(targetColumn, 0, columnCount - 1);
+    targetRow = clamp(targetRow, 0, rowCount - 1);
+    var occupied = new Set();
+    desktopShortcutLayer.querySelectorAll(".desktop-shortcut[data-desktop-shortcut]").forEach(function (button) {
+      if (button.dataset.desktopShortcut === ignoreId) return;
+      var column = Math.round((button.offsetLeft - bounds.left) / columnStep);
+      var row = Math.round((button.offsetTop - bounds.top) / rowStep);
+      occupied.add(column + ":" + row);
+    });
+    var best = null;
+    for (var columnIndex = 0; columnIndex < columnCount; columnIndex += 1) {
+      for (var rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+        if (occupied.has(columnIndex + ":" + rowIndex)) continue;
+        var distance = Math.pow(columnIndex - targetColumn, 2) + Math.pow(rowIndex - targetRow, 2);
+        if (!best || distance < best.distance) best = { column: columnIndex, row: rowIndex, distance: distance };
+      }
+    }
+    if (!best) best = { column: targetColumn, row: targetRow };
+    return clampDesktopShortcutPosition({
+      x: bounds.left + best.column * columnStep,
+      y: bounds.top + best.row * rowStep
+    }, metrics, bounds);
+  }
+
   function desktopShortcutTitle(app) {
     if (!app) return "Application";
     if (app.id === "browser") return "Browser";
@@ -1790,7 +1832,9 @@
     if (!desktopShortcutLayer) return;
     var focusedId = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.desktopShortcut;
     var fragment = document.createDocumentFragment();
-    launcherApps().forEach(function (app, index) { fragment.appendChild(createDesktopShortcut(app, index)); });
+    launcherApps().filter(function (app) { return !hiddenDesktopShortcutIds.has(app.id); }).forEach(function (app, index) {
+      fragment.appendChild(createDesktopShortcut(app, index));
+    });
     desktopShortcutLayer.textContent = "";
     desktopShortcutLayer.appendChild(fragment);
     layoutDesktopShortcuts();
@@ -1798,6 +1842,33 @@
       var focused = desktopShortcutLayer.querySelector('[data-desktop-shortcut="' + CSS.escape(focusedId) + '"]');
       if (focused) focused.focus({ preventScroll: true });
     }
+    syncDesktopShortcutRestoreControl();
+  }
+
+  function syncDesktopShortcutVisibility() {
+    if (!desktopShortcutLayer) return;
+    var hidden = false;
+    openWindows.forEach(function (win) {
+      if (!win || !win.isConnected || win.classList.contains("is-minimized") || win.classList.contains("is-closing")) return;
+      hidden = true;
+    });
+    root.dataset.desktopShortcutsHidden = hidden ? "true" : "false";
+    desktopShortcutLayer.toggleAttribute("inert", hidden);
+    desktopShortcutLayer.setAttribute("aria-hidden", hidden ? "true" : "false");
+    if (hidden) closeDesktopShortcutContextMenu();
+  }
+
+  function syncDesktopShortcutRestoreControl() {
+    var restore = document.querySelector("[data-restore-desktop-shortcuts]");
+    if (restore) restore.hidden = hiddenDesktopShortcutIds.size === 0;
+  }
+
+  function restoreDesktopShortcuts() {
+    if (!hiddenDesktopShortcutIds.size) return;
+    hiddenDesktopShortcutIds.clear();
+    writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
+    renderDesktopShortcuts();
+    showToast("Desktop icons restored", "Removed app shortcuts are back on the desktop.", "apps");
   }
 
   function scheduleDesktopShortcutRender() {
@@ -1833,7 +1904,9 @@
       '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="open"><span class="desktop-menu-app-icon" aria-hidden="true"></span><span data-desktop-shortcut-menu-open>Open app</span></button>' +
       '<span class="context-separator" role="separator"></span>' +
       '<button type="button" role="menuitemcheckbox" aria-checked="false" data-desktop-shortcut-menu-action="size"><span class="context-check" aria-hidden="true"></span><span>Large icons (hide names)</span></button>' +
-      '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="reset"><svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg><span>Reset icon position</span></button>';
+      '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="reset"><svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg><span>Reset icon position</span></button>' +
+      '<span class="context-separator" role="separator"></span>' +
+      '<button type="button" role="menuitem" data-desktop-shortcut-menu-action="remove"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg><span>Remove from desktop</span></button>';
     menu.addEventListener("contextmenu", function (event) { event.preventDefault(); });
     menu.addEventListener("click", function (event) {
       var actionButton = event.target.closest("[data-desktop-shortcut-menu-action]");
@@ -1850,6 +1923,15 @@
         delete desktopShortcutLayout[appId];
         writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
         renderDesktopShortcuts();
+      }
+      if (action === "remove" && appId) {
+        var removedApp = apps[appId];
+        hiddenDesktopShortcutIds.add(appId);
+        delete desktopShortcutLayout[appId];
+        writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, Array.from(hiddenDesktopShortcutIds));
+        writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
+        renderDesktopShortcuts();
+        showToast("Removed from desktop", desktopShortcutTitle(removedApp) + " is still available in Applications.", "apps");
       }
       closeDesktopShortcutContextMenu();
     });
@@ -1947,7 +2029,13 @@
       drag.button.classList.remove("is-dragging");
       if (drag.moved) {
         desktopShortcutSuppressOpenUntil = Date.now() + 500;
-        desktopShortcutLayout[drag.id] = { x: Math.round(drag.x), y: Math.round(drag.y) };
+        var metrics = desktopShortcutMetrics();
+        var snapped = snapDesktopShortcutPosition({ x: drag.x, y: drag.y }, metrics, desktopShortcutBounds(metrics), drag.id);
+        drag.button.classList.add("is-snapping");
+        drag.button.style.left = snapped.x + "px";
+        drag.button.style.top = snapped.y + "px";
+        window.setTimeout(function () { if (drag.button) drag.button.classList.remove("is-snapping"); }, 150);
+        desktopShortcutLayout[drag.id] = snapped;
         writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
       } else if (drag.pointerType === "touch" || drag.pointerType === "pen") {
         openDesktopShortcut(drag.button);
@@ -1957,6 +2045,8 @@
     desktopShortcutLayer.addEventListener("pointerup", finishDesktopShortcutDrag);
     desktopShortcutLayer.addEventListener("pointercancel", finishDesktopShortcutDrag);
     desktopShortcutLayer.addEventListener("lostpointercapture", finishDesktopShortcutDrag);
+    document.addEventListener("pointerup", finishDesktopShortcutDrag, true);
+    document.addEventListener("pointercancel", finishDesktopShortcutDrag, true);
     desktopShortcutLayer.addEventListener("dblclick", function (event) {
       var button = event.target.closest(".desktop-shortcut[data-desktop-shortcut]");
       if (!button) return;
@@ -4527,6 +4617,7 @@
     window.dispatchEvent(new CustomEvent("neo-window-state-change", {
       detail: { id: win.dataset.appId || "", minimized: Boolean(minimized), closed: false }
     }));
+    syncDesktopShortcutVisibility();
   }
 
   function syncMaximizeButton(win) {
@@ -4693,16 +4784,21 @@
   function resetLayout() {
     widgetLayout = {};
     windowStates = {};
+    desktopShortcutLayout = {};
+    hiddenDesktopShortcutIds.clear();
     writeJson(WIDGET_LAYOUT_KEY, widgetLayout);
     writeJson(WINDOW_STATE_KEY, windowStates);
+    writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
+    writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
     applyWidgetLayout();
+    renderDesktopShortcuts();
     openWindows.forEach(function (win) {
       win.classList.remove("is-maximized");
       syncMaximizeButton(win);
       win.style.left = "8%";
       win.style.top = "9%";
     });
-    showToast("Layout reset", "Widgets and windows returned to their defaults.", "check");
+    showToast("Layout reset", "Desktop icons, widgets, and windows returned to their defaults.", "check");
   }
 
   function normalizeText(value) {
@@ -7008,6 +7104,11 @@
       }
       if (event.target.closest("[data-shell-refresh]")) {
         restartShell();
+        return;
+      }
+      if (event.target.closest("[data-restore-desktop-shortcuts]")) {
+        restoreDesktopShortcuts();
+        if (window.NEO_FEATURES && typeof window.NEO_FEATURES.closeOverlays === "function") window.NEO_FEATURES.closeOverlays();
         return;
       }
       var appButton = event.target.closest("[data-app]");

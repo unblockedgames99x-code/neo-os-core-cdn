@@ -23,7 +23,16 @@
   z-index: 42;
   inset: 0;
   overflow: hidden;
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
+  transition: opacity 100ms ease, visibility 0s linear;
+}
+
+html[data-desktop-shortcuts-hidden="true"] .desktop-shortcuts {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 90ms ease, visibility 0s linear 90ms;
 }
 
 .desktop-shortcut {
@@ -65,6 +74,10 @@
   opacity: 0.82;
   cursor: grabbing;
   transform: scale(1.04);
+}
+
+.desktop-shortcut.is-snapping {
+  transition: left 120ms ease-out, top 120ms ease-out, background-color 100ms ease;
 }
 
 .desktop-shortcut-icon {
@@ -193,7 +206,9 @@ html[data-desktop-icon-size="large"] .desktop-shortcut-label {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .desktop-shortcut {
+  .desktop-shortcuts,
+  .desktop-shortcut,
+  .desktop-shortcut.is-snapping {
     transition: none;
   }
 }
