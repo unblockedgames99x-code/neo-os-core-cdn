@@ -8,7 +8,7 @@
       subtitle: "Search, stream, queue, and organize your music",
       icon: "stream",
       template: "browser-template",
-      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@437f2ac482d89a28b986687564cc0923de53a8ba/music-v2/index.html",
+      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@fd2cd03e4ee5cd063bd14b36c2ad62deabf360a7/music-v2/index.html",
       browserDirect: true,
       browserChrome: false,
       browserTheme: "stream-music",
