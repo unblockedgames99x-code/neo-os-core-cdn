@@ -288,7 +288,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@751c788b4e3e23e828ec261a16e2427930919f12/neo-chat/index.html?v=20260908-audio-performance-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@817360ffb30bd4470ebf2b8d624f0bee3e3e3768/neo-chat/index.html?v=20260908-audio-performance-v1",
       width: 1180,
       height: 760,
       launcher: true,
