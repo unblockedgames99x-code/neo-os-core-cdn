@@ -2,8 +2,23 @@
   "use strict";
 
   var CHECK_INTERVAL = 45000;
-  var CHECK_TIMEOUT = 4500;
-  var RELAY_URL = "wss://support.pired.org/lively/";
+  var CHECK_TIMEOUT = 6000;
+  var RELAY_ATTEMPT_TIMEOUT = 1800;
+  var RELAY_URLS = [
+    "wss://support.pired.org/lively/",
+    "wss://girlspreples.com/lively/",
+    "wss://northstreetumc.org/lively/",
+    "wss://pcesc.com/lively/",
+    "wss://kcchallengevbc.com/lively/",
+    "wss://slcbmooc.org/lively/",
+    "wss://wisp.mercurywork.shop/"
+  ];
+  var SERVER_URLS = [
+    { name: "Music server", url: "https://lol.samidy.workers.dev/" },
+    { name: "Chat server", url: "https://lunchbreak.dyercountylawncare.workers.dev/api/auth/token" },
+    { name: "Cloud server", url: "https://neo-stratus-api-w6nw.onrender.com/health" }
+  ];
+  var preferredRelay = RELAY_URLS[0];
   var listeners = [];
   var running = null;
   var sequence = 0;
@@ -14,7 +29,7 @@
     label: "Checking connection",
     summary: "Testing NEO OS services…",
     ready: 0,
-    total: 5,
+    total: 8,
     latency: 0,
     checkedAt: 0,
     services: []
@@ -56,15 +71,35 @@
     });
   }
 
-  function checkRelay() {
-    if (navigator.onLine === false || typeof WebSocket !== "function") {
-      return Promise.resolve({ name: "Web access", ready: false, latency: 0 });
-    }
+  function checkServer(name, url) {
+    var controller = new AbortController();
+    var timeout = window.setTimeout(function () { controller.abort(); }, CHECK_TIMEOUT);
+    var startedAt = performance.now();
+    return fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      credentials: "omit",
+      signal: controller.signal
+    }).then(function (response) {
+      return {
+        name: name,
+        ready: response.type === "opaque" || response.status < 500,
+        latency: Math.max(1, Math.round(performance.now() - startedAt))
+      };
+    }).catch(function () {
+      return { name: name, ready: false, latency: 0 };
+    }).then(function (result) {
+      window.clearTimeout(timeout);
+      return result;
+    });
+  }
+
+  function checkRelayUrl(url) {
     return new Promise(function (resolve) {
       var socket;
       var settled = false;
       var startedAt = performance.now();
-      var timeout = window.setTimeout(function () { finish(false); }, CHECK_TIMEOUT);
+      var timeout = window.setTimeout(function () { finish(false); }, RELAY_ATTEMPT_TIMEOUT);
       function finish(ready) {
         if (settled) return;
         settled = true;
@@ -72,10 +107,14 @@
         if (socket && socket.readyState < 2) {
           try { socket.close(1000, "Health check complete"); } catch (_error) {}
         }
-        resolve({ name: "Web access", ready: ready, latency: ready ? Math.max(1, Math.round(performance.now() - startedAt)) : 0 });
+        resolve({
+          ready: ready,
+          url: url,
+          latency: ready ? Math.max(1, Math.round(performance.now() - startedAt)) : 0
+        });
       }
       try {
-        socket = new WebSocket(RELAY_URL);
+        socket = new WebSocket(url);
         socket.addEventListener("open", function () { finish(true); }, { once: true });
         socket.addEventListener("error", function () { finish(false); }, { once: true });
         socket.addEventListener("close", function () { finish(false); }, { once: true });
@@ -85,11 +124,30 @@
     });
   }
 
+  function checkRelay() {
+    if (navigator.onLine === false || typeof WebSocket !== "function") {
+      return Promise.resolve({ name: "Browser relay", ready: false, latency: 0 });
+    }
+    return checkRelayUrl(preferredRelay).then(function (primary) {
+      if (primary.ready) return primary;
+      var fallbacks = RELAY_URLS.filter(function (url) { return url !== preferredRelay; });
+      return Promise.all(fallbacks.map(checkRelayUrl)).then(function (results) {
+        return results.find(function (result) { return result.ready; }) || { ready: false, latency: 0 };
+      });
+    }).then(function (result) {
+      if (result.ready && result.url) preferredRelay = result.url;
+      return { name: "Browser relay", ready: result.ready, latency: result.latency || 0, url: result.url || "" };
+    });
+  }
+
   function resultState(services, elapsed) {
     var ready = services.filter(function (service) { return service.ready; }).length;
-    var siteServices = services.filter(function (service) { return service.name !== "Web access"; });
+    var siteServices = services.filter(function (service) {
+      return service.name === "Desktop" || service.name === "Browser" || service.name === "Music" || service.name === "Wallpapers";
+    });
     var siteReady = siteServices.filter(function (service) { return service.ready; }).length;
-    var relayReady = services.some(function (service) { return service.name === "Web access" && service.ready; });
+    var externalServices = services.filter(function (service) { return siteServices.indexOf(service) === -1; });
+    var externalReady = externalServices.filter(function (service) { return service.ready; }).length;
     var failed = services.filter(function (service) { return !service.ready; }).map(function (service) { return service.name; });
     var next = {
       status: "limited",
@@ -101,14 +159,22 @@
       checkedAt: Date.now(),
       services: services
     };
-    if (siteReady === siteServices.length && relayReady) {
+    if (navigator.onLine === false) {
+      next.status = "offline";
+      next.label = "Offline";
+      next.summary = "This device is offline. Reconnect to Wi-Fi and try again.";
+    } else if (siteReady === siteServices.length && externalReady === externalServices.length) {
       next.status = "connected";
-      next.label = "All systems connected";
-      next.summary = "Desktop, Browser, Music, wallpapers, and web access are responding.";
+      next.label = "Online";
+      next.summary = "Wi-Fi and all NEO app servers are responding.";
+    } else if (siteReady === siteServices.length && externalReady) {
+      next.status = "limited";
+      next.label = "Online · some services limited";
+      next.summary = "Wi-Fi is working. Unavailable: " + failed.join(", ") + ".";
     } else if (siteReady === siteServices.length) {
-      next.status = "local";
-      next.label = "Local services ready";
-      next.summary = "All NEO apps are ready; live web access did not respond.";
+      next.status = "limited";
+      next.label = "Online · servers blocked";
+      next.summary = "The site is online, but this network is blocking NEO's live servers.";
     } else if (window.location.protocol === "file:" && siteReady <= 1) {
       next.status = "local";
       next.label = "Local mode";
@@ -127,7 +193,7 @@
     state = Object.freeze(Object.assign({}, state, {
       status: "checking",
       label: "Checking connection",
-      summary: "Testing Desktop, Browser, Music, wallpapers, and web access…"
+      summary: "Testing Wi-Fi, NEO apps, and live servers…"
     }));
     notify();
     var startedAt = performance.now();
@@ -141,7 +207,9 @@
       checkUrl("Music", config.music || "music-v2/index.html", base),
       checkUrl("Wallpapers", "wallpaper-full-media.json", base),
       checkRelay()
-    ]).then(function (services) {
+    ].concat(SERVER_URLS.map(function (server) {
+      return checkServer(server.name, server.url);
+    }))).then(function (services) {
       if (run !== sequence) return getState();
       state = resultState(services, Math.max(1, Math.round(performance.now() - startedAt)));
       notify();

@@ -49,6 +49,8 @@
   var mediaPrioritySources = new Set();
   var autoPerformanceActive = false;
   var connectionState = document.getElementById("connection-state");
+  var connectionPanel = document.getElementById("connection-panel");
+  var connectionPanelReturnFocus = null;
   var openWindows = new Map();
   var desktopShortcutContextMenu = null;
   var desktopShortcutContextAppId = "";
@@ -1480,6 +1482,60 @@
     window.setTimeout(updateClock, 60000 - (Date.now() % 60000) + 20);
   }
 
+  function setConnectionPanelOpen(open, trigger) {
+    if (!connectionPanel) return;
+    var shouldOpen = Boolean(open);
+    connectionPanel.hidden = !shouldOpen;
+    document.querySelectorAll("[data-connection-toggle]").forEach(function (button) {
+      button.setAttribute("aria-expanded", String(shouldOpen));
+    });
+    if (!shouldOpen) {
+      connectionPanel.classList.remove("is-topbar-anchor");
+      var returnFocus = connectionPanelReturnFocus;
+      connectionPanelReturnFocus = null;
+      if (returnFocus && returnFocus.isConnected) returnFocus.focus({ preventScroll: true });
+      return;
+    }
+    connectionPanelReturnFocus = trigger || document.activeElement;
+    connectionPanel.classList.toggle("is-topbar-anchor", Boolean(trigger && trigger.closest(".topbar")));
+  }
+
+  function updateConnectionPanel(current) {
+    if (!connectionPanel || !current) return;
+    var label = connectionPanel.querySelector("[data-connection-panel-label]");
+    var summary = connectionPanel.querySelector("[data-connection-panel-summary]");
+    var checked = connectionPanel.querySelector("[data-connection-checked]");
+    var list = connectionPanel.querySelector("[data-connection-services]");
+    var status = current.status || "checking";
+    connectionPanel.classList.toggle("is-offline", status === "offline");
+    connectionPanel.classList.toggle("is-limited", status === "limited" || status === "local");
+    connectionPanel.classList.toggle("is-checking", status === "checking");
+    if (label) label.textContent = current.label || "Connection status";
+    if (summary) summary.textContent = current.summary || "Checking NEO services…";
+    if (checked) {
+      checked.textContent = status === "checking" || !current.checkedAt
+        ? "Checking now…"
+        : "Checked " + new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(current.checkedAt));
+    }
+    if (!list) return;
+    var services = Array.isArray(current.services) ? current.services : [];
+    var fragment = document.createDocumentFragment();
+    services.forEach(function (service) {
+      var item = document.createElement("li");
+      var dot = document.createElement("span");
+      var name = document.createElement("strong");
+      var result = document.createElement("small");
+      item.classList.toggle("is-ready", Boolean(service.ready));
+      dot.className = "connection-service-dot";
+      dot.setAttribute("aria-hidden", "true");
+      name.textContent = service.name;
+      result.textContent = service.ready ? (service.latency ? service.latency + " ms" : "Ready") : "Unavailable";
+      item.append(dot, name, result);
+      fragment.appendChild(item);
+    });
+    list.replaceChildren(fragment);
+  }
+
   function updateConnection(nextState) {
     var monitor = window.NEO_CONNECTION_MONITOR;
     var current = nextState && nextState.status ? nextState : (monitor ? monitor.getState() : null);
@@ -1495,6 +1551,7 @@
       connectionState.title = detailText;
       var label = connectionState.querySelector(".connection-label");
       if (label) label.textContent = labelText;
+      connectionState.setAttribute("aria-label", "Network: " + labelText + ". " + detailText);
     }
     var taskbarNetwork = document.getElementById("taskbar-network");
     if (taskbarNetwork) {
@@ -1502,7 +1559,15 @@
       taskbarNetwork.classList.toggle("is-limited", limited);
       taskbarNetwork.dataset.connectionStatus = status;
       taskbarNetwork.title = labelText + " — " + detailText;
+      taskbarNetwork.setAttribute("aria-label", "Network: " + labelText + ". " + detailText);
     }
+    updateConnectionPanel(current || {
+      status: status,
+      label: labelText,
+      summary: detailText,
+      services: [],
+      checkedAt: 0
+    });
   }
 
   function updateTopbarAccount() {
@@ -7046,6 +7111,21 @@
 
     document.addEventListener("click", function (event) {
       if (launcherIsOpen() && !event.target.closest("#app-launcher, [data-open-launcher]")) setLauncherOpen(false);
+      var connectionToggle = event.target.closest("[data-connection-toggle]");
+      if (connectionToggle) {
+        event.preventDefault();
+        var openingConnectionPanel = connectionPanel ? connectionPanel.hidden : false;
+        setConnectionPanelOpen(openingConnectionPanel, connectionToggle);
+        if (openingConnectionPanel && window.NEO_CONNECTION_MONITOR) window.NEO_CONNECTION_MONITOR.refresh();
+        return;
+      }
+      var connectionRefresh = event.target.closest("[data-connection-refresh]");
+      if (connectionRefresh) {
+        event.preventDefault();
+        if (window.NEO_CONNECTION_MONITOR) window.NEO_CONNECTION_MONITOR.refresh();
+        return;
+      }
+      if (connectionPanel && !connectionPanel.hidden && !event.target.closest("#connection-panel")) setConnectionPanelOpen(false);
       var wallpaperUploadTrigger = event.target.closest("[data-wallpaper-upload-trigger]");
       if (wallpaperUploadTrigger) {
         event.preventDefault();
@@ -7274,6 +7354,11 @@
         return;
       }
       if (ctrlTapCandidate) ctrlTapCandidate = false;
+      if (event.key === "Escape" && connectionPanel && !connectionPanel.hidden) {
+        event.preventDefault();
+        setConnectionPanelOpen(false);
+        return;
+      }
       if (event.key === "Escape" && nowPlayingWidget && nowPlayingWidget.classList.contains("is-volume-open")) {
         closeNowPlayingVolume();
         return;

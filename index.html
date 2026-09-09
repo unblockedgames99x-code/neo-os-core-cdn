@@ -2,7 +2,7 @@
 <html lang="en" data-boot="pending" data-neo-app="shell" data-interface-style="modern" data-wallpaper="we-steam-1403160205" data-performance-mode="normal" data-auto-performance-active="false" data-taskbar-position="left" data-taskbar-style="current" data-taskbar-surface="glass" data-taskbar-outline="true" data-window-bar-style="current">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:3092 http://localhost:3092; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: http://127.0.0.1:3092 http://localhost:3092 wss://support.pired.org; frame-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:3092 http://localhost:3092; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: http://127.0.0.1:3092 http://localhost:3092 https://lol.samidy.workers.dev https://lunchbreak.dyercountylawncare.workers.dev https://neo-stratus-api-w6nw.onrender.com wss://support.pired.org wss://girlspreples.com wss://northstreetumc.org wss://pcesc.com wss://kcchallengevbc.com wss://slcbmooc.org wss://wisp.mercurywork.shop; frame-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
     <script src="./neo-local-config.js?v=20260908-audio-performance-v1&music=source-recovery-v2&artwork=stable-cover-v2&equalizer=efficient-v1&ui=retro-consistency-v1&cdn=github-shards-v2"></script>
     <script src="./neo-desktop-config.js?v=20260907-theme-library-v3"></script>
     <script src="./neo-system-bridge.js?v=20260907-theme-library-v3"></script>
@@ -365,10 +365,10 @@
           <button class="topbar-action mobile-notification-toggle" type="button" data-notification-toggle aria-label="Open notifications" aria-expanded="false" title="Notifications">
             <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
           </button>
-          <span class="connection-state" id="connection-state">
+          <button class="connection-state" id="connection-state" type="button" data-connection-toggle aria-label="Open network status" aria-expanded="false" aria-controls="connection-panel">
             <span class="connection-dot"></span>
             <span class="connection-label sr-only">Online</span>
-          </span>
+          </button>
           <button class="topbar-battery" type="button" data-app="control" aria-label="Open settings, battery 100 percent" title="Battery">
             <strong data-topbar-battery>100%</strong><svg class="icon" aria-hidden="true"><use href="#i-battery"></use></svg>
           </button>
@@ -515,8 +515,9 @@
           </div>
         </div>
         <div class="taskbar-tray" aria-label="System status">
-          <span class="taskbar-network" id="taskbar-network" title="Online"><span></span></span>
-          <svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg>
+          <button class="taskbar-network" id="taskbar-network" type="button" data-connection-toggle aria-label="Open network status" aria-expanded="false" aria-controls="connection-panel" title="Online">
+            <span aria-hidden="true"></span><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg>
+          </button>
           <span class="taskbar-clock" aria-label="Current date and time">
             <strong id="taskbar-clock">10:32 AM</strong>
             <small id="taskbar-date">8/2/2026</small>
@@ -531,6 +532,17 @@
         </header>
         <div class="notification-list" data-notification-list></div>
         <footer><button type="button" data-notification-clear>Clear all</button><button type="button" data-app="control">System settings</button></footer>
+      </aside>
+
+      <aside id="connection-panel" class="connection-panel" role="dialog" aria-modal="false" aria-labelledby="connection-panel-title" hidden>
+        <header>
+          <span class="connection-panel-mark" aria-hidden="true"><svg class="icon"><use href="#i-wifi"></use></svg></span>
+          <div><span class="eyebrow">NETWORK</span><h2 id="connection-panel-title" data-connection-panel-label>Checking connection</h2></div>
+          <button class="icon-button" type="button" data-connection-refresh aria-label="Check connection again" title="Check again"><svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg></button>
+        </header>
+        <p data-connection-panel-summary>Testing Wi-Fi, NEO apps, and live servers…</p>
+        <ul class="connection-service-list" data-connection-services aria-label="Connection details"></ul>
+        <footer><span data-connection-checked>Starting check…</span><button type="button" data-connection-refresh>Check again</button></footer>
       </aside>
 
       <div id="desktop-context-menu" class="desktop-context-menu" role="menu" aria-label="Desktop options" hidden>
@@ -1382,7 +1394,7 @@
     <script src="./neo-taskbar-preview.js?v=20260901-taskbar-options-v1" defer></script>
     <script src="./neo-chat-transport.js?v=20260901-production-auth-v1" defer></script>
     <script src="./neo-account-signin.js?v=20260907-profile-menu-v1" defer></script>
-    <script src="./neo-connection-monitor.js?v=20260907-site-health-v1" defer></script>
+    <script src="./neo-connection-monitor.js?v=20260909-server-fallback-v2" defer></script>
     <script src="./neo-skins.js?v=20260907-live-weather-v1&amp;scale=300-v1&amp;equalizer=live-v2&amp;music=symbols-v1" defer></script>
     <script src="./neo-chat-experience.js" defer></script>
     <script src="./neo-desktop-platform.js?v=20260907-widget-logo-v3&amp;tab=custom-url-v1&amp;themes=expanded-v1&amp;styles=launcher-picture-alignment-v12&amp;rainmeter=controls-v1&amp;editor=divider-v1" defer></script>
