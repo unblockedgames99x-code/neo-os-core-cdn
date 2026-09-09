@@ -436,6 +436,11 @@
     if (fullscreen) fullscreen.textContent = document.fullscreenElement || document.webkitFullscreenElement ? "Exit fullscreen" : "Enter fullscreen";
     var recording = menu.querySelector("[data-recording-label]");
     if (recording) recording.textContent = desktopRecorder && desktopRecorder.state !== "inactive" ? "Stop Recording" : "Start Recording";
+    var iconToggle = menu.querySelector('[data-desktop-action="toggle-icons"]');
+    var iconToggleLabel = menu.querySelector("[data-desktop-icons-label]");
+    var iconsHidden = Boolean(api && api.getDesktopShortcutsHidden && api.getDesktopShortcutsHidden());
+    if (iconToggle) iconToggle.setAttribute("aria-pressed", iconsHidden ? "true" : "false");
+    if (iconToggleLabel) iconToggleLabel.textContent = iconsHidden ? "Show all icons" : "Hide all icons";
     sortDesktopShortcuts(sort);
   }
 
@@ -602,6 +607,9 @@
     else if (action === "customize") api.openApp("control");
     else if (action === "background") api.openWallpaperSource("installed");
     else if (action === "terminal") api.openApp("terminal");
+    else if (action === "toggle-icons" && api.setDesktopShortcutsHidden && api.getDesktopShortcutsHidden) {
+      api.setDesktopShortcutsHidden(!api.getDesktopShortcutsHidden());
+    }
     else if (action === "fullscreen") toggleDesktopFullscreen();
     else if (action === "refresh" && api.refresh) api.refresh();
   }

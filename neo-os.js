@@ -8,6 +8,7 @@
   var WIDGET_LAYOUT_KEY = "neo_os_widget_layout_v1";
   var DESKTOP_SHORTCUT_LAYOUT_KEY = "neo_os_desktop_shortcut_layout_v1";
   var DESKTOP_SHORTCUT_HIDDEN_KEY = "neo_os_desktop_shortcut_hidden_v1";
+  var DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY = "neo_os_desktop_shortcuts_all_hidden_v1";
   var DESKTOP_VIEW_KEY = "neo_os_desktop_view_v1";
   var RECENT_APPS_KEY = "neo_os_recent_apps_v1";
   var WINDOW_STATE_KEY = "neo_os_window_states_v2";
@@ -252,6 +253,7 @@
   if (!desktopShortcutLayout || typeof desktopShortcutLayout !== "object" || Array.isArray(desktopShortcutLayout)) desktopShortcutLayout = {};
   var storedHiddenDesktopShortcuts = readJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
   var hiddenDesktopShortcutIds = new Set(Array.isArray(storedHiddenDesktopShortcuts) ? storedHiddenDesktopShortcuts.map(String) : []);
+  var desktopShortcutsManuallyHidden = readJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, false) === true;
 
   var apps = {
     browser: {
@@ -1912,15 +1914,33 @@
 
   function syncDesktopShortcutVisibility() {
     if (!desktopShortcutLayer) return;
-    var hidden = false;
-    openWindows.forEach(function (win) {
-      if (!win || !win.isConnected || win.classList.contains("is-minimized") || win.classList.contains("is-closing")) return;
-      hidden = true;
-    });
+    var hidden = desktopShortcutsManuallyHidden;
+    if (!hidden) {
+      openWindows.forEach(function (win) {
+        if (!win || !win.isConnected || win.classList.contains("is-minimized") || win.classList.contains("is-closing")) return;
+        hidden = true;
+      });
+    }
     root.dataset.desktopShortcutsHidden = hidden ? "true" : "false";
     desktopShortcutLayer.toggleAttribute("inert", hidden);
     desktopShortcutLayer.setAttribute("aria-hidden", hidden ? "true" : "false");
     if (hidden) closeDesktopShortcutContextMenu();
+  }
+
+  function setDesktopShortcutsManuallyHidden(hidden) {
+    hidden = Boolean(hidden);
+    if (desktopShortcutsManuallyHidden === hidden) {
+      syncDesktopShortcutVisibility();
+      return;
+    }
+    desktopShortcutsManuallyHidden = hidden;
+    writeJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, hidden);
+    syncDesktopShortcutVisibility();
+    showToast(
+      hidden ? "Desktop icons hidden" : "Desktop icons shown",
+      hidden ? "Your app positions are saved. Right-click the desktop to show every icon again." : "All desktop app icons are visible again.",
+      "apps"
+    );
   }
 
   function syncDesktopShortcutRestoreControl() {
@@ -2162,6 +2182,7 @@
       new MutationObserver(function () { scheduleDesktopShortcutRender(); }).observe(root, { attributes: true, attributeFilter: ["data-desktop-icon-size"] });
     }
     renderDesktopShortcuts();
+    syncDesktopShortcutVisibility();
   }
 
   function normalizeSearchValue(value) {
@@ -2584,7 +2605,7 @@
         document.head.appendChild(style);
       }
       var script = document.createElement("script");
-      script.src = "./neo-os-features.js?v=20260907-widget-menu-v1&hover=bridge-v1";
+      script.src = "./neo-os-features.js?v=20260909-hide-all-icons-v1&hover=bridge-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_FEATURES) {
@@ -4851,12 +4872,15 @@
     windowStates = {};
     desktopShortcutLayout = {};
     hiddenDesktopShortcutIds.clear();
+    desktopShortcutsManuallyHidden = false;
     writeJson(WIDGET_LAYOUT_KEY, widgetLayout);
     writeJson(WINDOW_STATE_KEY, windowStates);
     writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
     writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
+    writeJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, false);
     applyWidgetLayout();
     renderDesktopShortcuts();
+    syncDesktopShortcutVisibility();
     openWindows.forEach(function (win) {
       win.classList.remove("is-maximized");
       syncMaximizeButton(win);
@@ -7497,6 +7521,8 @@
       isInstalled: function (id) { return Boolean(apps[id] && apps[id].installed); },
       getSetting: function (name) { return settings[name]; },
       setSetting: setSetting,
+      getDesktopShortcutsHidden: function () { return desktopShortcutsManuallyHidden; },
+      setDesktopShortcutsHidden: setDesktopShortcutsManuallyHidden,
       getTabAppearancePresets: function () {
         return tabAppearancePresets.map(function (preset) { return Object.assign({}, preset); });
       },
