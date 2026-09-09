@@ -117,6 +117,11 @@
     return String(value || "").toLowerCase() === "retro" ? "retro" : "modern";
   }
 
+  function normalizeCursorTheme(value) {
+    value = String(value || "").toLowerCase();
+    return value === "neo" || value === "neon" || value === "pixel" || value === "contrast" ? value : "system";
+  }
+
   // Tab presets use local assets only. Replace these paths with CDN URLs later
   // without changing the settings UI or persistence contract.
   var tabAppearancePresets = [
@@ -170,6 +175,7 @@
     taskbarOutline: true,
     windowBarStyle: "current",
     interfaceStyle: "modern",
+    cursorTheme: "system",
     tabAppearance: "neo",
     customTabTitle: "My tab",
     customTabIcon: "",
@@ -220,6 +226,7 @@
   savedSettings.dockIconSize = normalizeDockIconSize(savedSettings.dockIconSize);
   savedSettings.windowBarStyle = normalizeWindowBarStyle(savedSettings.windowBarStyle);
   savedSettings.interfaceStyle = normalizeInterfaceStyle(savedSettings.interfaceStyle);
+  savedSettings.cursorTheme = normalizeCursorTheme(savedSettings.cursorTheme);
   savedSettings.tabAppearance = normalizeTabAppearance(savedSettings.tabAppearance);
   savedSettings.customTabTitle = String(savedSettings.customTabTitle || "My tab").trim().slice(0, 80) || "My tab";
   savedSettings.customTabIcon = isValidCustomTabIcon(savedSettings.customTabIcon)
@@ -263,7 +270,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a58b1737a16b0ba3a0294c6be38e66b537da3874/NEO-BROWSER/index.html?v=20260908-youtube-pip-v1",
+    route: "./NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -307,7 +314,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@05f6fedbf65aa77627d3080e72d3aa5a4d05ba92/neo-chat/index.html?v=20260908-audio-performance-v1",
+      route: "./neo-chat/index.html?v=20260907-neo-chat-images-v2",
       width: 1180,
       height: 760,
       launcher: true,
@@ -380,7 +387,7 @@
       pinned: true,
       core: true,
       category: "System",
-      aliases: ["settings", "preferences", "appearance", "styles", "modern", "retro", "sound", "theme", "tab appearance", "taskbar", "performance", "battery", "speed"]
+      aliases: ["settings", "preferences", "appearance", "styles", "modern", "retro", "cursor", "pointer", "sound", "theme", "tab appearance", "taskbar", "performance", "battery", "speed"]
     },
     terminal: {
       id: "terminal",
@@ -1185,11 +1192,34 @@
     } catch (error) {}
   }
 
+  function applyCursorThemeToFrame(frame) {
+    if (!frame) return;
+    var theme = normalizeCursorTheme(settings.cursorTheme);
+    try {
+      var frameDocument = frame.contentDocument;
+      var frameRoot = frameDocument && frameDocument.documentElement;
+      if (frameRoot) {
+        frameRoot.dataset.cursorTheme = theme;
+        if (frameDocument.head && !frameDocument.getElementById("neo-custom-cursors")) {
+          var link = frameDocument.createElement("link");
+          link.id = "neo-custom-cursors";
+          link.rel = "stylesheet";
+          link.href = new URL("./neo-custom-cursors.css?v=20260909-custom-cursors-v1", document.baseURI).href;
+          frameDocument.head.appendChild(link);
+        }
+      }
+    } catch (_error) {}
+    try {
+      frame.contentWindow.postMessage({ type: "neo-shell:cursor-theme", theme: theme }, "*");
+    } catch (_error) {}
+  }
+
   function applySettings(options) {
     options = options || {};
     var mode = performanceMode();
     var previousMode = normalizePerformanceMode(root.dataset.performanceMode);
     var previousInterfaceStyle = normalizeInterfaceStyle(root.dataset.interfaceStyle);
+    var previousCursorTheme = normalizeCursorTheme(root.dataset.cursorTheme);
     var previousTaskbarPosition = normalizeTaskbarPosition(root.dataset.taskbarPosition);
     var previousTaskbarStyle = normalizeTaskbarStyle(root.dataset.taskbarStyle);
     var wallpaper = settings.wallpaper;
@@ -1217,6 +1247,7 @@
     settings.taskbarSurface = normalizeTaskbarSurface(settings.taskbarSurface);
     settings.windowBarStyle = normalizeWindowBarStyle(settings.windowBarStyle);
     settings.interfaceStyle = normalizeInterfaceStyle(settings.interfaceStyle);
+    settings.cursorTheme = normalizeCursorTheme(settings.cursorTheme);
     settings.tabAppearance = normalizeTabAppearance(settings.tabAppearance);
     settings.taskbarTint = /^#[0-9a-f]{6}$/i.test(String(settings.taskbarTint || ""))
       ? String(settings.taskbarTint).toLowerCase()
@@ -1244,6 +1275,7 @@
     root.dataset.taskbarOutline = settings.taskbarOutline ? "true" : "false";
     root.dataset.windowBarStyle = settings.windowBarStyle;
     root.dataset.interfaceStyle = settings.interfaceStyle;
+    root.dataset.cursorTheme = settings.cursorTheme;
     applyTabAppearance();
     root.dataset.taskbarTone = taskbarUsesLightSurface ? "light" : "dark";
     root.dataset.reduceMotion = wallpaperSettings.reduceMotion ? "true" : "false";
@@ -1265,6 +1297,7 @@
     root.style.setProperty("--messages-blue", accent.onLight);
     document.querySelectorAll(".neo-window iframe").forEach(function (frame) {
       applyInterfaceStyleToFrame(frame);
+      applyCursorThemeToFrame(frame);
       try {
         var frameRoot = frame.contentDocument && frame.contentDocument.documentElement;
         if (frameRoot) {
@@ -1299,6 +1332,11 @@
       window.requestAnimationFrame(function () { fitDockToViewport(document.getElementById("neo-dock")); });
       window.dispatchEvent(new CustomEvent("neo-interface-style-change", {
         detail: { style: settings.interfaceStyle, previousStyle: previousInterfaceStyle }
+      }));
+    }
+    if (previousCursorTheme !== settings.cursorTheme) {
+      window.dispatchEvent(new CustomEvent("neo-cursor-theme-change", {
+        detail: { theme: settings.cursorTheme, previousTheme: previousCursorTheme }
       }));
     }
     if (previousTaskbarPosition !== settings.taskbarPosition || previousTaskbarStyle !== settings.taskbarStyle) {
@@ -4480,6 +4518,7 @@
       window.clearTimeout(timeout);
       applyHostIntegration();
       applyInterfaceStyleToFrame(frame);
+      applyCursorThemeToFrame(frame);
       try {
         if (frame.contentDocument && frame.contentDocument.documentElement) {
           frame.contentDocument.documentElement.dataset.neoPerformanceMode = performanceMode();

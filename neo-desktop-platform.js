@@ -142,12 +142,53 @@
     window.addEventListener('neo-rainmeter-change',sync);sync();
   }
 
+  function cursorThemeEditor(parent) {
+    const shell=window.NEO_SHELL,panel=section(parent,'Cursor');
+    panel.classList.add('cursor-theme-section');
+    panel.append(el('p','desktop-note','Choose a pointer style for the NEO desktop and local apps. Text selection and window resizing keep their familiar cursor shapes.'));
+    const grid=el('div','desktop-grid cursor-theme-grid');
+    panel.append(grid);
+    const themes=[
+      {id:'system',label:'System',description:'Browser default'},
+      {id:'neo',label:'NEO',description:'Cyan glass',asset:'neo-arrow.svg'},
+      {id:'neon',label:'Neon',description:'Pink glow',asset:'neon-arrow.svg'},
+      {id:'pixel',label:'Pixel',description:'Retro block',asset:'pixel-arrow.svg'},
+      {id:'contrast',label:'Contrast',description:'Large and bright',asset:'contrast-arrow.svg'}
+    ];
+    const choices=new Map();
+    themes.forEach(theme=>{
+      const choice=button('',()=>shell.setSetting('cursorTheme',theme.id),grid);
+      choice.classList.add('cursor-theme-choice');
+      choice.dataset.cursorThemeChoice=theme.id;
+      choice.setAttribute('aria-label','Use '+theme.label+' cursor');
+      const preview=el('span','cursor-theme-preview is-'+theme.id);
+      preview.setAttribute('aria-hidden','true');
+      if(theme.asset){const image=el('img');image.alt='';image.src='./assets/cursors/'+theme.asset;preview.append(image);}
+      else preview.append(el('span','cursor-system-glyph','↖'));
+      const copy=el('span','cursor-theme-copy');
+      copy.append(el('strong','',theme.label),el('small','',theme.description));
+      choice.append(preview,copy);
+      choices.set(theme.id,choice);
+    });
+    function sync(){
+      if(!panel.isConnected){window.removeEventListener('neo-cursor-theme-change',sync);return;}
+      const selected=shell.getSetting('cursorTheme')||'system';
+      choices.forEach((choice,id)=>{
+        const active=id===selected;
+        choice.classList.toggle('is-selected',active);
+        choice.setAttribute('aria-pressed',String(active));
+      });
+    }
+    window.addEventListener('neo-cursor-theme-change',sync);sync();
+  }
+
   function personalizationControls(app,options) {
     options=options||{};
     interfaceStyleEditor(app);
     rainmeterSettings(app);
     const p = B.get(), themes = section(app,'Theme'), grid = el('div','desktop-grid theme-grid'); themes.append(grid);
     Object.keys(C.themes).forEach(name => { const colors=C.themes[name],label=C.themeLabels?.[name]||name,b=button('',()=>B.set({theme:name}),grid),palette=el('span','theme-palette-preview'),accents=el('span','theme-accent-preview'); b.classList.add('theme-choice'); b.dataset.themeChoice=name; b.setAttribute('aria-label','Use '+label+' theme'); b.setAttribute('aria-pressed',String(name===p.theme)); b.style.setProperty('--theme-preview-bg',colors[0]); b.style.setProperty('--theme-preview-surface',colors[1]); b.style.setProperty('--theme-preview-text',colors[2]); b.style.setProperty('--theme-preview-line',colors[4]); b.style.setProperty('--theme-preview-accent',colors[5]); [colors[0],colors[1],colors[4]].forEach(color=>{const swatch=el('i');swatch.style.background=color;palette.append(swatch);}); [colors[5],colors[3],colors[2]].forEach(color=>{const swatch=el('i');swatch.style.background=color;accents.append(swatch);}); b.append(el('span','theme-choice-label',label),palette,accents); });
+    cursorThemeEditor(app);
     tabAppearanceEditor(app);
     const sound = section(app,'Sound and display');
     const volume = slider(sound,'Master volume',0,100,p.volume,value=>B.set({volume:value}));
