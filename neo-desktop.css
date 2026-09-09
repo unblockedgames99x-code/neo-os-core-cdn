@@ -114,3 +114,38 @@ html[data-desktop-motion=reduced] *,html[data-reduce-motion=true] *{animation:no
 @media (max-width: 700px) {
   .editor-main { grid-template-columns: 120px 2px minmax(0, 1fr); }
 }
+
+.neo-skin[data-skin-type="music"] .skin-media-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.neo-skin[data-skin-type="music"] .skin-content .skin-media-control {
+  display: inline-grid;
+  place-items: center;
+  width: clamp(34px, 2.2em, 50px);
+  height: clamp(34px, 2.2em, 50px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.neo-skin[data-skin-type="music"] .skin-media-control:hover,
+.neo-skin[data-skin-type="music"] .skin-media-control:focus-visible {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.neo-skin[data-skin-type="music"] .skin-media-icon {
+  width: clamp(24px, 1.3em, 34px);
+  height: clamp(24px, 1.3em, 34px);
+  pointer-events: none;
+}
+
+.neo-skin[data-skin-type="music"] .skin-media-toggle .skin-media-icon {
+  width: clamp(28px, 1.5em, 38px);
+  height: clamp(28px, 1.5em, 38px);
+}
