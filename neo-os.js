@@ -2848,13 +2848,16 @@
       frame.contentWindow.postMessage({ neoMusicControl: { action: action, value: value } }, targetOrigin);
     }
     function state(event) {
-      var trustedOpaqueFrame = event.origin === "null" && frame.hasAttribute("srcdoc");
-      if ((event.origin !== location.origin && !trustedOpaqueFrame) || event.source !== frame.contentWindow) return;
+      // CDN runner frames use srcdoc and therefore have an opaque origin. The
+      // window reference is the stable trust boundary here; checking origins
+      // rejects a valid ready event when the outer and music frames are nested.
+      if (event.source !== frame.contentWindow) return;
       if (!event.data) return;
       if (event.data.neoMusicUiReady === true) setRuntimeReady();
       var detail = event.data.neoMusicState ||
         (event.data.type === "neo-local-music:state" ? event.data.state : null);
       if (!detail) return;
+      setRuntimeReady();
       var cover = "";
       try {
         var coverUrl = new URL(detail.cover || "", localConfig.music);
