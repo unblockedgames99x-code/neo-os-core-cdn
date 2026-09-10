@@ -296,21 +296,6 @@
       category: "System",
       aliases: ["file explorer", "file manager", "downloads", "documents", "drive", "storage"]
     },
-    zones: {
-      id: "zones",
-      title: "Games",
-      subtitle: "Complete NEO game library",
-      icon: "html-games",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9b5d2817e995eac8a5d985e3e2346a8bca3fbf30/neo-games/index.html?v=20260910-library-theme-v2",
-      keepAlive: false,
-      width: 1180,
-      height: 760,
-      launcher: true,
-      pinned: true,
-      core: true,
-      category: "Games",
-      aliases: ["html games", "games", "play", "arcade", "catalog", "zones"]
-    },
     chat: {
       id: "chat",
       title: "NEO Chat",
@@ -452,7 +437,7 @@
 
   var storedPinnedApps = readJson(PINNED_APPS_KEY, null);
   if (Array.isArray(storedPinnedApps) && storedPinnedApps.length && storedPinnedApps.indexOf("chat") === -1) {
-    var chatInsertAt = Math.max(0, storedPinnedApps.indexOf("zones") + 1);
+    var chatInsertAt = Math.max(0, storedPinnedApps.indexOf("files") + 1);
     storedPinnedApps.splice(chatInsertAt, 0, "chat");
   }
   if (Array.isArray(storedPinnedApps) && storedPinnedApps.length) {
@@ -466,6 +451,7 @@
   })).filter(function (id, index, ids) {
     return ids.indexOf(id) === index && apps[id] && apps[id].launcher;
   });
+  writeJson(PINNED_APPS_KEY, pinnedAppOrder);
 
   function readJson(key, fallback) {
     try {
@@ -3063,7 +3049,6 @@
     }
     body.appendChild(template.content.cloneNode(true));
     syncSettingControls(body);
-    if (app.id === "zones") wireLibraryApp(body);
     if (app.id === "search") wireSearchApp(body);
     if (app.template === "browser-template") wireBrowserApp(body, app);
     if (app.id === "chat") wireMessagesApp(body);
