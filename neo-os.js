@@ -271,7 +271,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ff33ab104954d9332fb3a4b5ec7b9a64475b4e26/NEO-BROWSER/index.html?v=20260910-tab-isolation-v1",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cbfa8fda55d1fb281aa20f1dd96da7be6bc13f3d/NEO-BROWSER/index.html?v=20260910-chromebook-stack-v1",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -2847,7 +2847,7 @@
       var existing = document.getElementById("neo-browse-runtime-script");
       var script = existing || document.createElement("script");
       script.id = "neo-browse-runtime-script";
-      script.src = "./neo-browser-runtime.js?v=20260907-lively-tabs-v1";
+      script.src = "./neo-browser-runtime.js?v=20260910-chromebook-stack-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_BROWSER_ENGINE) {
