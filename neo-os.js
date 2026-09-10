@@ -301,7 +301,7 @@
       title: "Games",
       subtitle: "Complete NEO game library",
       icon: "html-games",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@main/neo-games/index.html?v=20260910-games-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9b5d2817e995eac8a5d985e3e2346a8bca3fbf30/neo-games/index.html?v=20260910-library-theme-v2",
       keepAlive: false,
       width: 1180,
       height: 760,
