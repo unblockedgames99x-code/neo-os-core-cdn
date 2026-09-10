@@ -270,7 +270,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@d18d995be07032ced7eb1c82005bd9157995cdc9/NEO-BROWSER/launch.svg?v=20260909-worker-transport-v7",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@d18d995be07032ced7eb1c82005bd9157995cdc9/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -314,7 +314,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@f96b6f2842c2771c930b8be18bae1f18df6163ee/neo-chat/index.html?v=20260907-neo-chat-images-v2",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@77f0fd327a7ae7cfd7e6ec1b42013f365813d1a4/neo-chat/index.html?v=20260907-neo-chat-images-v2",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5013,7 +5013,7 @@
   function loadCatalog() {
     if (catalog) return Promise.resolve(catalog);
     if (catalogPromise) return catalogPromise;
-    catalogPromise = fetch(projectAssetUrl("games/index.json"), { credentials: "omit", cache: "force-cache" })
+    catalogPromise = fetch(localConfig.gamesCatalog || projectAssetUrl("games/index.json"), { credentials: "omit", cache: "force-cache" })
       .then(function (response) {
         if (!response.ok) throw new Error("Catalog request failed");
         return response.json();
@@ -5041,7 +5041,8 @@
   function loadCoverManifest() {
     if (coverManifestLoaded) return Promise.resolve(coverManifest);
     if (coverManifestPromise) return coverManifestPromise;
-    coverManifestPromise = fetch(projectAssetUrl("games/covers.json?v=20260802-neo-v2"), { credentials: "omit", cache: "force-cache" })
+    var coverSource = localConfig.gamesCovers || projectAssetUrl("games/covers.json");
+    coverManifestPromise = fetch(coverSource + (coverSource.indexOf("?") === -1 ? "?" : "&") + "v=20260802-neo-v3", { credentials: "omit", cache: "force-cache" })
       .then(function (response) {
         if (!response.ok) throw new Error("Cover manifest request failed");
         return response.json();
@@ -5630,6 +5631,7 @@
     var mapped = String(coverManifest[slug] || "").trim();
     if (/^\/games\/captured-covers\//i.test(mapped)) candidates.push(projectAssetUrl(mapped));
     else if (!localOnly && /^https:\/\//i.test(mapped)) candidates.push(mapped);
+    if (candidates.length) return candidates;
     [
       "games/captured-covers/" + safe + "-cover.webp",
       "games/captured-covers/" + safe + "-illustrated.webp",
@@ -5691,6 +5693,16 @@
 
   function localGameRoute(entry) {
     var file = String(entry && entry.file || "").replace(/\\/g, "/");
+    if (!localOnly && /^https:\/\//i.test(file)) {
+      try {
+        var remote = new URL(file);
+        if (
+          /^(?:fastly|cdn|gcore|quantil)\.jsdelivr\.net$/i.test(remote.hostname) &&
+          /^\/gh\/unblockedgames99x-code\/neo-os-games-\d+-cdn@[^/]+\/games\/[A-Za-z0-9%._()\[\] -]+\.html$/i.test(remote.pathname)
+        ) return remote.href;
+      } catch (error) {}
+      return "";
+    }
     if (!/^games\/[A-Za-z0-9._()\[\] -]+\.html$/.test(file)) return "";
     return projectAssetUrl(file.split("/").map(encodeURIComponent).join("/"));
   }
@@ -6937,6 +6949,7 @@
         var initialAppearance = applyTabAppearance();
         applyTabAppearanceToDocument(popup.document, initialAppearance);
         popup.focus();
+
         var sourceRoot = new URL("./", document.baseURI).href;
         var sourceUrl = new URL("index.html", sourceRoot).href;
         var preferredMode = window.matchMedia("(max-width: 700px)").matches ? "mobile" : "laptop";
