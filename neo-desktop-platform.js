@@ -23,7 +23,6 @@
   function ask(title, label, value, accept) { const d = modal(title), form = el('form'), input = el('input'); input.value = value || ''; input.required = true; input.setAttribute('aria-label',label); form.append(el('label','',label),input); button('Cancel',()=>d.close(),form); const submit = button('Create',null,form); submit.type = 'submit'; form.onsubmit = e => { e.preventDefault(); if (accept(input.value) !== false) d.close(); }; d.append(form); input.focus(); }
   window.NEO_EXTRA_APPS = Object.assign(window.NEO_EXTRA_APPS || {}, {
     vscode: {id:'vscode',title:'Code workspace',name:'Code workspace',subtitle:'Local editor · VS Code-inspired',icon:'code',core:true,launcher:true,category:'Productivity',width:1040,height:650},
-    personalize: {id:'personalize',title:'Personalization',name:'Personalization',subtitle:'Styles, themes, display, sound and wallpaper',icon:'settings',core:true,launcher:true,category:'System',width:820,height:640},
     skins: {id:'skins',title:'Widgets',name:'Widgets',subtitle:'Add and customize desktop widgets',icon:'widgets',core:true,launcher:true,category:'System',width:850,height:620}
   });
 
@@ -205,10 +204,6 @@
     window.addEventListener('neo-system-state',sync);
   }
 
-  function settings(body) {
-    const app = el('div','desktop-app'); body.append(app); app.append(el('h1','','Personalization'));
-    personalizationControls(app);
-  }
   function skinGallery(body) {
     const widgetInfo={
       clock:{label:'Clock',description:'Time and date at a glance',category:'Essentials',icon:'i-monitor',accent:'#72d8ff'},
@@ -367,6 +362,6 @@
     // Existing closeWindow removes the app node. Flush editor drafts before removal.
     const layer=document.querySelector('#window-layer, .window-layer');if(layer)new MutationObserver(records=>records.forEach(r=>r.removedNodes.forEach(n=>{n.querySelectorAll?.('.window-body').forEach(b=>b._neoDesktopCleanup?.());}))).observe(layer,{childList:true});
   }
-  window.NEO_DESKTOP={mount(id,body){const handlers={personalize:settings,skins:skinGallery,vscode:editor,terminal};if(!handlers[id])return false;handlers[id](body);return true;},enhance(id,body){if(id==='control'){body.querySelectorAll('.desktop-settings-shortcuts').forEach(shortcut=>shortcut.remove());const control=body.querySelector('.control-center'),taskbar=control&&control.querySelector('.taskbar-settings');if(control&&taskbar&&!control.querySelector('.integrated-personalization-settings')){const integrated=el('section','settings-section integrated-personalization-settings desktop-app');control.insertBefore(integrated,taskbar);personalizationControls(integrated,{integrated:true});}}},init};
+  window.NEO_DESKTOP={mount(id,body){const handlers={skins:skinGallery,vscode:editor,terminal};if(!handlers[id])return false;handlers[id](body);return true;},enhance(id,body){if(id==='control'){body.querySelectorAll('.desktop-settings-shortcuts').forEach(shortcut=>shortcut.remove());const control=body.querySelector('.control-center'),taskbar=control&&control.querySelector('.taskbar-settings');if(control&&taskbar&&!control.querySelector('.integrated-personalization-settings')){const integrated=el('section','settings-section integrated-personalization-settings desktop-app');control.insertBefore(integrated,taskbar);personalizationControls(integrated,{integrated:true});}}},init};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else queueMicrotask(init);
 })();

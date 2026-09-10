@@ -1149,7 +1149,7 @@
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
     if (["browser", "stream", "chat", "cinehd", "discord", "youtube-app", "neo-cloud"].indexOf(app.id) !== -1) return "bridge";
-    if (["personalize", "skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
+    if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
   }
@@ -1182,7 +1182,7 @@
           var link = frameDocument.createElement("link");
           link.id = "neo-interface-styles";
           link.rel = "stylesheet";
-          link.href = new URL("./neo-interface-styles.css?v=20260907-launcher-picture-alignment-v12", document.baseURI).href;
+          link.href = new URL("./neo-interface-styles.css?v=20260907-launcher-picture-alignment-v12&settings=combined-v1", document.baseURI).href;
           frameDocument.head.appendChild(link);
         }
       }
@@ -4538,6 +4538,7 @@
   }
 
   function openApp(id) {
+    if (id === "personalize") id = "control";
     var app = apps[id];
     if (!app) return null;
     if (app.launcher && !app.installed) {
