@@ -45,6 +45,9 @@
       );
     }
     var hasAssetBase = /<base\b[^>]*\bhref\s*=/i.test(html);
+    var audioRuntime = !/\/music-(?:local|v2)\//i.test(sourceUrl)
+      ? '<script src="' + escapeAttribute(resolveUrl("./neo-audio-spectrum-bridge.js?v=20260909-all-audio-v1")) + '"><\/script>'
+      : "";
     var networkRuntime = "";
     if (
       isRunner() &&
@@ -56,7 +59,7 @@
     }
     var injection = (hasAssetBase ? "" : '<base href="' + escapeAttribute(baseUrl) + '" target="_self">') +
       '<meta name="neo-source-url" content="' + escapeAttribute(sourceUrl) + '">' +
-      '<meta name="neo-runner" content="nested">' + networkRuntime;
+      '<meta name="neo-runner" content="nested">' + audioRuntime + networkRuntime;
     if (/<head(?:\s[^>]*)?>/i.test(html)) {
       return html.replace(/<head(?:\s[^>]*)?>/i, function (head) {
         return head + injection;

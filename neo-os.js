@@ -4435,6 +4435,20 @@
         }));
         return;
       }
+      if (data.type === "neo-shell:audio-levels") {
+        window.dispatchEvent(new CustomEvent("neo-media-levels", {
+          detail: {
+            source: "route-audio:" + app.id,
+            appId: app.id,
+            levels: Array.isArray(data.levels) ? data.levels : [],
+            measured: data.measured === true,
+            active: data.active === true,
+            bands: Number(data.bands) || 32,
+            interval: Number(data.interval) || 100
+          }
+        }));
+        return;
+      }
       if (data.type !== "neo-shell:media-state") return;
       var videoRoute = app.id === "youtube-app" || app.id === "browser";
       window.dispatchEvent(new CustomEvent("neo-media-state", {
@@ -4467,6 +4481,17 @@
           muted: false,
           kind: "video",
           pauseWallpaper: true
+        }
+      }));
+      window.dispatchEvent(new CustomEvent("neo-media-levels", {
+        detail: {
+          source: "route-audio:" + app.id,
+          appId: app.id,
+          levels: [],
+          measured: true,
+          active: false,
+          bands: 32,
+          interval: 100
         }
       }));
     }

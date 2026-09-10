@@ -13,6 +13,8 @@
   var enabled = false;
   var playing = false;
   var measured = false;
+  var mediaStates = new Map();
+  var spectrumSources = new Map();
   var targets = new Float32Array(BAND_COUNT);
   var levels = new Float32Array(BAND_COUNT);
   var peaks = new Float32Array(BAND_COUNT);
@@ -40,6 +42,33 @@
       normalized[index] = clamp(Number(source[before]) + (Number(source[after]) - Number(source[before])) * mix);
     }
     return normalized;
+  }
+
+  function refreshSources() {
+    var now = Date.now();
+    var nextTargets = new Float32Array(BAND_COUNT);
+    var nextPlaying = false;
+    var nextMeasured = false;
+    spectrumSources.forEach(function (entry, source) {
+      if (now - entry.updatedAt > 1600) {
+        spectrumSources.delete(source);
+        return;
+      }
+      if (!entry.active || now - entry.updatedAt > 800) return;
+      nextPlaying = true;
+      nextMeasured = nextMeasured || entry.measured;
+      for (var index = 0; index < BAND_COUNT; index += 1) {
+        nextTargets[index] = Math.max(nextTargets[index], entry.levels[index] || 0);
+      }
+    });
+    mediaStates.forEach(function (entry, source) {
+      if (now - entry.updatedAt > 1600) mediaStates.delete(source);
+      else if (entry.playing) nextPlaying = true;
+    });
+    targets = nextTargets;
+    playing = nextPlaying;
+    measured = nextMeasured;
+    schedule();
   }
 
   function accentRgb() {
@@ -140,7 +169,7 @@
     document.querySelectorAll('[data-widget-action="bottom-visualizer"]').forEach(function (button) {
       button.setAttribute("aria-checked", enabled ? "true" : "false");
       var label = button.querySelector("[data-bottom-visualizer-label]");
-      if (label) label.textContent = enabled ? "Remove bottom music visualizer" : "Add bottom music visualizer";
+      if (label) label.textContent = enabled ? "Remove bottom sound visualizer" : "Add bottom sound visualizer";
     });
   }
 
@@ -165,17 +194,25 @@
 
   window.addEventListener("neo-media-state", function (event) {
     var detail = event.detail || {};
-    if (detail.kind && detail.kind !== "audio") return;
-    playing = detail.active !== false && detail.playing === true;
-    if (!playing) targets.fill(0);
-    schedule();
+    mediaStates.set(String(detail.source || "media"), {
+      playing: detail.active !== false && detail.playing === true,
+      updatedAt: Date.now()
+    });
+    refreshSources();
   });
 
   window.addEventListener("neo-media-levels", function (event) {
     var detail = event.detail || {};
-    targets = normalize(detail.levels);
-    measured = detail.measured === true;
-    schedule();
+    var levels = normalize(detail.levels);
+    var peak = Math.max.apply(Math, Array.from(levels));
+    var mediaState = mediaStates.get(String(detail.source || "audio"));
+    spectrumSources.set(String(detail.source || "audio"), {
+      levels: levels,
+      measured: detail.measured === true,
+      active: detail.active === true || (detail.active !== false && ((mediaState && mediaState.playing) || peak > .006)),
+      updatedAt: Date.now()
+    });
+    refreshSources();
   });
 
   window.addEventListener("resize", function () {
@@ -201,5 +238,6 @@
     }
   };
 
+  window.setInterval(function () { if (!document.hidden) refreshSources(); }, 300);
   setEnabled(enabled);
 })();
