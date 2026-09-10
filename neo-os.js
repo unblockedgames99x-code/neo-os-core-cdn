@@ -650,7 +650,7 @@
       zstream: "./assets/zstream.png?v=20260827-zstream-official-v1",
       discord: "./assets/discord-official.png?v=20260828-user-artwork-v2",
       youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1",
-      chatgpt: "./assets/chatgpt-logo.svg?v=20260910-ai-v1"
+      chatgpt: "./assets/neo-ai-logo.svg?v=20260910-ai-logo-v2"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
     var customIcon = safeCustomAppIcon(name);

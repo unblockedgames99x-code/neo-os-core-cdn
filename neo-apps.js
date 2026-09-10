@@ -151,7 +151,7 @@
       title: "NEO AI",
       subtitle: "Chat, images, web search, and study tools",
       icon: "chatgpt",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4e714ea0309b44b3932eb2333cdcb8eaae0e6ebc/neo-ai/index.html?v=20260910-ai-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@5bf29d702210f5026d007fc2cf3444cdb01cad3e/neo-ai/index.html?v=20260910-ai-logo-v2",
       keepAlive: true,
       width: 1120,
       height: 760,
