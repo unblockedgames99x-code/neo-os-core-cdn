@@ -300,7 +300,7 @@
       title: "Games",
       subtitle: "Complete NEO game library",
       icon: "html-games",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@ccf21f25c0c59923f61792ae9a81e34e3febec6f/neo-games/index.html?v=20260910-games-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@main/neo-games/index.html?v=20260910-games-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -2856,6 +2856,16 @@
       if (event.source !== frame.contentWindow) return;
       if (!event.data) return;
       if (event.data.neoMusicUiReady === true) setRuntimeReady();
+      if (event.data.neoMusicLevels && Array.isArray(event.data.neoMusicLevels.values)) {
+        window.dispatchEvent(new CustomEvent("neo-media-levels", { detail: {
+          source: source,
+          active: true,
+          levels: event.data.neoMusicLevels.values,
+          measured: event.data.neoMusicLevels.measured === true,
+          bands: Math.max(0, Number(event.data.neoMusicLevels.bands) || 0),
+          interval: Math.max(0, Number(event.data.neoMusicLevels.interval) || 0)
+        }}));
+      }
       var detail = event.data.neoMusicState ||
         (event.data.type === "neo-local-music:state" ? event.data.state : null);
       if (!detail) return;
