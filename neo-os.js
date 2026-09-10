@@ -1144,6 +1144,7 @@
         detail: appearance
       }));
     }
+    return appearance;
   }
 
   function interfaceStyleScopeForApp(app) {
@@ -6888,13 +6889,13 @@
       }
       try {
         popup.document.open();
-        popup.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEO OS</title><style>html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}</style></head><body></body></html>');
+        popup.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEO OS</title><style>html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#050505;color:#fff;font:16px Arial,sans-serif}body{display:grid;place-items:center}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#050505}</style></head><body><p id="neo-blank-status">Loading NEO OS…</p></body></html>');
         popup.document.close();
         var frame = popup.document.createElement("iframe");
-        frame.src = window.location.href;
         frame.title = "NEO OS";
-        frame.allow = "autoplay; fullscreen; clipboard-read; clipboard-write";
-        frame.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:0;background:#000";
+        frame.allow = "autoplay; picture-in-picture; fullscreen; clipboard-read; clipboard-write; gamepad";
+        frame.allowFullscreen = true;
+        frame.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:0;background:#050505";
         popup.addEventListener("message", function (messageEvent) {
           if (messageEvent.source !== frame.contentWindow) return;
           var message = messageEvent.data;
@@ -6908,13 +6909,51 @@
             type: appearance.type
           });
         });
-        popup.document.body.appendChild(frame);
-        applyTabAppearance();
+        var initialAppearance = applyTabAppearance();
+        applyTabAppearanceToDocument(popup.document, initialAppearance);
         popup.focus();
+        var sourceRoot = new URL("./", document.baseURI).href;
+        var sourceUrl = new URL("index.html", sourceRoot).href;
+        var preferredMode = window.matchMedia("(max-width: 700px)").matches ? "mobile" : "laptop";
+        try {
+          var storedMode = localStorage.getItem("neo_start_mode_v1");
+          if (storedMode === "mobile" || storedMode === "laptop") preferredMode = storedMode;
+        } catch (error) {}
+        fetch(sourceUrl, { cache: "no-store", credentials: "omit" })
+          .then(function (response) {
+            if (!response.ok) throw new Error("NEO source response " + response.status);
+            return response.text();
+          })
+          .then(function (source) {
+            if (popup.closed) return;
+            var html = String(source || "").replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/gi, "");
+            var safeRoot = sourceRoot.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+            var injection = '<base href="' + safeRoot + '">';
+            if (document.querySelector('meta[name="neo-runner"]')) {
+              injection += '<meta name="neo-runner" content="github-jsdelivr">';
+            }
+            html = /<head(?:\s[^>]*)?>/i.test(html)
+              ? html.replace(/<head(?:\s[^>]*)?>/i, function (head) { return head + injection; })
+              : injection + html;
+            html = html.replace(/<body([^>]*)>/i, '<body$1 data-neo-autostart="' + preferredMode + '">');
+            frame.srcdoc = html;
+            popup.document.body.replaceChildren(frame);
+          })
+          .catch(function () {
+            if (popup.closed) return;
+            frame.src = sourceUrl;
+            popup.document.body.replaceChildren(frame);
+          });
       } catch (error) {
-        popup.location.href = window.location.href;
+        popup.location.href = new URL("index.html", document.baseURI).href;
       }
     });
+
+    var autoStartMode = document.body && document.body.getAttribute("data-neo-autostart");
+    if (autoStartMode) {
+      finish(autoStartMode === "mobile" ? "mobile" : "laptop");
+      return;
+    }
 
     requestAnimationFrame(function () {
       var preferred = screen.querySelector('[data-start-mode="' + (window.matchMedia("(max-width: 700px)").matches ? "mobile" : "laptop") + '"]');
