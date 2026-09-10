@@ -85,7 +85,7 @@
           volume: playback.volume,
           muted: audio.muted,
           volumeControl: true,
-          transport: false,
+          transport: true,
           pauseWallpaper: false
         } : { source: sourceId, active: false }
       }));
@@ -290,7 +290,7 @@
           volume: Math.max(0, Math.min(1, Number(frameState.volume) || 0)),
           muted: frameState.muted === true,
           volumeControl: false,
-          transport: false,
+          transport: true,
           pauseWallpaper: false
         } : { source: sourceId, appId: "stream", active: false }
       }));
@@ -318,6 +318,22 @@
       audio.volume = Math.max(0, Math.min(1, Number(event.detail.volume) || 0));
       try { localStorage.setItem("neo_stream_music_volume", String(audio.volume)); } catch (error) {}
       broadcast();
+    }
+
+    function onTransport(event) {
+      var detail = event.detail || {};
+      if (String(detail.source || "") !== sourceId) return;
+      var action = String(detail.action || "");
+      if (action === "previous" || action === "prev") handle({ type: "prev" });
+      else if (action === "next") handle({ type: "next" });
+      else if (action === "toggle") handle({ type: "toggle" });
+      else if (action === "pause") pause();
+      else if (action === "play" && currentTrack()) {
+        wantsPlayback = true;
+        failures = 0;
+        requestPlayback();
+        broadcast();
+      }
     }
 
     function stop() {
@@ -351,6 +367,7 @@
       stop();
       window.removeEventListener("message", onMessage);
       window.removeEventListener("neo-media-volume-request", onVolume);
+      window.removeEventListener("neo-media-transport-request", onTransport);
       window.removeEventListener("pointerdown", unlockPlayback, true);
       window.removeEventListener("touchend", unlockPlayback, true);
       window.removeEventListener("keydown", unlockPlayback, true);
@@ -381,6 +398,7 @@
     });
     window.addEventListener("message", onMessage);
     window.addEventListener("neo-media-volume-request", onVolume);
+    window.addEventListener("neo-media-transport-request", onTransport);
     window.addEventListener("pointerdown", unlockPlayback, { capture: true, passive: true });
     window.addEventListener("touchend", unlockPlayback, { capture: true, passive: true });
     window.addEventListener("keydown", unlockPlayback, true);
