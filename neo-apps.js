@@ -25,7 +25,7 @@
       title: "NEO Stream",
       subtitle: "Profiles, movies, series, and My List",
       icon: "zstream",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@7a4204c97d3925f946539012fa5cdc17557381ec/neo-tv/launch.svg?v=20260910-stream-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@ccf21f25c0c59923f61792ae9a81e34e3febec6f/neo-tv/launch.svg?v=20260910-stream-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
