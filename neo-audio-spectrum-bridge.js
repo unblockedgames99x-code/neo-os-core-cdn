@@ -98,6 +98,10 @@
     if (changed || active || lastActive) emit(combined, active);
     lastActive = active;
     lastLevels = combined;
+    if (!meters.size && timer) {
+      window.clearInterval(timer);
+      timer = 0;
+    }
   }
 
   function ensureTimer() {
@@ -217,8 +221,16 @@
     try { doc.querySelectorAll("audio,video").forEach(function (media) { watchMedia(realm, media); }); } catch (_error) {}
     try {
       doc.querySelectorAll("iframe").forEach(function (frame) {
-        try { installRealm(frame.contentWindow); } catch (_error) {}
+        installFrame(frame);
       });
+    } catch (_error) {}
+  }
+
+  function installFrame(frame) {
+    try {
+      var child = frame && frame.contentWindow;
+      if (!child || child.__neoAudioSpectrumBridge) return;
+      installRealm(child);
     } catch (_error) {}
   }
 
@@ -227,9 +239,7 @@
     try {
       var doc = realm.document;
       if (!doc || installedDocuments.has(doc)) return;
-      if (realm !== window && realm.__neoAudioSpectrumBridgeRealm) return;
       installedDocuments.add(doc);
-      Object.defineProperty(realm, "__neoAudioSpectrumBridgeRealm", { value: true });
       patchAudioGraph(realm);
       var rescan = function () { scanRealm(realm); };
       if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", rescan, { once: true });
@@ -240,7 +250,7 @@
       }, true);
       doc.addEventListener("load", function (event) {
         if (event.target && event.target.tagName === "IFRAME") {
-          try { installRealm(event.target.contentWindow); } catch (_error) {}
+          installFrame(event.target);
         }
       }, true);
       if (realm.MutationObserver && doc.documentElement) {
@@ -250,9 +260,12 @@
               if (!node || node.nodeType !== 1) return;
               if (node.matches && node.matches("audio,video")) watchMedia(realm, node);
               if (node.matches && node.matches("iframe")) {
-                try { installRealm(node.contentWindow); } catch (_error) {}
+                node.addEventListener("load", function () { installFrame(node); });
               }
               if (node.querySelectorAll) node.querySelectorAll("audio,video").forEach(function (media) { watchMedia(realm, media); });
+              if (node.querySelectorAll) node.querySelectorAll("iframe").forEach(function (frame) {
+                frame.addEventListener("load", function () { installFrame(frame); });
+              });
             });
           });
         }).observe(doc.documentElement, { childList: true, subtree: true });
@@ -262,6 +275,13 @@
 
   installRealm(window);
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) sample();
+    if (document.hidden) {
+      if (timer) window.clearInterval(timer);
+      timer = 0;
+      sample();
+      return;
+    }
+    if (meters.size) ensureTimer();
+    else sample();
   });
 })();

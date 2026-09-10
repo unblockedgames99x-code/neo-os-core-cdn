@@ -14,12 +14,12 @@
     onlineApps: Object.freeze(["chat", "cinehd", "neo-cloud", "discord", "youtube-app", "geometry-dash"]),
     assetBase: base.href,
     music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@83f22406608b4852ec0a4fb7086677322413e7f1/music-v2/index.html?v=20260909-api-retry-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=gesture-safe-v1&artwork=stable-cover-v2&equalizer=lazy-v1&ui=retro-consistency-v1", base).href,
-    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@06aff13cb01e6a468b2d9211116374b17d52b16a/NEO-BROWSER/index.html?v=20260909-search-reliability-v1" : new URL("NEO-BROWSER/index.html?v=20260908-audio-performance-v1", base).href,
+    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@515584b6c52a02ce216b909d0b0210162c287ec1/NEO-BROWSER/index.html?v=20260909-worker-transport-v1" : new URL("NEO-BROWSER/index.html?v=20260908-audio-performance-v1", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
     previewBrowser: new URL("NEO-BROWSER/", previewBase).href,
-    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@06aff13cb01e6a468b2d9211116374b17d52b16a/local-browser/support.html" : new URL("local-browser/support.html", base).href,
-    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@06aff13cb01e6a468b2d9211116374b17d52b16a/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
+    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@515584b6c52a02ce216b909d0b0210162c287ec1/local-browser/support.html" : new URL("local-browser/support.html", base).href,
+    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@515584b6c52a02ce216b909d0b0210162c287ec1/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });
