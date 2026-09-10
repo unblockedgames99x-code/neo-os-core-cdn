@@ -116,6 +116,7 @@
     <link rel="stylesheet" href="./neo-liquid-scrollbars.css?v=20260907-scroll-containers-v2" />
     <link rel="stylesheet" href="./neo-interface-styles.css?v=20260907-launcher-picture-alignment-v12&amp;taskbar=spacing-alignment-v2&amp;chat=exact-imessage-logo-v2&amp;preview=retro-v1&amp;menus=contrast-v1&amp;launcher-icon=centered-v1&amp;settings=combined-v1" />
     <link rel="stylesheet" href="./neo-dock-interactions.css?v=20260909-desktop-shortcuts-v2" />
+    <link rel="stylesheet" href="./neo-taskbar-quick-settings.css?v=20260910-quick-settings-v1" />
   </head>
   <body>
     <a class="skip-link" href="#neo-desktop">Skip to desktop</a>
@@ -519,8 +520,8 @@
           </div>
         </div>
         <div class="taskbar-tray" aria-label="System status">
-          <button class="taskbar-network" id="taskbar-network" type="button" data-connection-toggle aria-label="Open network status" aria-expanded="false" aria-controls="connection-panel" title="Online">
-            <span aria-hidden="true"></span><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg>
+          <button class="taskbar-network taskbar-quick-button" id="taskbar-network" type="button" data-taskbar-quick-toggle aria-label="Open quick settings" aria-expanded="false" aria-controls="taskbar-quick-settings" title="Quick settings">
+            <span aria-hidden="true"></span><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg><svg class="icon" aria-hidden="true"><use href="#i-volume"></use></svg>
           </button>
           <span class="taskbar-clock" aria-label="Current date and time">
             <strong id="taskbar-clock">10:32 AM</strong>
@@ -528,6 +529,26 @@
           </span>
         </div>
       </nav>
+
+      <aside id="taskbar-quick-settings" class="taskbar-quick-settings" role="dialog" aria-modal="false" aria-labelledby="taskbar-quick-title" hidden>
+        <header>
+          <div><span class="eyebrow">NEO OS</span><h2 id="taskbar-quick-title">Quick settings</h2></div>
+          <button class="icon-button" type="button" data-taskbar-quick-close aria-label="Close quick settings"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
+        </header>
+        <div class="taskbar-quick-grid" role="group" aria-label="Quick controls">
+          <button type="button" data-taskbar-quick-network data-connection-toggle aria-expanded="false" aria-controls="connection-panel"><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg><span><strong>Network</strong><small>Connection status</small></span></button>
+          <button type="button" data-notification-toggle aria-expanded="false" aria-controls="notification-center"><svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg><span><strong>Notifications</strong><small>View recent alerts</small></span></button>
+          <button type="button" data-taskbar-quick-dnd aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg><span><strong>Do Not Disturb</strong><small>Quiet visual alerts</small></span></button>
+          <button type="button" data-taskbar-quick-night aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span><strong>Night light</strong><small>Warmer screen color</small></span></button>
+          <button type="button" data-taskbar-quick-battery aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-battery"></use></svg><span><strong>Battery saver</strong><small>Reduce background effects</small></span></button>
+          <button type="button" data-app="control" data-taskbar-quick-settings-link><svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg><span><strong>All settings</strong><small>Taskbar and appearance</small></span></button>
+        </div>
+        <div class="taskbar-quick-sliders">
+          <label><svg class="icon" aria-hidden="true"><use href="#i-volume"></use></svg><span class="sr-only">Master volume</span><input type="range" min="0" max="100" value="70" data-taskbar-quick-volume aria-label="Master volume"><output data-taskbar-quick-volume-output>70%</output></label>
+          <label><svg class="icon" aria-hidden="true"><use href="#i-monitor"></use></svg><span class="sr-only">Screen brightness</span><input type="range" min="45" max="100" value="100" data-taskbar-quick-brightness aria-label="Screen brightness"><output data-taskbar-quick-brightness-output>100%</output></label>
+        </div>
+      </aside>
+      <div class="neo-night-light-layer" aria-hidden="true"></div>
 
       <aside id="notification-center" class="notification-center" role="dialog" aria-modal="false" aria-labelledby="notification-title" hidden>
         <header>
@@ -1408,6 +1429,7 @@
     <script src="./neo-desktop-platform.js?v=20260907-widget-logo-v3&amp;tab=custom-url-v1&amp;themes=expanded-v1&amp;styles=launcher-picture-alignment-v12&amp;rainmeter=controls-v1&amp;editor=network-preview-v1&amp;cursor=custom-v1&amp;settings=combined-v1" defer></script>
     <script src="./neo-leave-guard.js?v=20260907-anti-close-v1" defer></script>
     <script src="./neo-os.js?v=20260910-chromebook-stack-v1&amp;taskbar=launcher-v1&amp;drive=polish-v1&amp;theme=20260907-theme-system-v2&amp;runtime=20260907-runtime-recovery-v2&amp;motion=window-v2&amp;custom=tab-url-v1&amp;tab=cdn-blank-title-v3&amp;context=hover-v1&amp;launcher=motion-v1&amp;wallpaper=resume-v1&amp;auto-performance=v1&amp;styles=launcher-picture-alignment-v12&amp;boot=universal-loader-v2&amp;chat=standalone-v1&amp;artwork=stable-cover-v2&amp;rainmeter=glyph-skin-v1&amp;widgets=logo-v1&amp;desktop=hide-all-icons-default-v2&amp;cursor=custom-v1&amp;settings=combined-v1&amp;music-widgets=live-v1" defer></script>
+    <script src="./neo-taskbar-quick-settings.js?v=20260910-quick-settings-v1" defer></script>
     <script src="./neo-backup.js?v=20260830-backup-v1" defer></script>
     <script src="./neo-window-resize.js?v=20260901-mobile-compat-v1" defer></script>
     <script src="./neo-taskbar-menu.js?v=20260901-clean-desktop-v1" defer></script>
