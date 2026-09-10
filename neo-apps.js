@@ -20,20 +20,6 @@
       category: "Media",
       aliases: ["neo music", "music", "stream", "songs", "albums", "artists", "radio", "playlists", "audio player"]
     },
-    cinehd: {
-      id: "cinehd",
-      title: "NEO Stream",
-      subtitle: "Profiles, movies, series, anime, manga, and My List",
-      icon: "zstream",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@eae13c4d28237c370725e5ada2d96c77871790d2/neo-tv/launch.svg?v=20260910-netflix-classics-v1",
-      keepAlive: false,
-      width: 1180,
-      height: 760,
-      launcher: true,
-      pinned: false,
-      category: "Media",
-      aliases: ["neo stream", "neo tv", "movies", "series", "anime", "manga", "television", "tv", "streaming", "netflix"]
-    },
     discord: {
       id: "discord",
       title: "Discord",
@@ -312,16 +298,6 @@
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(cloudApps));
       }
       localStorage.setItem(neoCloudMigrationKey, "1");
-    }
-
-    var cineHdMigrationKey = "neo_os_cinehd_app_v1";
-    if (localStorage.getItem(cineHdMigrationKey) !== "1") {
-      var installedApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
-      if (Array.isArray(installedApps) && installedApps.indexOf("cinehd") === -1) {
-        installedApps.push("cinehd");
-        localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(installedApps));
-      }
-      localStorage.setItem(cineHdMigrationKey, "1");
     }
 
     var discordMigrationKey = "neo_os_discord_app_v1";

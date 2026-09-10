@@ -424,7 +424,7 @@
     apps.browser.hideName = false;
     apps.browser.title = "Browser";
     apps.browser.accessibleName = "NEO Browser";
-    ["cinehd", "discord", "youtube-app", "geometry-dash", "neo-cloud", "report"].forEach(function (id) {
+    ["discord", "youtube-app", "geometry-dash", "neo-cloud", "report"].forEach(function (id) {
       if (!apps[id]) return;
       if (id === "report" && localConfig.support) {
         apps[id].route = localConfig.support;
@@ -647,7 +647,6 @@
       "html-games": "./assets/html-games.svg?v=20260827-blue-controller-v1",
       "neo-cloud": "./assets/neo-cloud.svg?v=20260901-cloud-logo-v2",
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
-      zstream: "./assets/zstream.png?v=20260827-zstream-official-v1",
       discord: "./assets/discord-official.png?v=20260828-user-artwork-v2",
       youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1",
       chatgpt: "./assets/neo-ai-logo.svg?v=20260910-ai-logo-v2"
@@ -1298,7 +1297,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
-    if (["browser", "stream", "chat", "cinehd", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
@@ -1306,7 +1305,6 @@
 
   function embeddedInterfaceStyleAppId(appId) {
     if (appId === "stream") return "music";
-    if (appId === "cinehd") return "tv";
     if (appId === "neo-cloud") return "cloud";
     if (appId === "neo-ai") return "ai";
     if (appId === "chat") return "chat";
