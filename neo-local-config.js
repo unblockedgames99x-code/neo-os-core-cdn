@@ -13,7 +13,7 @@
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "cinehd", "neo-cloud", "discord", "youtube-app", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@a0625b0a923c27faa77c350f5c0e42626eef6089/music-v2/launch.svg?v=20260909-real-url-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=source-recovery-v2&artwork=stable-cover-v2&equalizer=efficient-v1&ui=retro-consistency-v1", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@fd29f608f257eba1235d2afa21cee3323766b746/music-v2/launch.svg?v=20260909-real-url-v1" : new URL("music-v2/index.html?v=20260908-audio-performance-v1&search=fast-v1&playback=source-recovery-v2&artwork=stable-cover-v2&equalizer=efficient-v1&ui=retro-consistency-v1", base).href,
     browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@d18d995be07032ced7eb1c82005bd9157995cdc9/NEO-BROWSER/index.html?v=20260907-runtime-recovery-v2" : new URL("NEO-BROWSER/index.html?v=20260907-runtime-recovery-v2", base).href,
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@f595c690c785337933b42027f95e4eefe46e779a/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@f595c690c785337933b42027f95e4eefe46e779a/covers.json" : new URL("../games/covers.json", base).href,
