@@ -3,7 +3,7 @@
 
   const ENGINE_VERSION = "neo-browse-v68";
   const CORE_ROOT = new URL("./", document.currentScript.src).href;
-  const BROWSER_ROOT = "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a58b1737a16b0ba3a0294c6be38e66b537da3874/";
+  const BROWSER_ROOT = "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@06aff13cb01e6a468b2d9211116374b17d52b16a/";
   const OS_SCOPE = new URL("./", BROWSER_ROOT).pathname;
   const ROUTE_PREFIX = new URL("browse-v68/", BROWSER_ROOT).pathname;
   const RUNTIME_ROOT = BROWSER_ROOT + "browser-runtime";
@@ -567,7 +567,7 @@
       // Plain domains and search phrases are handled below.
     }
     if (!input.includes(" ") && input.includes(".")) return `https://${input}`;
-    return `https://html.duckduckgo.com/html/?q=${encodeURIComponent(input)}`;
+    return `https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(input)}`;
   }
 
   function externalDestination(value) {
