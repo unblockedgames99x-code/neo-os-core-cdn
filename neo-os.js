@@ -16,6 +16,7 @@
   var DEFAULT_WINDOW_HEIGHT = 760;
   var PINNED_APPS_KEY = "neo_os_pinned_apps_v1";
   var INSTALLED_APPS_KEY = "neo_os_installed_apps_v1";
+  var CUSTOM_APPS_KEY = "neo_os_custom_apps_v1";
   var BOOT_SESSION_KEY = "neo_os_booted_session";
   var GUEST_SESSION_KEY = "neo_os_guest_session_v1";
   var MUSIC_MODE_KEY = "neo_os_music_mode_v1";
@@ -416,6 +417,7 @@
     }
   };
   Object.assign(apps, window.NEO_EXTRA_APPS || {});
+  restoreCustomApps(apps);
   if (localOnly) {
     apps.browser.route = localConfig.browser;
     apps.browser.subtitle = "Fast private tabs with automatic relay fallback";
@@ -443,7 +445,7 @@
     .filter(function (id) { return Object.prototype.hasOwnProperty.call(apps, id); }));
   Object.keys(apps).forEach(function (id) {
     var app = apps[id];
-    app.installed = !app.launcher || app.core || installedAppIds.has(id);
+    app.installed = !app.launcher || app.core || app.custom || installedAppIds.has(id);
     if (app.installed && app.launcher) installedAppIds.add(id);
   });
   writeJson(INSTALLED_APPS_KEY, Array.from(installedAppIds));
@@ -482,6 +484,149 @@
     }
   }
 
+  function normalizeCustomAppUrl(value) {
+    var source = String(value || "").trim();
+    if (!source) throw new TypeError("Enter the site URL.");
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(source)) source = "https://" + source;
+    var url;
+    try { url = new URL(source); } catch (error) { throw new TypeError("Enter a valid website URL."); }
+    if (url.protocol !== "http:" && url.protocol !== "https:") throw new TypeError("Only http and https websites can be installed.");
+    url.username = "";
+    url.password = "";
+    return url.href;
+  }
+
+  function safeCustomAppIcon(value) {
+    var source = String(value || "").trim();
+    if (!source || source.length > 350000) return "";
+    if (/^data:image\/(?:avif|gif|jpeg|png|svg\+xml|webp)(?:;[^,]*)?,/i.test(source)) return source;
+    try {
+      var url = new URL(source);
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+    } catch (error) { return ""; }
+  }
+
+  function escapeAttribute(value) {
+    return String(value || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
+
+  function customAppRoute(url, mode) {
+    if (mode === "direct") return url;
+    var browserRoute = localConfig && localConfig.browser ? localConfig.browser : "./NEO-BROWSER/index.html";
+    return browserRoute + (browserRoute.indexOf("?") === -1 ? "?" : "&") + "neo-app-mode=1&neo-custom-app=1&neo-app-target=" + encodeURIComponent(url);
+  }
+
+  function customAppDefinition(record) {
+    var id = String(record && record.id || "").replace(/[^a-z0-9_-]/gi, "");
+    var title = String(record && record.title || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 48);
+    if (!/^custom-app-[a-z0-9_-]+$/i.test(id) || !title) return null;
+    var url;
+    try { url = normalizeCustomAppUrl(record.url); } catch (error) { return null; }
+    var mode = record.mode === "direct" ? "direct" : "relay";
+    var icon = safeCustomAppIcon(record.icon) || "apps";
+    var host = "Website";
+    try { host = new URL(url).hostname.replace(/^www\./, "") || host; } catch (error) {}
+    return {
+      id: id,
+      title: title,
+      subtitle: host + (mode === "direct" ? " · Direct embed" : " · NEO relay"),
+      icon: icon,
+      route: customAppRoute(url, mode),
+      sourceUrl: url,
+      launchMode: mode,
+      keepAlive: false,
+      width: 1080,
+      height: 720,
+      launcher: true,
+      pinned: false,
+      custom: true,
+      category: "Installed",
+      aliases: [title, host, "custom app", "website"]
+    };
+  }
+
+  function customAppRecord(app) {
+    return { id: app.id, title: app.title, url: app.sourceUrl, icon: safeCustomAppIcon(app.icon), mode: app.launchMode, createdAt: app.createdAt || Date.now() };
+  }
+
+  function persistCustomApps() {
+    writeJson(CUSTOM_APPS_KEY, Object.keys(apps).map(function (id) { return apps[id]; }).filter(function (app) { return app && app.custom; }).map(customAppRecord));
+  }
+
+  function restoreCustomApps(registry) {
+    var records = readJson(CUSTOM_APPS_KEY, []);
+    if (!Array.isArray(records)) records = [];
+    var normalized = [];
+    records.slice(0, 80).forEach(function (record) {
+      var app = customAppDefinition(record);
+      if (!app || registry[app.id]) return;
+      app.createdAt = Number(record.createdAt) || Date.now();
+      registry[app.id] = app;
+      normalized.push(customAppRecord(app));
+    });
+    writeJson(CUSTOM_APPS_KEY, normalized);
+  }
+
+  function publicAppRecord(app) {
+    return {
+      id: app.id,
+      title: app.title,
+      subtitle: app.subtitle,
+      icon: app.icon,
+      category: app.category,
+      pinned: Boolean(app.pinned),
+      installed: Boolean(app.installed),
+      core: Boolean(app.core),
+      custom: Boolean(app.custom),
+      sourceUrl: app.custom ? app.sourceUrl : "",
+      launchMode: app.custom ? app.launchMode : "",
+      hideName: Boolean(app.hideName),
+      accessibleName: app.accessibleName || app.title
+    };
+  }
+
+  function installCustomApp(input) {
+    input = input && typeof input === "object" ? input : {};
+    var title = String(input.title || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 48);
+    if (!title) throw new TypeError("Enter an app name.");
+    var url = normalizeCustomAppUrl(input.url);
+    var icon = String(input.icon || "").trim();
+    if (icon && !safeCustomAppIcon(icon)) throw new TypeError("Use an http, https, or image-data icon.");
+    var id = "custom-app-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    while (apps[id]) id += "x";
+    var app = customAppDefinition({ id: id, title: title, url: url, icon: icon, mode: input.mode });
+    if (!app) throw new TypeError("This app could not be installed.");
+    app.createdAt = Date.now();
+    app.installed = true;
+    apps[id] = app;
+    installedAppIds.add(id);
+    hiddenDesktopShortcutIds.delete(id);
+    writeJson(INSTALLED_APPS_KEY, Array.from(installedAppIds));
+    persistCustomApps();
+    renderDock();
+    renderDesktopShortcuts();
+    renderLauncher();
+    return publicAppRecord(app);
+  }
+
+  function removeCustomApp(id) {
+    var app = apps[id];
+    if (!app || !app.custom) return false;
+    setAppInstalled(id, false);
+    delete apps[id];
+    delete desktopShortcutLayout[id];
+    delete windowStates[id];
+    hiddenDesktopShortcutIds.delete(id);
+    writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
+    writeJson(WINDOW_STATE_KEY, windowStates);
+    writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, Array.from(hiddenDesktopShortcutIds));
+    persistCustomApps();
+    renderDock();
+    renderDesktopShortcuts();
+    renderLauncher();
+    return true;
+  }
+
   function escapeSelector(value) {
     if (window.CSS && typeof window.CSS.escape === "function") return window.CSS.escape(value);
     return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
@@ -507,6 +652,8 @@
       youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
+    var customIcon = safeCustomAppIcon(name);
+    if (customIcon) return '<img class="app-image-icon" src="' + escapeAttribute(customIcon) + '" width="24" height="24" alt="">';
     return '<svg class="icon" aria-hidden="true"><use href="#i-' + name + '"></use></svg>';
   }
 
@@ -1150,7 +1297,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
-    if (["browser", "stream", "chat", "cinehd", "discord", "youtube-app", "neo-cloud"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
@@ -1158,7 +1305,7 @@
 
   function embeddedInterfaceStyleAppId(appId) {
     if (appId === "stream") return "music";
-    if (appId === "cinehd") return "tv";
+    if (appId === "cinehd" || appId === "anime" || appId === "manga") return "tv";
     if (appId === "neo-cloud") return "cloud";
     if (appId === "chat") return "chat";
     if (appId === "browser" || appId === "discord" || appId === "youtube-app") return "browser";
@@ -2642,12 +2789,12 @@
       if (!document.querySelector('link[data-neo-features]')) {
         var style = document.createElement("link");
         style.rel = "stylesheet";
-        style.href = "./neo-os-features.css?v=20260826-playlist-actions-v1&hover=bridge-v1";
+        style.href = "./neo-os-features.css?v=20260910-app-installer-v1&hover=bridge-v1";
         style.dataset.neoFeatures = "";
         document.head.appendChild(style);
       }
       var script = document.createElement("script");
-      script.src = "./neo-os-features.js?v=20260909-hide-all-icons-v1&hover=bridge-v1";
+      script.src = "./neo-os-features.js?v=20260910-app-installer-v1&hover=bridge-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_FEATURES) {
@@ -7640,15 +7787,14 @@
       notify: showToast,
       icon: iconMarkup,
       getApps: function () {
-        return launcherApps().map(function (app) {
-          return { id: app.id, title: app.title, subtitle: app.subtitle, icon: app.icon, category: app.category, pinned: Boolean(app.pinned), installed: true, core: Boolean(app.core), hideName: Boolean(app.hideName), accessibleName: app.accessibleName || app.title };
-        });
+        return launcherApps().map(publicAppRecord);
       },
       getStoreApps: function () {
-        return storeApps().map(function (app) {
-          return { id: app.id, title: app.title, subtitle: app.subtitle, icon: app.icon, category: app.category, pinned: Boolean(app.pinned), installed: Boolean(app.installed), core: Boolean(app.core), hideName: Boolean(app.hideName), accessibleName: app.accessibleName || app.title };
-        });
+        return storeApps().map(publicAppRecord);
       },
+      getCustomApps: function () { return launcherApps().filter(function (app) { return app.custom; }).map(publicAppRecord); },
+      installCustomApp: installCustomApp,
+      removeCustomApp: removeCustomApp,
       setPinned: setAppPinned,
       setInstalled: setAppInstalled,
       isInstalled: function (id) { return Boolean(apps[id] && apps[id].installed); },

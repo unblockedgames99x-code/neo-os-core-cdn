@@ -23,16 +23,44 @@
     cinehd: {
       id: "cinehd",
       title: "NEO Stream",
-      subtitle: "Profiles, movies, series, and My List",
+      subtitle: "Profiles, movies, series, anime, manga, and My List",
       icon: "zstream",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@ccf21f25c0c59923f61792ae9a81e34e3febec6f/neo-tv/launch.svg?v=20260910-stream-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@01101a68b312508354ecc8af1cd5620be506ffcb/neo-tv/launch.svg?v=20260910-media-sections-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
       launcher: true,
       pinned: false,
       category: "Media",
-      aliases: ["neo stream", "neo tv", "movies", "series", "television", "tv", "streaming", "netflix"]
+      aliases: ["neo stream", "neo tv", "movies", "series", "anime", "manga", "television", "tv", "streaming", "netflix"]
+    },
+    anime: {
+      id: "anime",
+      title: "Anime",
+      subtitle: "Anime from your NEO Stream profiles",
+      icon: "zstream",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@01101a68b312508354ecc8af1cd5620be506ffcb/neo-tv/launch.svg?view=anime&v=20260910-media-sections-v1",
+      keepAlive: false,
+      width: 1180,
+      height: 760,
+      launcher: true,
+      pinned: false,
+      category: "Media",
+      aliases: ["anime", "animation", "series", "neo stream"]
+    },
+    manga: {
+      id: "manga",
+      title: "Manga",
+      subtitle: "Read manga from your NEO Stream profiles",
+      icon: "file",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@01101a68b312508354ecc8af1cd5620be506ffcb/neo-tv/launch.svg?view=manga&v=20260910-media-sections-v1",
+      keepAlive: false,
+      width: 1080,
+      height: 760,
+      launcher: true,
+      pinned: false,
+      category: "Reading",
+      aliases: ["manga", "comics", "reader", "books", "neo stream"]
     },
     discord: {
       id: "discord",
@@ -102,6 +130,20 @@
       core: true,
       category: "Productivity",
       aliases: ["notes", "notepad", "text", "write"]
+    },
+    "app-installer": {
+      id: "app-installer",
+      title: "App Installer",
+      subtitle: "Install a site with its name and icon",
+      icon: "apps",
+      lazy: true,
+      width: 880,
+      height: 680,
+      launcher: true,
+      pinned: false,
+      core: true,
+      category: "System",
+      aliases: ["app installer", "install app", "add app", "web app", "url app", "pwa"]
     },
     calculator: {
       id: "calculator",
@@ -290,6 +332,16 @@
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(discordApps));
       }
       localStorage.setItem(discordMigrationKey, "1");
+    }
+
+    var mediaSectionsMigrationKey = "neo_os_media_sections_apps_v1";
+    if (localStorage.getItem(mediaSectionsMigrationKey) !== "1") {
+      var mediaApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
+      if (Array.isArray(mediaApps)) {
+        ["anime", "manga"].forEach(function (id) { if (mediaApps.indexOf(id) === -1) mediaApps.push(id); });
+        localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(mediaApps));
+      }
+      localStorage.setItem(mediaSectionsMigrationKey, "1");
     }
 
     var retiredOptionalAppsKey = "neo_os_remove_duplicate_and_retired_apps_v3";
