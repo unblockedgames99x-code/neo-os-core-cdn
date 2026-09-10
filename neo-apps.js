@@ -117,21 +117,6 @@
       category: "Games",
       aliases: ["neo cloud", "cloud gaming", "stream games", "remote play", "cloud games"]
     },
-    "pc-remote": {
-      id: "pc-remote",
-      title: "PC Remote",
-      subtitle: "Access or share a computer from another device",
-      icon: "monitor",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ee94138b22fb0eeb64162f0d8d5e2975dd5abeab/neo-remote/index.html?v=20260910-pc-remote-v1",
-      keepAlive: false,
-      width: 1060,
-      height: 720,
-      launcher: true,
-      pinned: false,
-      core: true,
-      category: "Utilities",
-      aliases: ["pc remote", "remote desktop", "remote pc", "pc emulator", "screen share", "chrome remote desktop", "rustdesk"]
-    },
     nowgg: {
       id: "nowgg",
       title: "nowgg.fun",
@@ -387,14 +372,23 @@
       localStorage.setItem(mediaSectionsMigrationKey, "1");
     }
 
-    var remoteAppsMigrationKey = "neo_os_remote_and_nowgg_apps_v1";
-    if (localStorage.getItem(remoteAppsMigrationKey) !== "1") {
+    var nowggMigrationKey = "neo_os_nowgg_app_v2";
+    if (localStorage.getItem(nowggMigrationKey) !== "1") {
       var remoteApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
-      if (Array.isArray(remoteApps)) {
-        ["pc-remote", "nowgg"].forEach(function (id) { if (remoteApps.indexOf(id) === -1) remoteApps.push(id); });
+      if (Array.isArray(remoteApps) && remoteApps.indexOf("nowgg") === -1) {
+        remoteApps.push("nowgg");
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(remoteApps));
       }
-      localStorage.setItem(remoteAppsMigrationKey, "1");
+      localStorage.setItem(nowggMigrationKey, "1");
+    }
+
+    var removePcRemoteKey = "neo_os_remove_pc_remote_v1";
+    if (localStorage.getItem(removePcRemoteKey) !== "1") {
+      ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
+        var savedApps = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "pc-remote"; })));
+      });
+      localStorage.setItem(removePcRemoteKey, "1");
     }
 
     var neoAiMigrationKey = "neo_os_add_neo_ai_v1";

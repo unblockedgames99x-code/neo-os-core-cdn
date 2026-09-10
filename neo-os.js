@@ -1298,7 +1298,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
-    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud", "pc-remote", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
@@ -1308,7 +1308,6 @@
     if (appId === "stream") return "music";
     if (appId === "cinehd" || appId === "anime" || appId === "manga") return "tv";
     if (appId === "neo-cloud") return "cloud";
-    if (appId === "pc-remote") return "remote";
     if (appId === "neo-ai") return "ai";
     if (appId === "chat") return "chat";
     if (appId === "browser" || appId === "discord" || appId === "youtube-app" || appId === "nowgg") return "browser";
@@ -4571,7 +4570,6 @@
       "allow-presentation"
     ];
     if (app.id !== "browser") frameSandbox.push("allow-modals");
-    if (app.id === "pc-remote") frameSandbox.push("allow-popups-to-escape-sandbox");
     frame.sandbox = frameSandbox.join(" ");
     frame.allow = "fullscreen; autoplay; picture-in-picture; gamepad; clipboard-read; clipboard-write; display-capture";
     frame.setAttribute("allowfullscreen", "");
