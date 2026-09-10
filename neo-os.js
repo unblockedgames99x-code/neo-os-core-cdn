@@ -649,7 +649,8 @@
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
       zstream: "./assets/zstream.png?v=20260827-zstream-official-v1",
       discord: "./assets/discord-official.png?v=20260828-user-artwork-v2",
-      youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1"
+      youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1",
+      chatgpt: "./assets/chatgpt-logo.svg?v=20260910-ai-v1"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
     var customIcon = safeCustomAppIcon(name);
@@ -1297,7 +1298,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
-    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud", "pc-remote", "nowgg"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud", "pc-remote", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
@@ -1308,6 +1309,7 @@
     if (appId === "cinehd" || appId === "anime" || appId === "manga") return "tv";
     if (appId === "neo-cloud") return "cloud";
     if (appId === "pc-remote") return "remote";
+    if (appId === "neo-ai") return "ai";
     if (appId === "chat") return "chat";
     if (appId === "browser" || appId === "discord" || appId === "youtube-app" || appId === "nowgg") return "browser";
     return "app";
@@ -4571,7 +4573,7 @@
     if (app.id !== "browser") frameSandbox.push("allow-modals");
     if (app.id === "pc-remote") frameSandbox.push("allow-popups-to-escape-sandbox");
     frame.sandbox = frameSandbox.join(" ");
-    frame.allow = "fullscreen; autoplay; picture-in-picture; gamepad; clipboard-read; clipboard-write";
+    frame.allow = "fullscreen; autoplay; picture-in-picture; gamepad; clipboard-read; clipboard-write; display-capture";
     frame.setAttribute("allowfullscreen", "");
     frame.dataset.route = app.route;
     body.append(loader, fallback, frame);

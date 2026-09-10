@@ -146,6 +146,20 @@
       category: "Games",
       aliases: ["nowgg", "now gg", "nowgg.fun", "cloud games", "android games"]
     },
+    "neo-ai": {
+      id: "neo-ai",
+      title: "NEO AI",
+      subtitle: "Chat, images, web search, and study tools",
+      icon: "chatgpt",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4e714ea0309b44b3932eb2333cdcb8eaae0e6ebc/neo-ai/index.html?v=20260910-ai-v1",
+      keepAlive: true,
+      width: 1120,
+      height: 760,
+      launcher: true,
+      pinned: false,
+      category: "Productivity",
+      aliases: ["neo ai", "ai", "assistant", "chatgpt", "chat gpt", "study", "web search", "image ai"]
+    },
     notes: {
       id: "notes",
       title: "Notes",
@@ -381,6 +395,16 @@
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(remoteApps));
       }
       localStorage.setItem(remoteAppsMigrationKey, "1");
+    }
+
+    var neoAiMigrationKey = "neo_os_add_neo_ai_v1";
+    if (localStorage.getItem(neoAiMigrationKey) !== "1") {
+      var aiApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
+      if (Array.isArray(aiApps) && aiApps.indexOf("neo-ai") === -1) {
+        aiApps.push("neo-ai");
+        localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(aiApps));
+      }
+      localStorage.setItem(neoAiMigrationKey, "1");
     }
 
     var retiredOptionalAppsKey = "neo_os_remove_duplicate_and_retired_apps_v3";
