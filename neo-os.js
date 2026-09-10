@@ -150,7 +150,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 16,
+    designVersion: 17,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -186,7 +186,7 @@
     taskbarAccent: "#ffffff",
     reduceMotion: false,
     performanceMode: "normal",
-    autoPerformanceMode: true
+    autoPerformanceMode: false
   };
 
   var savedSettings = readJson(SETTINGS_KEY, {});
@@ -220,6 +220,9 @@
     savedSettings.dockMagnify = false;
     savedSettings.dockIconSize = "normal";
   }
+  if (savedDesignVersion < 17) {
+    savedSettings.autoPerformanceMode = false;
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -247,7 +250,7 @@
   delete savedSettings.taskbarMaterial;
   delete savedSettings.taskbarOpacity;
   delete savedSettings.taskbarBlur;
-  savedSettings.designVersion = 16;
+  savedSettings.designVersion = 17;
   var settings = Object.assign({}, defaultSettings, savedSettings);
   var appliedTabAppearanceSignature = "";
   // Keep imported wallpapers and the local reactive scene. Remote workshop defaults
