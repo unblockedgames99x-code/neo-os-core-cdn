@@ -260,7 +260,7 @@
   if (!desktopShortcutLayout || typeof desktopShortcutLayout !== "object" || Array.isArray(desktopShortcutLayout)) desktopShortcutLayout = {};
   var storedHiddenDesktopShortcuts = readJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
   var hiddenDesktopShortcutIds = new Set(Array.isArray(storedHiddenDesktopShortcuts) ? storedHiddenDesktopShortcuts.map(String) : []);
-  var desktopShortcutsManuallyHidden = readJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, false) === true;
+  var desktopShortcutsManuallyHidden = readJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, true) === true;
 
   var apps = {
     browser: {
@@ -4918,12 +4918,12 @@
     windowStates = {};
     desktopShortcutLayout = {};
     hiddenDesktopShortcutIds.clear();
-    desktopShortcutsManuallyHidden = false;
+    desktopShortcutsManuallyHidden = true;
     writeJson(WIDGET_LAYOUT_KEY, widgetLayout);
     writeJson(WINDOW_STATE_KEY, windowStates);
     writeJson(DESKTOP_SHORTCUT_LAYOUT_KEY, desktopShortcutLayout);
     writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, []);
-    writeJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, false);
+    writeJson(DESKTOP_SHORTCUTS_ALL_HIDDEN_KEY, true);
     applyWidgetLayout();
     renderDesktopShortcuts();
     syncDesktopShortcutVisibility();
