@@ -49,7 +49,7 @@
 
   function normalizedTheme(value) {
     const theme = legacyThemes[value] || value;
-    return knownThemes.has(theme) ? theme : 'graphite';
+    return knownThemes.has(theme) ? theme : 'oled';
   }
 
   function normalizedInterfaceStyle(value) {
