@@ -117,6 +117,35 @@
       category: "Games",
       aliases: ["neo cloud", "cloud gaming", "stream games", "remote play", "cloud games"]
     },
+    "pc-remote": {
+      id: "pc-remote",
+      title: "PC Remote",
+      subtitle: "Access or share a computer from another device",
+      icon: "monitor",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ee94138b22fb0eeb64162f0d8d5e2975dd5abeab/neo-remote/index.html?v=20260910-pc-remote-v1",
+      keepAlive: false,
+      width: 1060,
+      height: 720,
+      launcher: true,
+      pinned: false,
+      core: true,
+      category: "Utilities",
+      aliases: ["pc remote", "remote desktop", "remote pc", "pc emulator", "screen share", "chrome remote desktop", "rustdesk"]
+    },
+    nowgg: {
+      id: "nowgg",
+      title: "nowgg.fun",
+      subtitle: "Cloud games through the NEO relay",
+      icon: "gamepad",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ee94138b22fb0eeb64162f0d8d5e2975dd5abeab/NEO-BROWSER/index.html?neo-app-mode=1&neo-custom-app=1&neo-app-target=https%3A%2F%2Fnowgg.fun%2F",
+      keepAlive: false,
+      width: 1180,
+      height: 760,
+      launcher: true,
+      pinned: false,
+      category: "Games",
+      aliases: ["nowgg", "now gg", "nowgg.fun", "cloud games", "android games"]
+    },
     notes: {
       id: "notes",
       title: "Notes",
@@ -342,6 +371,16 @@
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(mediaApps));
       }
       localStorage.setItem(mediaSectionsMigrationKey, "1");
+    }
+
+    var remoteAppsMigrationKey = "neo_os_remote_and_nowgg_apps_v1";
+    if (localStorage.getItem(remoteAppsMigrationKey) !== "1") {
+      var remoteApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
+      if (Array.isArray(remoteApps)) {
+        ["pc-remote", "nowgg"].forEach(function (id) { if (remoteApps.indexOf(id) === -1) remoteApps.push(id); });
+        localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(remoteApps));
+      }
+      localStorage.setItem(remoteAppsMigrationKey, "1");
     }
 
     var retiredOptionalAppsKey = "neo_os_remove_duplicate_and_retired_apps_v3";
