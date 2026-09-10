@@ -1635,8 +1635,7 @@
         rainmeter.dataset.rainmeterYear = now.getFullYear() + ".";
       }
       if (rainmeterWeekday) {
-        var rainmeterGlyphs = { A: "卂", B: "乃", C: "匚", D: "ᗪ", E: "乇", F: "千", G: "Ꮆ", H: "卄", I: "丨", J: "ﾌ", K: "Ҝ", L: "ㄥ", M: "爪", N: "几", O: "ㄖ", P: "卩", Q: "Ɋ", R: "尺", S: "丂", T: "ㄒ", U: "ㄩ", V: "ᐯ", W: "山", X: "乂", Y: "ㄚ", Z: "乙" };
-        rainmeterWeekday.dataset.rainmeterGlyphDay = Array.from(dayName.toUpperCase()).map(function (letter) { return rainmeterGlyphs[letter] || letter; }).join("");
+        delete rainmeterWeekday.dataset.rainmeterGlyphDay;
         var weekdayLetters = document.createDocumentFragment();
         Array.from(dayName.toUpperCase()).forEach(function (letter) {
           var glyph = document.createElement("span");
