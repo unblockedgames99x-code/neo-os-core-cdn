@@ -106,6 +106,7 @@
     <link rel="stylesheet" href="./neo-chat.css?v=20260908-imessage-logo-v2" />
     <title>NEO OS</title>
     <link rel="stylesheet" href="./neo-desktop.css?v=20260907-equalizer-live-v2&amp;chat=utility-spacing-v1&amp;apps=style-passthrough-v1&amp;editor=network-preview-v1&amp;music=symbols-v1" />
+    <link rel="stylesheet" href="./neo-bottom-visualizer.css?v=20260909-bottom-spectrum-v1" />
     <link rel="stylesheet" href="./neo-custom-cursors.css?v=20260909-custom-cursors-v1" />
     <link rel="stylesheet" href="./neo-fonts.css?v=20260906-select-contrast-v2" />
     <link rel="stylesheet" href="./neo-range.css?v=20260906-range-fill-v1" />
@@ -387,6 +388,8 @@
         <p id="rainmeter-date" class="rainmeter-date">02 AUGUST, 2026.</p>
       </section>
 
+      <canvas id="neo-bottom-visualizer" class="neo-bottom-visualizer" aria-label="Music spectrum visualizer" aria-hidden="true" hidden></canvas>
+
       <section id="widget-layer" class="widget-layer" aria-label="Desktop widgets">
         <article class="neo-widget system-widget" data-widget="system">
           <div class="widget-heading">
@@ -571,6 +574,7 @@
           <div class="context-submenu" role="menu" aria-label="Widget options" data-context-panel="widgets" hidden>
             <button class="context-back" type="button" role="menuitem" data-context-back><svg class="icon context-arrow" aria-hidden="true"><use href="#i-chevron"></use></svg><span>Back</span></button>
             <button type="button" role="menuitem" data-widget-action="manage"><svg class="icon" aria-hidden="true"><use href="#i-apps"></use></svg><span>Add or customize widgets</span></button>
+            <button type="button" role="menuitemcheckbox" aria-checked="false" data-widget-action="bottom-visualizer"><svg class="icon" aria-hidden="true"><use href="#i-music"></use></svg><span data-bottom-visualizer-label>Add bottom music visualizer</span></button>
             <span class="context-separator" role="separator"></span>
             <button type="button" role="menuitemcheckbox" aria-checked="true" data-widget-action="show"><span class="context-check" aria-hidden="true"></span><span>Show widgets</span></button>
             <button type="button" role="menuitemcheckbox" aria-checked="true" data-widget-action="lock"><span class="context-check" aria-hidden="true"></span><span>Lock positions</span></button>
@@ -1391,6 +1395,7 @@
     <script src="./neo-frame-loader.js?v=20260907-monochrome-reskin-v1" defer></script>
     <script src="./neo-apps.js?v=20260907-online-apps-v2" defer></script>
     <script src="./neo-music-runtime.js?v=20260831-fast-full-stream-v5&amp;equalizer=live-v2" defer></script>
+    <script src="./neo-bottom-visualizer.js?v=20260909-bottom-spectrum-v1" defer></script>
     <script src="./neo-wallpaper-engine.js?v=20260906-local-scenes-v1&amp;loading=failsafe-v1&amp;auto-performance=v1&amp;images=bundled-v1" defer></script>
     <script src="./neo-wallpaper-quality.js?v=20260831-performance-modes-v2" defer></script>
     <script src="./neo-taskbar-preview.js?v=20260901-taskbar-options-v1" defer></script>
