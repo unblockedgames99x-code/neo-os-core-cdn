@@ -34,20 +34,6 @@
       category: "Media",
       aliases: ["neo stream", "neo tv", "movies", "series", "anime", "manga", "television", "tv", "streaming", "netflix"]
     },
-    manga: {
-      id: "manga",
-      title: "Manga",
-      subtitle: "Read manga from your NEO Stream profiles",
-      icon: "file",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@eae13c4d28237c370725e5ada2d96c77871790d2/neo-tv/launch.svg?view=manga&v=20260910-netflix-classics-v1",
-      keepAlive: false,
-      width: 1080,
-      height: 760,
-      launcher: true,
-      pinned: false,
-      category: "Reading",
-      aliases: ["manga", "comics", "reader", "books", "neo stream"]
-    },
     discord: {
       id: "discord",
       title: "Discord",
@@ -348,16 +334,6 @@
       localStorage.setItem(discordMigrationKey, "1");
     }
 
-    var mediaSectionsMigrationKey = "neo_os_manga_app_v2";
-    if (localStorage.getItem(mediaSectionsMigrationKey) !== "1") {
-      var mediaApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
-      if (Array.isArray(mediaApps) && mediaApps.indexOf("manga") === -1) {
-        mediaApps.push("manga");
-        localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(mediaApps));
-      }
-      localStorage.setItem(mediaSectionsMigrationKey, "1");
-    }
-
     var removeAnimeAppKey = "neo_os_remove_anime_app_v1";
     if (localStorage.getItem(removeAnimeAppKey) !== "1") {
       ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
@@ -365,6 +341,15 @@
         if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "anime"; })));
       });
       localStorage.setItem(removeAnimeAppKey, "1");
+    }
+
+    var removeMangaAppKey = "neo_os_remove_manga_app_v1";
+    if (localStorage.getItem(removeMangaAppKey) !== "1") {
+      ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
+        var savedApps = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "manga"; })));
+      });
+      localStorage.setItem(removeMangaAppKey, "1");
     }
 
     var nowggMigrationKey = "neo_os_nowgg_app_v2";
