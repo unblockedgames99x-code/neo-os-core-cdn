@@ -1298,7 +1298,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
-    if (["browser", "stream", "chat", "cinehd", "anime", "manga", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "cinehd", "manga", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
@@ -1306,7 +1306,7 @@
 
   function embeddedInterfaceStyleAppId(appId) {
     if (appId === "stream") return "music";
-    if (appId === "cinehd" || appId === "anime" || appId === "manga") return "tv";
+    if (appId === "cinehd" || appId === "manga") return "tv";
     if (appId === "neo-cloud") return "cloud";
     if (appId === "neo-ai") return "ai";
     if (appId === "chat") return "chat";

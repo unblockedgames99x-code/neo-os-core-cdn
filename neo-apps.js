@@ -34,20 +34,6 @@
       category: "Media",
       aliases: ["neo stream", "neo tv", "movies", "series", "anime", "manga", "television", "tv", "streaming", "netflix"]
     },
-    anime: {
-      id: "anime",
-      title: "Anime",
-      subtitle: "Anime from your NEO Stream profiles",
-      icon: "zstream",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@17f3533205cc814a2a674d632fd520d35e7f58be/neo-tv/launch.svg?view=anime&v=20260910-open-streaming-v1",
-      keepAlive: false,
-      width: 1180,
-      height: 760,
-      launcher: true,
-      pinned: false,
-      category: "Media",
-      aliases: ["anime", "animation", "series", "neo stream"]
-    },
     manga: {
       id: "manga",
       title: "Manga",
@@ -362,14 +348,23 @@
       localStorage.setItem(discordMigrationKey, "1");
     }
 
-    var mediaSectionsMigrationKey = "neo_os_media_sections_apps_v1";
+    var mediaSectionsMigrationKey = "neo_os_manga_app_v2";
     if (localStorage.getItem(mediaSectionsMigrationKey) !== "1") {
       var mediaApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
-      if (Array.isArray(mediaApps)) {
-        ["anime", "manga"].forEach(function (id) { if (mediaApps.indexOf(id) === -1) mediaApps.push(id); });
+      if (Array.isArray(mediaApps) && mediaApps.indexOf("manga") === -1) {
+        mediaApps.push("manga");
         localStorage.setItem("neo_os_installed_apps_v1", JSON.stringify(mediaApps));
       }
       localStorage.setItem(mediaSectionsMigrationKey, "1");
+    }
+
+    var removeAnimeAppKey = "neo_os_remove_anime_app_v1";
+    if (localStorage.getItem(removeAnimeAppKey) !== "1") {
+      ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
+        var savedApps = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "anime"; })));
+      });
+      localStorage.setItem(removeAnimeAppKey, "1");
     }
 
     var nowggMigrationKey = "neo_os_nowgg_app_v2";
