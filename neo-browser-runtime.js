@@ -3,7 +3,7 @@
 
   const ENGINE_VERSION = "neo-browse-v68";
   const CORE_ROOT = new URL("./", document.currentScript.src).href;
-  const BROWSER_ROOT = "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@20848a6f841786c9fd44b3d01aae2811fbadd9e9/";
+  const BROWSER_ROOT = "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@d9caaf025da5ee9181f96f57dfda1af506d9bb80/";
   const OS_SCOPE = new URL("./", BROWSER_ROOT).pathname;
   const ROUTE_PREFIX = new URL("browse-v68/", BROWSER_ROOT).pathname;
   const RUNTIME_ROOT = BROWSER_ROOT + "browser-runtime";
