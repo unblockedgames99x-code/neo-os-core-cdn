@@ -635,7 +635,7 @@
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
       discord: "./assets/discord-official.png?v=20260828-user-artwork-v2",
       youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1",
-      chatgpt: "./assets/neo-ai-logo.svg?v=20260910-ai-logo-v2"
+      chatgpt: "./assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
     var customIcon = safeCustomAppIcon(name);
