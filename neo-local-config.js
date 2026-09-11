@@ -13,7 +13,7 @@
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "neo-cloud", "nowgg", "neo-ai", "discord", "youtube-app", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@a219c1671683d78c264880fa379ea2384216536b/music-v2/launch.svg?v=20260910-catalog-failover-v2" : new URL("music-v2/index.html?v=20260910-meting-v1&theme=system-v1&widgets=live-v1", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@1f6ca0436796199af08193fb9e3c6d210c9b0f00/music-v2/launch.svg?v=20260910-clean-play-v1" : new URL("music-v2/index.html?v=20260910-meting-v1&theme=system-v1&widgets=live-v1", base).href,
     browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@df9807b64f8de2d616e90b7093004fdea1b2165a/NEO-BROWSER/index.html?v=20260910-fast-browser-v2" : new URL("NEO-BROWSER/index.html?v=20260910-fast-browser-v2", base).href,
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/covers.json" : new URL("../games/covers.json", base).href,
