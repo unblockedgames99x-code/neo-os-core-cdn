@@ -107,10 +107,6 @@ html[data-auto-performance-active="true"] .now-playing-volume-flyout {
   box-shadow: none !important;
 }
 
-html[data-auto-performance-active="true"] .neo-taskbar-preview {
-  display: none !important;
-}
-
 html[data-performance-mode="performance"],
 html[data-performance-mode="ultimate"] {
   scroll-behavior: auto !important;
@@ -164,12 +160,6 @@ html[data-performance-mode="performance"] .neo-taskbar-menu {
 html[data-performance-mode="performance"] .neo-window,
 html[data-performance-mode="performance"] .window-chrome {
   background-color: #0b0d10 !important;
-}
-
-html[data-performance-mode="performance"] .neo-taskbar-preview,
-html[data-performance-mode="ultimate"] .neo-taskbar-preview,
-html[data-performance-mode="ultimate"] .neo-minimized-tray {
-  display: none !important;
 }
 
 html[data-performance-mode="ultimate"] {

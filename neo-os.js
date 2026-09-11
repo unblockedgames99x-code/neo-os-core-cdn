@@ -4930,6 +4930,7 @@
     if (minimized) win.setAttribute("aria-hidden", "true");
     else win.removeAttribute("aria-hidden");
     syncAutoPerformanceMode();
+    renderDock();
     window.dispatchEvent(new CustomEvent("neo-window-state-change", {
       detail: { id: win.dataset.appId || "", minimized: Boolean(minimized), closed: false }
     }));
