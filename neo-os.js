@@ -502,7 +502,15 @@
   function customAppRoute(url, mode) {
     if (mode === "direct") return url;
     var browserRoute = localConfig && localConfig.browser ? localConfig.browser : "./NEO-BROWSER/index.html";
-    return browserRoute + (browserRoute.indexOf("?") === -1 ? "?" : "&") + "neo-app-mode=1&neo-custom-app=1&neo-app-target=" + encodeURIComponent(url);
+    try {
+      var route = new URL(browserRoute, document.baseURI);
+      route.searchParams.set("neo-app-mode", "1");
+      route.searchParams.set("neo-custom-app", "1");
+      route.searchParams.set("neo-app-target", url);
+      return route.href;
+    } catch (_error) {
+      return browserRoute + (browserRoute.indexOf("?") === -1 ? "?" : "&") + "neo-app-mode=1&neo-custom-app=1&neo-app-target=" + encodeURIComponent(url);
+    }
   }
 
   function customAppDefinition(record) {
@@ -1287,6 +1295,7 @@
 
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
+    if (app.custom && app.launchMode === "relay") return "bridge";
     if (["browser", "stream", "chat", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
@@ -2778,12 +2787,12 @@
       if (!document.querySelector('link[data-neo-features]')) {
         var style = document.createElement("link");
         style.rel = "stylesheet";
-        style.href = "./neo-os-features.css?v=20260910-app-installer-v1&hover=bridge-v1";
+        style.href = "./neo-os-features.css?v=20260910-app-installer-v2&hover=bridge-v1";
         style.dataset.neoFeatures = "";
         document.head.appendChild(style);
       }
       var script = document.createElement("script");
-      script.src = "./neo-os-features.js?v=20260910-app-installer-v1&hover=bridge-v1";
+      script.src = "./neo-os-features.js?v=20260910-app-installer-v2&hover=bridge-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_FEATURES) {
@@ -4512,7 +4521,8 @@
   }
 
   function mountFrame(app, body) {
-    if (app.id === "browser" && location.protocol === "file:") {
+    var browserBacked = app.id === "browser" || Boolean(app.custom && app.launchMode === "relay");
+    if (browserBacked && location.protocol === "file:") {
       body.innerHTML = '<div class="feature-loader is-error" role="alert"><strong>Browser needs the NEO web runtime</strong><p>Tabs and website loading require the local secure context; they cannot run from a raw file.</p><a class="button primary" data-browser-runtime-link>Open working NEO OS</a></div>';
       var browserRuntimeLink = body.querySelector("[data-browser-runtime-link]");
       browserRuntimeLink.href = localConfig.preview || "http://127.0.0.1:3092/neo-os/";
@@ -4544,7 +4554,7 @@
     var frame = document.createElement("iframe");
     frame.title = app.title;
     frame.loading = "eager";
-    if (app.id === "browser") frame.setAttribute("fetchpriority", "high");
+    if (browserBacked) frame.setAttribute("fetchpriority", "high");
     frame.referrerPolicy = "same-origin";
     var frameSandbox = [
       "allow-same-origin",
@@ -4596,7 +4606,7 @@
         return;
       }
       if (data.type !== "neo-shell:media-state") return;
-      var videoRoute = app.id === "youtube-app" || app.id === "browser";
+      var videoRoute = app.id === "youtube-app" || browserBacked;
       window.dispatchEvent(new CustomEvent("neo-media-state", {
         detail: {
           source: "route-media:" + app.id,
@@ -4642,7 +4652,7 @@
       }));
     }
     function relayNeoBrowserMessage(event) {
-      if (app.id !== "browser" || event.source === frame.contentWindow) return;
+      if (!browserBacked || event.source === frame.contentWindow) return;
       var data = event.data;
       if (!data || typeof data !== "object" || !Object.prototype.hasOwnProperty.call(data, "__neoBridge")) return;
       try {
@@ -4652,14 +4662,14 @@
       }
     }
     window.addEventListener("message", handleEmbeddedMediaState);
-    if (app.id === "browser") window.addEventListener("message", relayNeoBrowserMessage);
+    if (browserBacked) window.addEventListener("message", relayNeoBrowserMessage);
     if (hostWindow) hostWindow._neoExtraCleanup = function () {
       window.removeEventListener("message", handleEmbeddedMediaState);
-      if (app.id === "browser") window.removeEventListener("message", relayNeoBrowserMessage);
+      if (browserBacked) window.removeEventListener("message", relayNeoBrowserMessage);
       clearEmbeddedMediaState();
     };
     function applyHostIntegration() {
-      if (app.id !== "browser") return;
+      if (!browserBacked) return;
       try {
         var frameDocument = frame.contentDocument;
         if (!frameDocument || !frameDocument.head || frameDocument.getElementById("neo-os-browser-host-fixes")) return;
