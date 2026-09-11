@@ -274,7 +274,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f703757f813d6030e11e15df658072c9368105fe/NEO-BROWSER/index.html?v=20260910-chromebook-stack-v1",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cb00c443f7fd339ec6a23c44997a131446f61c06/NEO-BROWSER/index.html?v=20260910-chromebook-stack-v1",
       keepAlive: false,
       width: 1080,
       height: 720,
