@@ -173,7 +173,7 @@ html[data-performance-mode="ultimate"] .neo-minimized-tray {
 }
 
 html[data-performance-mode="ultimate"] {
-  --topbar-height: 0px;
+  --topbar-height: 36px;
   --wallpaper-blur: 0px !important;
   --neo-taskbar-blur: 0px !important;
 }
@@ -187,13 +187,12 @@ html[data-performance-mode="ultimate"] .wallpaper,
 html[data-performance-mode="ultimate"] #weather-canvas,
 html[data-performance-mode="ultimate"] .rainmeter-clock,
 html[data-performance-mode="ultimate"] .rainmeter-editor,
-html[data-performance-mode="ultimate"] .widget-layer,
-html[data-performance-mode="ultimate"] .neo-status-strip {
+html[data-performance-mode="ultimate"] .widget-layer {
   display: none !important;
 }
 
 html[data-performance-mode="ultimate"] .window-layer {
-  top: 0 !important;
+  top: var(--topbar-height) !important;
 }
 
 html[data-performance-mode="ultimate"] .taskbar,
