@@ -4988,7 +4988,10 @@
     function paintDrag() {
       dragFrame = 0;
       if (!drag) return;
-      win.style.transform = "translate3d(" + (drag.nextLeft - drag.left) + "px," + (drag.nextTop - drag.top) + "px,0)";
+      var transform = "translate3d(" + (drag.nextLeft - drag.left) + "px," + (drag.nextTop - drag.top) + "px,0)";
+      if (transform === drag.lastTransform) return;
+      drag.lastTransform = transform;
+      win.style.transform = transform;
     }
 
     chrome.addEventListener("pointerdown", function (event) {
@@ -5006,6 +5009,7 @@
         top: top,
         nextLeft: left,
         nextTop: top,
+        lastTransform: "",
         maxLeft: Math.max(0, layerRect.width - rect.width),
         maxTop: Math.max(0, layerRect.height - rect.height)
       };
@@ -5016,8 +5020,10 @@
     });
     chrome.addEventListener("pointermove", function (event) {
       if (!drag || event.pointerId !== drag.pointerId) return;
-      drag.nextLeft = clamp(drag.left + event.clientX - drag.x, 0, drag.maxLeft);
-      drag.nextTop = clamp(drag.top + event.clientY - drag.y, drag.minTop, drag.maxTop);
+      var samples = typeof event.getCoalescedEvents === "function" ? event.getCoalescedEvents() : [];
+      var pointer = samples.length ? samples[samples.length - 1] : event;
+      drag.nextLeft = Math.round(clamp(drag.left + pointer.clientX - drag.x, 0, drag.maxLeft));
+      drag.nextTop = Math.round(clamp(drag.top + pointer.clientY - drag.y, drag.minTop, drag.maxTop));
       if (!dragFrame) dragFrame = requestAnimationFrame(paintDrag);
     });
     function endDrag(event) {
@@ -5030,9 +5036,6 @@
       win.style.left = Math.round(nextLeft) + "px";
       win.style.top = Math.round(nextTop) + "px";
       win.style.transform = "";
-      // Commit the layout position while drag transitions are still disabled.
-      // Otherwise the temporary translate and the new left/top can appear together.
-      win.getBoundingClientRect();
       win.classList.remove("is-dragging");
       if (chrome.hasPointerCapture(event.pointerId)) chrome.releasePointerCapture(event.pointerId);
       saveWindowState(win);
