@@ -1004,7 +1004,8 @@
       playing: playing,
       paused: paused,
       volume: hasVolume ? volume : (nowPlayingState && nowPlayingState.source === source ? nowPlayingState.volume : 1),
-      volumeControl: hasVolume
+      volumeControl: hasVolume,
+      transport: detail.transport === true
     };
 
     nowPlayingWidget.hidden = false;
@@ -7448,7 +7449,7 @@
       if (nowPlaying) {
         event.preventDefault();
         if (!nowPlayingWidget || nowPlayingWidget.querySelector(".now-playing-controls").hidden) return;
-        if (nowPlayingState && (nowPlayingState.source === "audiobooks" || nowPlayingState.source === "neo-local-player")) {
+        if (nowPlayingState && nowPlayingState.transport && nowPlayingState.source) {
           window.dispatchEvent(new CustomEvent("neo-media-transport-request", {
             detail: { source: nowPlayingState.source, action: nowPlaying.dataset.nowPlayingAction }
           }));
