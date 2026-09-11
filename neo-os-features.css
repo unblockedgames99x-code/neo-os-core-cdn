@@ -761,7 +761,7 @@ html[data-desktop-icon-size="small"] [data-desktop-shortcut] { --desktop-icon-si
 .installer-form select:focus { border-color: var(--neo-accent-visible, #fff); box-shadow: 0 0 0 2px var(--neo-accent-soft, rgba(255,255,255,.11)); }
 .installer-help { margin: 12px 0 0; color: #777f8b; font-size: 8px; line-height: 1.55; }
 .installer-submit-row { display: flex; align-items: center; gap: 12px; min-height: 34px; margin-top: 14px; }
-.installer-submit-row output { color: #9fb1aa; font-size: 11px; font-weight: 650; line-height: 1.4; }
+.installer-submit-row output { min-width: 0; color: #b9d9cb; font-size: 11px; font-weight: 650; line-height: 1.4; }
 .installer-submit-row output.is-error { color: #ff8585; }
 .installed-sites { min-height: 310px; }
 .installed-sites-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }

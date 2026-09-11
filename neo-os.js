@@ -275,7 +275,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@df9807b64f8de2d616e90b7093004fdea1b2165a/NEO-BROWSER/index.html?v=20260910-fast-browser-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@main/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -305,7 +305,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@c6e5a7d9e76ee7c4f87c690659a35af187f8267d/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@main/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -509,7 +509,7 @@
       route.searchParams.set("neo-custom-app", "1");
       route.searchParams.set("neo-app-target", url);
       return route.href;
-    } catch (_error) {
+    } catch (error) {
       return browserRoute + (browserRoute.indexOf("?") === -1 ? "?" : "&") + "neo-app-mode=1&neo-custom-app=1&neo-app-target=" + encodeURIComponent(url);
     }
   }
@@ -1308,7 +1308,8 @@
     if (appId === "neo-cloud") return "cloud";
     if (appId === "neo-ai") return "ai";
     if (appId === "chat") return "chat";
-    if (appId === "browser" || appId === "discord" || appId === "youtube-app" || appId === "nowgg") return "browser";
+    if (appId === "youtube-app") return "youtube";
+    if (appId === "browser" || appId === "discord" || appId === "nowgg") return "browser";
     return "app";
   }
 
@@ -4664,10 +4665,24 @@
         // Ignore messages sent while the browser frame is being replaced.
       }
     }
+    function relayHostWindowState(event) {
+      var detail = event && event.detail;
+      if (!detail || detail.id !== app.id) return;
+      try {
+        frame.contentWindow.postMessage({
+          type: "neo-shell:visibility",
+          visible: detail.closed !== true && detail.minimized !== true
+        }, "*");
+      } catch (_error) {
+        // Ignore state changes while the embedded frame is being replaced.
+      }
+    }
     window.addEventListener("message", handleEmbeddedMediaState);
+    window.addEventListener("neo-window-state-change", relayHostWindowState);
     if (browserBacked) window.addEventListener("message", relayNeoBrowserMessage);
     if (hostWindow) hostWindow._neoExtraCleanup = function () {
       window.removeEventListener("message", handleEmbeddedMediaState);
+      window.removeEventListener("neo-window-state-change", relayHostWindowState);
       if (browserBacked) window.removeEventListener("message", relayNeoBrowserMessage);
       clearEmbeddedMediaState();
     };
@@ -4712,6 +4727,7 @@
           frame.contentDocument.documentElement.dataset.neoPerformanceMode = performanceMode();
         }
         frame.contentWindow.postMessage({ type: "neo-shell:performance-mode", mode: performanceMode() }, "*");
+        frame.contentWindow.postMessage({ type: "neo-shell:visibility", visible: !(hostWindow && hostWindow.classList.contains("is-minimized")) }, "*");
       } catch (_error) {}
       loader.classList.add("is-complete");
       fallback.classList.remove("is-visible");
