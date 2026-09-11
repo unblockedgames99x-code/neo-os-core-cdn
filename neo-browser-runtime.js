@@ -1,17 +1,18 @@
 (() => {
   "use strict";
 
-  const ENGINE_VERSION = "neo-browse-v68";
+  const ENGINE_VERSION = "neo-browse-v69";
   const OS_SCOPE = "/neo-os/";
-  const ROUTE_PREFIX = "/neo-os/browse-v68/";
+  const ROUTE_PREFIX = "/neo-os/browse-v69/";
   const RUNTIME_ROOT = "/neo-os/browser-runtime";
   const NEW_TAB_DESTINATION = "neo://newtab";
-  const NEW_TAB_PAGE = "/neo-os/browser-newtab.html?v=neo-browse-v68";
+  const NEW_TAB_PAGE = "/neo-os/browser-newtab.html?v=neo-browse-v69";
   const WORKER_URL = `/neo-os/browser-sw.js?engine=${ENGINE_VERSION}`;
   const BAREMUX_WORKER_URL = `${RUNTIME_ROOT}/baremux/worker.js?engine=${ENGINE_VERSION}`;
   const PRIMARY_TRANSPORT_URL = `${RUNTIME_ROOT}/epoxy/index.mjs?engine=${ENGINE_VERSION}`;
   const FALLBACK_TRANSPORT_URL = `${RUNTIME_ROOT}/libcurl/index.mjs?engine=${ENGINE_VERSION}`;
-  const PREFERRED_WISP_RELAY = "wss://support.pired.org/lively/";
+  const NEXTNODE_PROXY_ORIGIN = "https://nextnode9124.b-cdn.net/";
+  const PREFERRED_WISP_RELAY = "wss://nextnode9124.b-cdn.net/w/";
   const WISP_RELAYS = [
     PREFERRED_WISP_RELAY,
     "wss://cdn.northstreetumc.org/adblock/",
@@ -19,7 +20,7 @@
     "wss://girlspreples.org/wi/",
     "wss://mages.io/wisp/",
   ];
-  const WISP_RELAY_CACHE_KEY = `neo-wisp-relay:${ENGINE_VERSION}:chromebook-v2`;
+  const WISP_RELAY_CACHE_KEY = `neo-wisp-relay:${ENGINE_VERSION}:nextnode-v1`;
   let runtimePromise = null;
   let stylesPromise = null;
   let transportConnection = null;
@@ -2103,6 +2104,7 @@
   }
 
   window.NEO_BROWSER_ENGINE = {
+    proxyOrigin: NEXTNODE_PROXY_ORIGIN,
     warm: getRuntime,
     async openQuery(options) {
       if (!options?.container) throw new Error("The web app has no page container.");

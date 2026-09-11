@@ -275,7 +275,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cb00c443f7fd339ec6a23c44997a131446f61c06/NEO-BROWSER/index.html?v=20260910-chromebook-stack-v1",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@0d4474cb76e88213c991351c47a37b9e0cf78908/NEO-BROWSER/index.html?v=20260910-nextnode-proxy-v1",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -2846,7 +2846,7 @@
       var existing = document.getElementById("neo-browse-runtime-script");
       var script = existing || document.createElement("script");
       script.id = "neo-browse-runtime-script";
-      script.src = "./neo-browser-runtime.js?v=20260910-chromebook-stack-v1";
+      script.src = "./neo-browser-runtime.js?v=20260910-nextnode-proxy-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_BROWSER_ENGINE) {
