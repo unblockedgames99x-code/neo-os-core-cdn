@@ -7002,15 +7002,56 @@
     weatherFrame = requestAnimationFrame(frame);
   }
 
+  function playBootVideo(video, restart) {
+    if (!video) return;
+    if (video._neoPauseTimer) {
+      window.clearTimeout(video._neoPauseTimer);
+      video._neoPauseTimer = 0;
+    }
+    if (restart) {
+      try { video.currentTime = 0; } catch (error) {}
+    }
+    var playback;
+    try { playback = video.play(); } catch (error) { return; }
+    if (playback && typeof playback.catch === "function") playback.catch(function () {});
+  }
+
+  function pauseBootVideo(video) {
+    if (!video) return;
+    if (video._neoPauseTimer) window.clearTimeout(video._neoPauseTimer);
+    video._neoPauseTimer = window.setTimeout(function () {
+      video._neoPauseTimer = 0;
+      try { video.pause(); } catch (error) {}
+    }, 240);
+  }
+
+  function waitForBootVideo(video, minimumDelay) {
+    var minimum = new Promise(function (resolve) { window.setTimeout(resolve, minimumDelay); });
+    if (!video || video.readyState >= 2) return minimum;
+    var videoReady = new Promise(function (resolve) {
+      var settled = false;
+      function done() {
+        if (settled) return;
+        settled = true;
+        video.removeEventListener("loadeddata", done);
+        video.removeEventListener("error", done);
+        resolve();
+      }
+      video.addEventListener("loadeddata", done, { once: true });
+      video.addEventListener("error", done, { once: true });
+    });
+    var videoGuard = new Promise(function (resolve) { window.setTimeout(resolve, 1800); });
+    return Promise.all([minimum, Promise.race([videoReady, videoGuard])]);
+  }
+
   function performBoot() {
-    var image = new Image();
-    image.src = "./assets/universal-loading-screen-white.webp";
-    var ready = typeof image.decode === "function" ? image.decode().catch(function () {}) : Promise.resolve();
-    var timeout = new Promise(function (resolve) { window.setTimeout(resolve, 650); });
-    Promise.race([ready, timeout]).then(function () {
+    var video = document.querySelector("[data-universal-loading-video]");
+    playBootVideo(video, true);
+    waitForBootVideo(video, 1400).then(function () {
       requestAnimationFrame(function () {
         root.dataset.boot = "complete";
         try { sessionStorage.setItem(BOOT_SESSION_KEY, "1"); } catch (error) {}
+        pauseBootVideo(video);
       });
     });
   }
@@ -7019,7 +7060,7 @@
     var screen = document.getElementById("neo-start-screen");
     var desktop = document.getElementById("neo-desktop");
     var universalLoader = document.getElementById("boot-screen");
-    var universalLoaderImage = universalLoader && universalLoader.querySelector("[data-universal-loading-image]");
+    var universalLoaderVideo = universalLoader && universalLoader.querySelector("[data-universal-loading-video]");
     var startInProgress = false;
     if (!screen) {
       onComplete();
@@ -7034,20 +7075,16 @@
     function showUniversalLoader() {
       root.dataset.universalLoading = "true";
       if (universalLoader) universalLoader.setAttribute("aria-label", "Loading NEO OS");
+      playBootVideo(universalLoaderVideo, true);
     }
 
     function hideUniversalLoader() {
       delete root.dataset.universalLoading;
+      pauseBootVideo(universalLoaderVideo);
     }
 
     function waitForUniversalLoader() {
-      var minimum = new Promise(function (resolve) { window.setTimeout(resolve, 1000); });
-      if (!universalLoaderImage || (universalLoaderImage.complete && universalLoaderImage.naturalWidth)) return minimum;
-      var imageReady = typeof universalLoaderImage.decode === "function"
-        ? universalLoaderImage.decode().catch(function () {})
-        : Promise.resolve();
-      var imageGuard = new Promise(function (resolve) { window.setTimeout(resolve, 250); });
-      return Promise.all([minimum, Promise.race([imageReady, imageGuard])]);
+      return waitForBootVideo(universalLoaderVideo, 1400);
     }
 
     function finish(mode) {

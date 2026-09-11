@@ -260,7 +260,9 @@
     </svg>
 
     <div id="boot-screen" class="boot-screen" role="status" aria-live="polite" aria-label="Loading NEO OS">
-      <img class="boot-screen-image" data-universal-loading-image src="./assets/universal-loading-screen-white.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="async" />
+      <video class="boot-screen-video" data-universal-loading-video autoplay muted playsinline preload="auto" aria-hidden="true" width="3840" height="2160">
+        <source src="./assets/neo-os-loading.mp4" type="video/mp4" />
+      </video>
       <span class="boot-screen-copy" data-universal-loading-copy>
         <strong>NEO OS</strong>
         <span>Loading your desktop</span>
