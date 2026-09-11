@@ -52,6 +52,10 @@
   box-sizing: border-box;
 }
 
+img:not(.pixi):not(.pixel-art) {
+  image-rendering: auto !important;
+}
+
 html,
 body {
   width: 100%;
