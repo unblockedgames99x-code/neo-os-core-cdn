@@ -14,6 +14,7 @@
   var WINDOW_STATE_KEY = "neo_os_window_states_v2";
   var DEFAULT_WINDOW_WIDTH = 1180;
   var DEFAULT_WINDOW_HEIGHT = 760;
+  var WINDOW_TOP_GAP = 8;
   var PINNED_APPS_KEY = "neo_os_pinned_apps_v1";
   var INSTALLED_APPS_KEY = "neo_os_installed_apps_v1";
   var CUSTOM_APPS_KEY = "neo_os_custom_apps_v1";
@@ -2728,7 +2729,9 @@
       // Older records used viewport coordinates. New records are layer-relative.
       if (savedWindow.coordinates !== "layer") { if (savedWindow.left != null) left -= layerBounds.left; if (savedWindow.top != null) top -= layerBounds.top; }
       win.style.left = clamp(left, 0, Math.max(0, availableWidth - width)) + "px";
-      win.style.top = clamp(top, 0, Math.max(0, availableHeight - height)) + "px";
+      var maxTop = Math.max(0, availableHeight - height);
+      var minTop = maxTop >= WINDOW_TOP_GAP ? WINDOW_TOP_GAP : 0;
+      win.style.top = clamp(top, minTop, maxTop) + "px";
     }
     win.innerHTML =
       '<header class="window-chrome">' +
@@ -5006,6 +5009,7 @@
         maxLeft: Math.max(0, layerRect.width - rect.width),
         maxTop: Math.max(0, layerRect.height - rect.height)
       };
+      drag.minTop = drag.maxTop >= WINDOW_TOP_GAP ? WINDOW_TOP_GAP : 0;
       win.classList.add("is-dragging");
       chrome.setPointerCapture(event.pointerId);
       event.preventDefault();
@@ -5013,7 +5017,7 @@
     chrome.addEventListener("pointermove", function (event) {
       if (!drag || event.pointerId !== drag.pointerId) return;
       drag.nextLeft = clamp(drag.left + event.clientX - drag.x, 0, drag.maxLeft);
-      drag.nextTop = clamp(drag.top + event.clientY - drag.y, 0, drag.maxTop);
+      drag.nextTop = clamp(drag.top + event.clientY - drag.y, drag.minTop, drag.maxTop);
       if (!dragFrame) dragFrame = requestAnimationFrame(paintDrag);
     });
     function endDrag(event) {
@@ -5051,7 +5055,9 @@
       var width = Math.min(rect.width, bounds.width), height = Math.min(rect.height, bounds.height);
       win.style.width = width + 'px'; win.style.height = height + 'px';
       win.style.left = clamp(rect.left - bounds.left,0,Math.max(0,bounds.width-width)) + 'px';
-      win.style.top = clamp(rect.top - bounds.top,0,Math.max(0,bounds.height-height)) + 'px';
+      var maxTop = Math.max(0, bounds.height - height);
+      var minTop = maxTop >= WINDOW_TOP_GAP ? WINDOW_TOP_GAP : 0;
+      win.style.top = clamp(rect.top - bounds.top, minTop, maxTop) + 'px';
       saveWindowState(win);
     });
   }
