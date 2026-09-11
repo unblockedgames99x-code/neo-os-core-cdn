@@ -126,7 +126,7 @@
 
   function draw(now, once) {
     frame = 0;
-    if (!enabled || document.hidden) return;
+    if (!enabled || document.hidden || root.classList.contains("is-window-interacting")) return;
     if (!once && now - lastFrame < 30) {
       frame = requestAnimationFrame(draw);
       return;
@@ -182,7 +182,7 @@
   }
 
   function schedule() {
-    if (enabled && !frame && !document.hidden) frame = requestAnimationFrame(draw);
+    if (enabled && !frame && !document.hidden && !root.classList.contains("is-window-interacting")) frame = requestAnimationFrame(draw);
   }
 
   function syncMenu() {
@@ -251,6 +251,15 @@
       return;
     }
     if (enabled) resize();
+  });
+
+  window.addEventListener("neo-window-interaction", function (event) {
+    if (event.detail && event.detail.active === true) {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      return;
+    }
+    schedule();
   });
 
   window.NEO_BOTTOM_VISUALIZER = {

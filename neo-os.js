@@ -5016,6 +5016,9 @@
       };
       drag.minTop = drag.maxTop >= WINDOW_TOP_GAP ? WINDOW_TOP_GAP : 0;
       win.classList.add("is-dragging");
+      root.classList.add("is-window-interacting");
+      window.dispatchEvent(new CustomEvent("neo-window-interaction", { detail: { active: true, source: "window-drag" } }));
+      window.dispatchEvent(new CustomEvent("neo-media-priority", { detail: { active: true, source: "window-drag", pauseWallpaper: true } }));
       chrome.setPointerCapture(event.pointerId);
       event.preventDefault();
     });
@@ -5038,6 +5041,9 @@
       win.style.top = Math.round(nextTop) + "px";
       win.style.transform = "";
       win.classList.remove("is-dragging");
+      root.classList.remove("is-window-interacting");
+      window.dispatchEvent(new CustomEvent("neo-window-interaction", { detail: { active: false, source: "window-drag" } }));
+      window.dispatchEvent(new CustomEvent("neo-media-priority", { detail: { active: false, source: "window-drag", pauseWallpaper: true } }));
       if (chrome.hasPointerCapture(event.pointerId)) chrome.releasePointerCapture(event.pointerId);
       saveWindowState(win);
     }
