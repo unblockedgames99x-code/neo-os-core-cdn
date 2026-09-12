@@ -288,7 +288,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@763504b86230a55f377a1f4a536f566497a0015f/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@87490096f83c1e12f15086d5fb670d569f8ff980/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -318,7 +318,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@5a16c4941c81c053c19f9d22024edf6021177474/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@96b286c1ff19b1e02b799b4c615d8fdb21203919/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -660,7 +660,7 @@
       discord: "./assets/discord-official.2910de11b970480d.webp?v=20260828-user-artwork-v2",
       youtube: "./assets/youtube-official.8068a0be4bb21f6e.webp?v=20260828-user-artwork-v1",
       chatgpt: "./assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1",
-      "xbox-games": "./assets/xbox-games.svg?v=20260912-games-v1",
+      "xbox-games": "./assets/xbox-games.svg?v=20260912-official-shape-v2",
       movies: "./assets/movies-icon.webp?v=20260912-user-artwork-v1"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
