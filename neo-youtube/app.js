@@ -5,6 +5,7 @@
     'https://pipedapi.ducks.party',
     'https://api.piped.private.coffee'
   ];
+  const CATALOGUE_TIMEOUT_MS = 4500;
   const SEARCH_CACHE_MS = 10 * 60 * 1000;
   const HISTORY_KEY = 'neo_youtube_history_v2';
   const CACHE_PREFIX = 'neo_youtube_search_v2:';
@@ -302,7 +303,7 @@
     const controller = new AbortController();
     const abort = () => controller.abort();
     parentSignal?.addEventListener('abort', abort, { once: true });
-    const timer = window.setTimeout(() => controller.abort(), 7500);
+    const timer = window.setTimeout(() => controller.abort(), CATALOGUE_TIMEOUT_MS);
     try {
       const response = await fetch(base + path, {
         signal: controller.signal,
@@ -318,18 +319,37 @@
   }
 
   async function firstWorking(path, signal) {
-    let lastError = new Error('Catalogue unavailable');
-    for (const base of API_BASES) {
-      try {
-        const data = await fetchJson(base, path, signal);
-        state.provider = new URL(base).hostname;
-        return data;
-      } catch (error) {
-        if (signal?.aborted) throw error;
-        lastError = error;
-      }
+    const raceController = new AbortController();
+    const abortRace = () => raceController.abort();
+    if (signal?.aborted) abortRace();
+    else signal?.addEventListener('abort', abortRace, { once: true });
+
+    try {
+      const winner = await Promise.any(API_BASES.map(base => (
+        fetchJson(base, path, raceController.signal).then(data => ({ base, data }))
+      )));
+      state.provider = new URL(winner.base).hostname;
+      raceController.abort();
+      return winner.data;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      throw new Error('Catalogue unavailable', { cause: error });
+    } finally {
+      raceController.abort();
+      signal?.removeEventListener('abort', abortRace);
     }
-    throw lastError;
+  }
+
+  function fallbackResults(query) {
+    const words = String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) return [...FALLBACK_ITEMS];
+    return [...FALLBACK_ITEMS].sort((a, b) => {
+      const score = item => {
+        const text = `${item.title} ${item.uploaderName}`.toLowerCase();
+        return words.reduce((total, word) => total + (text.includes(word) ? 1 : 0), 0);
+      };
+      return score(b) - score(a);
+    });
   }
 
   function attachImageFallbacks(root = document) {
@@ -467,17 +487,9 @@
       renderResults();
     } catch (error) {
       if (state.request.signal.aborted) return;
-      state.items = [];
-      const youtubeSearch = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
-      dom.resultStatus.textContent = '';
-      dom.resultsList.innerHTML = `
-        <div class="empty-state"><div>
-          <h2>The catalogue did not respond</h2>
-          <p>Paste a YouTube link to play it here, retry the search, or open the same search on YouTube.</p>
-          <button type="button" data-retry-search>Retry</button>
-          <a href="${youtubeSearch}" target="_blank" rel="noopener noreferrer">Open YouTube</a>
-        </div></div>`;
-      $('[data-retry-search]')?.addEventListener('click', () => search(q, { replace: true }));
+      state.provider = '';
+      state.items = fallbackResults(q);
+      renderResults('Live catalogue unavailable • Showing playable picks');
     }
   }
 
