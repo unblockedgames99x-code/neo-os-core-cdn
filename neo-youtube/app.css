@@ -753,6 +753,10 @@ svg {
 html.has-video-popout,
 html.has-video-popout body { background: #000; }
 
+html.has-video-popout,
+html.has-video-popout body,
+body.has-video-popout .content { overflow: hidden !important; }
+
 body.has-video-popout .masthead,
 body.has-video-popout .sidebar { display: none !important; }
 
@@ -783,6 +787,71 @@ body.has-video-popout[data-popout-mode="watch"] .player-shell {
   border-radius: 0;
   aspect-ratio: auto;
 }
+
+/* The official player reserves chrome above and below a 16:9 video. In the
+   compact pop-out, enlarge that viewport by the same amount and clip those
+   chrome bands so the window contains the video itself. */
+body.has-video-popout {
+  --yt-popout-chrome-crop: 96px;
+}
+
+body.has-video-popout[data-popout-mode="watch"] .player-shell iframe,
+body.has-video-popout[data-popout-mode="shorts"] .short-player iframe {
+  position: absolute !important;
+  top: calc(var(--yt-popout-chrome-crop) / -2) !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: calc(100% + var(--yt-popout-chrome-crop)) !important;
+  max-width: none !important;
+  border: 0 !important;
+}
+
+.popout-video-poster {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: none;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+
+body.has-video-popout .is-popout-source > .popout-video-poster { display: grid; }
+body.has-video-popout .is-popout-source.is-popout-started > .popout-video-poster {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.popout-video-poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.popout-video-poster > span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 0, 51, .95);
+  box-shadow: 0 5px 22px rgba(0, 0, 0, .55);
+  pointer-events: none;
+}
+
+.popout-video-poster svg { width: 25px; height: 25px; }
 
 body.has-video-popout[data-popout-mode="shorts"] .content > :not(.shorts-view),
 body.has-video-popout[data-popout-mode="shorts"] .shorts-stage > :not(.short-card),

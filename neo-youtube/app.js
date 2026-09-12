@@ -185,6 +185,54 @@
     announceMedia(Boolean(frame), false);
   }
 
+  function resumeFrame(frame = state.playerFrame) {
+    if (!frame?.contentWindow) return;
+    frame.dataset.neoPopoutPlaying = 'true';
+    try {
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 'neo-youtube-popout' }), '*');
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+    } catch {}
+    announceMedia(true, true);
+  }
+
+  function mountPopoutPoster(source) {
+    source?.querySelector('[data-popout-poster]')?.remove();
+    source?.classList.remove('is-popout-started');
+    if (!source) return;
+    const poster = document.createElement('button');
+    poster.type = 'button';
+    poster.className = 'popout-video-poster';
+    poster.dataset.popoutPoster = 'true';
+    poster.setAttribute('aria-label', 'Play video');
+    const image = document.createElement('img');
+    image.alt = '';
+    image.decoding = 'async';
+    image.referrerPolicy = 'no-referrer';
+    image.src = state.current?.thumbnail || thumbnailUrl(state.current?.id || '');
+    image.addEventListener('error', () => { image.hidden = true; }, { once: true });
+    const mark = document.createElement('span');
+    mark.innerHTML = icon('play');
+    poster.append(image, mark);
+    poster.addEventListener('click', () => {
+      poster.dataset.userActivated = 'true';
+      resumeFrame();
+      window.setTimeout(() => source.classList.add('is-popout-started'), 700);
+    });
+    source.appendChild(poster);
+  }
+
+  function handlePlayerMessage(event) {
+    if (!state.popoutActive || event.source !== state.playerFrame?.contentWindow) return;
+    let data = event.data;
+    if (typeof data === 'string') {
+      try { data = JSON.parse(data); } catch { return; }
+    }
+    const poster = state.popoutOrigin?.querySelector('[data-popout-poster]');
+    if (poster?.dataset.userActivated === 'true' && data?.event === 'infoDelivery' && Number(data.info?.playerState) === 1) {
+      state.popoutOrigin?.classList.add('is-popout-started');
+    }
+  }
+
   function setPopoutPresentation(active, mode = state.popoutMode) {
     const source = state.popoutOrigin;
     dom.body.classList.toggle('has-video-popout', active);
@@ -193,10 +241,13 @@
       dom.body.dataset.popoutMode = mode;
       document.documentElement.dataset.popoutMode = mode;
       source?.classList.add('is-popout-source');
+      mountPopoutPoster(source);
     } else {
       delete dom.body.dataset.popoutMode;
       delete document.documentElement.dataset.popoutMode;
       source?.classList.remove('is-popout-source');
+      source?.classList.remove('is-popout-started');
+      source?.querySelector('[data-popout-poster]')?.remove();
     }
     dom.popout.hidden = !active;
     if (active) dom.popout.dataset.mode = mode;
@@ -540,6 +591,9 @@
       delete iframe.dataset.neoProxyError;
       delete iframe.dataset.neoProxyRequestId;
       delete iframe.dataset.neoProxySource;
+      iframe.addEventListener('load', () => {
+        if (state.popoutActive && state.playerFrame === iframe) resumeFrame(iframe);
+      }, { once: true });
       iframe.src = officialSource;
       announceMedia(true, autoplay, item);
     }, 4500);
@@ -562,6 +616,10 @@
     state.popoutMode = mode === 'shorts' ? 'shorts' : 'watch';
     state.popoutOrigin = frame.parentElement;
     setPopoutPresentation(true, state.popoutMode);
+    resumeFrame(frame);
+    window.setTimeout(() => {
+      if (state.popoutActive && state.playerFrame === frame) resumeFrame(frame);
+    }, 350);
     const selector = state.popoutMode === 'shorts' ? '[data-popout-short]' : '[data-popout-video]';
     $(selector)?.setAttribute('aria-pressed', 'true');
     showToast('Video popped out');
@@ -863,6 +921,7 @@
   dom.popoutRestore.addEventListener('click', restorePopout);
   dom.popoutClose.addEventListener('click', closePopout);
   $('[data-popout-drag]').addEventListener('pointerdown', beginPopoutDrag);
+  window.addEventListener('message', handlePlayerMessage);
   dom.shortPlay.addEventListener('click', playCurrentShort);
   $('[data-short-prev]').addEventListener('click', () => moveShort(-1));
   $('[data-short-next]').addEventListener('click', () => moveShort(1));
