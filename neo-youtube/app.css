@@ -87,7 +87,6 @@ svg {
 .masthead-end,
 .search-form,
 .brand,
-.sign-in,
 .nav-item,
 .watch-details,
 .channel-block,
@@ -219,20 +218,6 @@ svg {
 .search-button:hover { background: var(--yt-hover); }
 .voice-button { margin-left: 12px; background: var(--yt-surface-2); }
 
-.sign-in {
-  min-width: max-content;
-  height: 36px;
-  gap: 6px;
-  padding: 0 12px;
-  border: 1px solid var(--yt-line);
-  border-radius: 18px;
-  color: var(--yt-accent);
-  font-weight: 600;
-}
-
-.sign-in svg { width: 22px; height: 22px; }
-.sign-in:hover { background: color-mix(in srgb, var(--yt-accent) 15%, transparent); }
-
 .sidebar {
   position: fixed;
   z-index: 40;
@@ -250,7 +235,6 @@ svg {
 
 .sidebar nav,
 .nav-section,
-.signin-panel,
 .sidebar-footer { border-bottom: 1px solid var(--yt-line); }
 
 .sidebar nav { padding-bottom: 12px; }
@@ -281,10 +265,6 @@ svg {
 .nav-item svg,
 .nav-item img { width: 24px; height: 24px; flex: 0 0 auto; }
 .nav-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.signin-panel { padding: 16px 20px; }
-.signin-panel p { max-width: 170px; margin: 0 0 14px; line-height: 1.45; }
-.signin-panel .sign-in { display: inline-flex; }
 
 .sidebar-footer { padding: 16px 12px 22px; border-bottom: 0; color: var(--yt-muted); font-size: 12px; }
 .sidebar-footer p { margin: 0 0 10px; line-height: 1.4; }
@@ -840,7 +820,6 @@ body.has-video-popout[data-popout-mode="shorts"] .short-player {
 @media (max-width: 1100px) {
   :root { --yt-sidebar-width: 76px; }
   .masthead { grid-template-columns: 180px minmax(220px, 680px) minmax(120px, 1fr); }
-  .sidebar .signin-panel,
   .sidebar .nav-section,
   .sidebar .sidebar-footer,
   .sidebar nav .nav-item:nth-child(n+4) { display: none; }
@@ -861,9 +840,7 @@ body.has-video-popout[data-popout-mode="shorts"] .short-player {
   .masthead-start { gap: 0; }
   .search-box { margin-left: 0; }
   .voice-button,
-  .masthead-end .icon-button,
-  .masthead-end .sign-in span { display: none; }
-  .masthead-end .sign-in { width: 38px; min-width: 38px; padding: 0; justify-content: center; border: 0; }
+  .masthead-end .icon-button { display: none; }
   .search-button { width: 46px; }
   .results-view { padding: 0 12px 48px; }
   .watch-view { padding: 12px 10px 42px; }

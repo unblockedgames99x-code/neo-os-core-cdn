@@ -744,27 +744,22 @@
     renderShort(true);
   }
 
-  function showLibrary(view, options = {}) {
+  function showHistory(options = {}) {
     const historyItems = readStorage(HISTORY_KEY, []).map(normalize).filter(Boolean);
     state.items = historyItems;
     state.query = '';
     state.filter = 'all';
     showView('results');
-    setActiveNav(view);
+    setActiveNav('history');
     updateFilterButtons();
-    if (view === 'history' || view === 'you') {
-      dom.resultStatus.textContent = view === 'history' ? 'Watch history on this device' : 'Your local library';
-      if (historyItems.length) {
-        dom.resultsList.innerHTML = historyItems.map(resultCard).join('');
-        bindResultCards();
-      } else {
-        dom.resultsList.innerHTML = '<div class="empty-state"><div><h2>No watch history</h2><p>Videos you play here will appear on this device.</p></div></div>';
-      }
+    dom.resultStatus.textContent = 'Watch history on this device';
+    if (historyItems.length) {
+      dom.resultsList.innerHTML = historyItems.map(resultCard).join('');
+      bindResultCards();
     } else {
-      dom.resultStatus.textContent = '';
-      dom.resultsList.innerHTML = '<div class="empty-state"><div><h2>Sign in to see subscriptions</h2><p>Your YouTube subscriptions stay with your Google account.</p><a href="https://accounts.google.com/ServiceLogin?service=youtube" target="_blank" rel="noopener noreferrer">Sign in</a></div></div>';
+      dom.resultsList.innerHTML = '<div class="empty-state"><div><h2>No watch history</h2><p>Videos you play here will appear on this device.</p></div></div>';
     }
-    if (!options.fromRoute) navigate({ view }, false);
+    if (!options.fromRoute) navigate({ view: 'history' }, false);
   }
 
   function goHome(replace = false) {
@@ -812,8 +807,8 @@
       openShorts(shortId === 'feed' ? '' : shortId, { replace: true, fromRoute: true });
     } else if (query) {
       search(query, { replace: true, fromRoute: true });
-    } else if (view) {
-      showLibrary(view, { fromRoute: true });
+    } else if (view === 'history') {
+      showHistory({ fromRoute: true });
     } else {
       goHome(true);
     }
@@ -836,7 +831,7 @@
     const view = button.dataset.view;
     if (view === 'home') goHome();
     else if (view === 'shorts') openShorts();
-    else showLibrary(view);
+    else if (view === 'history') showHistory();
   }));
 
   $$('[data-search-preset]').forEach(button => button.addEventListener('click', () => {
