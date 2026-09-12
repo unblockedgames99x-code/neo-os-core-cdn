@@ -292,7 +292,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2391624330a5b2d017f5d080ed98848b497d9c75/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a4b38dc82740bcbf6af3f6985676728c0d394848/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -322,7 +322,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@fe33e4bc4edfd0ec400307a804b7fab8c3e1a946/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@d1d38483be954f059b2cc345210914019fd74776/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1016,6 +1016,9 @@
         nowPlayingWidget.hidden = true;
         if (topbarMedia) topbarMedia.hidden = true;
         syncGameNowPlayingOverlay();
+        window.dispatchEvent(new CustomEvent("neo-now-playing-change", {
+          detail: { active: false, source: source }
+        }));
       }
       return;
     }
@@ -1136,6 +1139,9 @@
       toggle.setAttribute("aria-label", playing ? "Pause" : "Play");
     }
     syncGameNowPlayingOverlay();
+    window.dispatchEvent(new CustomEvent("neo-now-playing-change", {
+      detail: Object.assign({ active: true }, nowPlayingState)
+    }));
   }
 
   function showStreamNowPlaying() {
