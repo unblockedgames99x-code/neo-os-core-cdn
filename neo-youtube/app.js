@@ -9,6 +9,12 @@
   const SEARCH_CACHE_MS = 10 * 60 * 1000;
   const HISTORY_KEY = 'neo_youtube_history_v2';
   const CACHE_PREFIX = 'neo_youtube_search_v3:';
+  const OFFICIAL_SHORTS = Object.freeze([
+    { id: 'zxSSPFgBTLQ', title: '#shorts #crazy #funny', uploaderName: 'Teach', duration: 30, isShort: true },
+    { id: '2CVzaiZiKA0', title: '#shorts #comedy', uploaderName: 'Aman Sharma', duration: 30, isShort: true },
+    { id: 'DlEIu42PxiU', title: 'I rescued these animals 😁 #shorts #animals #nature', uploaderName: 'Melerus', duration: 30, isShort: true },
+    { id: '0Jq4XaCOnAc', title: 'I like this story #animals #shorts', uploaderName: 'Sweetheart Zoo', duration: 30, isShort: true }
+  ]);
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -57,6 +63,7 @@
     shortsItems: [],
     shortIndex: 0,
     shortPlaying: false,
+    shortsRefresh: null,
     popoutActive: false,
     popoutMode: '',
     popoutOrigin: null,
@@ -380,6 +387,50 @@
       raceController.abort();
       signal?.removeEventListener('abort', abortRace);
     }
+  }
+
+  function uniqueVideos(items = []) {
+    return items.filter((item, index) => item && items.findIndex(other => other?.id === item.id) === index);
+  }
+
+  function refreshOfficialShorts() {
+    if (state.shortsRefresh) return state.shortsRefresh;
+    const officialIds = new Set(OFFICIAL_SHORTS.map(item => item.id));
+    state.shortsRefresh = Promise.allSettled(OFFICIAL_SHORTS.map(async seed => {
+      const path = `/oembed?url=${encodeURIComponent(`https://www.youtube.com/shorts/${seed.id}`)}&format=json`;
+      const data = await fetchJson('https://www.youtube.com', path);
+      if (!(Number(data.height) > Number(data.width))) throw new Error('Not a vertical Short');
+      return normalize({
+        ...seed,
+        title: data.title || seed.title,
+        uploaderName: data.author_name || seed.uploaderName,
+        thumbnail: data.thumbnail_url || thumbnailUrl(seed.id),
+        isShort: true
+      });
+    })).then(results => {
+      const verified = results
+        .filter(result => result.status === 'fulfilled' && result.value)
+        .map(result => result.value);
+      if (!verified.length) return;
+
+      const currentId = state.current?.id || '';
+      const external = state.shortsItems.filter(item => !officialIds.has(item.id));
+      state.shortsItems = uniqueVideos([...external, ...verified]);
+      state.shortIndex = Math.max(0, state.shortsItems.findIndex(item => item.id === currentId));
+      const current = state.shortsItems[state.shortIndex];
+      if (state.view !== 'shorts' || !current) return;
+      state.current = current;
+      dom.shortTitle.textContent = current.title;
+      dom.shortChannel.textContent = current.uploaderName;
+      dom.shortStatus.textContent = `${state.shortIndex + 1} of ${state.shortsItems.length}`;
+      if (!state.shortPlaying) {
+        const source = current.thumbnail || thumbnailUrl(current.id);
+        dom.shortPlayer.style.backgroundImage = `url("${source.replace(/"/g, '%22')}")`;
+      }
+    }).finally(() => {
+      state.shortsRefresh = null;
+    });
+    return state.shortsRefresh;
   }
 
   function attachImageFallbacks(root = document) {
@@ -769,25 +820,12 @@
     if (!options.fromRoute) navigate({ shorts: startId || 'feed' }, options.replace);
 
     const existing = state.items.filter(item => item.isShort || (item.duration > 0 && item.duration <= 90));
-    if (existing.length) state.shortsItems = existing;
+    const official = OFFICIAL_SHORTS.map(normalize).filter(Boolean);
+    state.shortsItems = uniqueVideos([...existing, ...state.shortsItems, ...official]);
     if (startId && !state.shortsItems.some(item => item.id === startId)) {
       const start = state.items.find(item => item.id === startId)
         || normalize({ id: startId, title: 'YouTube Short', uploaderName: 'YouTube', isShort: true });
       if (start) state.shortsItems.unshift(start);
-    }
-
-    if (state.shortsItems.length < 4) {
-      try {
-        const controller = new AbortController();
-        const data = await firstWorking('/search?q=popular%20shorts&filter=videos', controller.signal);
-        const found = (Array.isArray(data) ? data : data.items || [])
-          .filter(item => !item.type || item.type === 'stream')
-          .map(normalize)
-          .filter(Boolean)
-          .filter(item => item.isShort || (item.duration > 0 && item.duration <= 90));
-        const merged = [...state.shortsItems, ...found];
-        state.shortsItems = merged.filter((item, index) => merged.findIndex(other => other.id === item.id) === index);
-      } catch {}
     }
 
     if (!state.shortsItems.length) {
@@ -796,6 +834,7 @@
     }
     state.shortIndex = Math.max(0, state.shortsItems.findIndex(item => item.id === startId));
     renderShort(Boolean(options.autoplay));
+    refreshOfficialShorts().catch(() => {});
   }
 
   function moveShort(direction) {
