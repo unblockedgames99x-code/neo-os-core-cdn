@@ -292,7 +292,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f1855cca5c99137ae067dd3de3b525e4073c4123/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@745ff21379b35225b41045566a0e37c613e6afad/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
