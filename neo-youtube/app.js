@@ -274,7 +274,13 @@
 
   function navigate(params, replace = false) {
     const method = replace ? 'replaceState' : 'pushState';
-    history[method](params, '', historyUrl(params));
+    if (/^https?:$/.test(location.protocol)) {
+      history[method](params, '', historyUrl(params));
+    } else {
+      // srcdoc/blob frames cannot rewrite their URL to the injected CDN base.
+      // State-only history preserves Back/Forward without navigating the frame.
+      history[method]({ neoYouTubeRoute: params }, '');
+    }
   }
 
   function remember(item) {
@@ -718,7 +724,7 @@
     renderShort(true);
   }
 
-  function showLibrary(view) {
+  function showLibrary(view, options = {}) {
     const historyItems = readStorage(HISTORY_KEY, []).map(normalize).filter(Boolean);
     state.items = historyItems;
     state.query = '';
@@ -738,7 +744,7 @@
       dom.resultStatus.textContent = '';
       dom.resultsList.innerHTML = '<div class="empty-state"><div><h2>Sign in to see subscriptions</h2><p>Your YouTube subscriptions stay with your Google account.</p><a href="https://accounts.google.com/ServiceLogin?service=youtube" target="_blank" rel="noopener noreferrer">Sign in</a></div></div>';
     }
-    navigate({ view }, false);
+    if (!options.fromRoute) navigate({ view }, false);
   }
 
   function goHome(replace = false) {
@@ -765,8 +771,13 @@
   }
 
   function routeFromLocation() {
-    const params = new URLSearchParams(location.search);
-    const hashMatch = location.hash.match(/^#watch=([\w-]{11})$/);
+    const embedded = !/^https?:$/.test(location.protocol);
+    const source = new URL(embedded
+      ? document.querySelector('meta[name="neo-source-url"]')?.content || location.href
+      : location.href);
+    const embeddedRoute = embedded && history.state?.neoYouTubeRoute;
+    const params = new URLSearchParams(embeddedRoute || source.search);
+    const hashMatch = !embeddedRoute && source.hash.match(/^#watch=([\w-]{11})$/);
     const videoId = params.get('v') || hashMatch?.[1];
     const shortId = params.get('shorts');
     const query = params.get('q');
@@ -780,7 +791,7 @@
     } else if (query) {
       search(query, { replace: true, fromRoute: true });
     } else if (view) {
-      showLibrary(view);
+      showLibrary(view, { fromRoute: true });
     } else {
       goHome(true);
     }
