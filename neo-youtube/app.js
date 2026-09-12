@@ -113,6 +113,7 @@
   }
 
   function normalize(item = {}) {
+    if (!item || typeof item !== 'object') return null;
     const id = videoIdFrom(item.id || item.url || item.videoId || '');
     if (!id) return null;
     const duration = Number(item.duration || 0);
@@ -311,11 +312,14 @@
     parentSignal?.addEventListener('abort', abort, { once: true });
     const timer = window.setTimeout(() => controller.abort(), CATALOGUE_TIMEOUT_MS);
     try {
-      const response = await fetch(base + path, {
+      const options = {
         signal: controller.signal,
         headers: { Accept: 'application/json' },
         cache: 'default'
-      });
+      };
+      const response = window.NEO_PROXY_CLIENT?.fetch
+        ? await window.NEO_PROXY_CLIENT.fetch(base + path, options)
+        : await fetch(base + path, options);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } finally {
@@ -360,17 +364,30 @@
 
   function attachImageFallbacks(root = document) {
     $$('img[data-video-id]', root).forEach(image => {
+      const setSource = source => {
+        if (!source) return;
+        const request = window.NEO_PROXY_CLIENT?.image
+          ? window.NEO_PROXY_CLIENT.image(source)
+          : Promise.resolve(source);
+        request.then(route => { if (image.isConnected) image.src = route; }).catch(() => { image.hidden = true; });
+      };
       image.addEventListener('error', () => {
         if (image.dataset.fallbackApplied) {
           image.hidden = true;
           return;
         }
         image.dataset.fallbackApplied = '1';
-        image.src = thumbnailUrl(image.dataset.videoId, 'mqdefault');
+        setSource(thumbnailUrl(image.dataset.videoId, 'mqdefault'));
       }, { once: false });
+      setSource(image.dataset.neoSrc || thumbnailUrl(image.dataset.videoId));
     });
     $$('img[data-avatar]', root).forEach(image => {
       image.addEventListener('error', () => { image.hidden = true; }, { once: true });
+      const source = image.dataset.neoSrc;
+      const request = source && window.NEO_PROXY_CLIENT?.image
+        ? window.NEO_PROXY_CLIENT.image(source)
+        : Promise.resolve(source);
+      request.then(route => { if (route && image.isConnected) image.src = route; }).catch(() => { image.hidden = true; });
     });
   }
 
@@ -389,12 +406,12 @@
   function resultCard(item) {
     const duration = formatDuration(item.duration);
     const avatar = item.uploaderAvatar
-      ? `<img data-avatar src="${escapeHtml(item.uploaderAvatar)}" alt="">`
+      ? `<img data-avatar data-neo-src="${escapeHtml(item.uploaderAvatar)}" alt="">`
       : escapeHtml(item.uploaderName.slice(0, 1).toUpperCase());
     return `
       <article class="video-result" tabindex="0" data-video-id="${item.id}">
         <div class="result-thumb">
-          <img data-video-id="${item.id}" src="${item.thumbnail}" alt="" loading="lazy" decoding="async">
+          <img data-video-id="${item.id}" data-neo-src="${escapeHtml(item.thumbnail)}" alt="" loading="lazy" decoding="async">
           ${duration ? `<span class="duration-badge">${duration}</span>` : ''}
         </div>
         <div class="result-info">
@@ -480,6 +497,9 @@
       renderResults(`${cached.length} results • Cached catalogue`);
       return;
     }
+
+    state.items = fallbackResults(q);
+    renderResults("Playable picks ready • Refreshing the live catalogue…");
 
     try {
       const data = await firstWorking(`/search?q=${encodeURIComponent(q)}&filter=videos`, state.request.signal);
@@ -609,7 +629,7 @@
 
   function avatarMarkup(item) {
     return item.uploaderAvatar
-      ? `<img data-avatar src="${escapeHtml(item.uploaderAvatar)}" alt="">`
+      ? `<img data-avatar data-neo-src="${escapeHtml(item.uploaderAvatar)}" alt="">`
       : escapeHtml(item.uploaderName.slice(0, 1).toUpperCase());
   }
 
@@ -620,7 +640,7 @@
     dom.upNext.innerHTML = items.map(item => `
       <article class="next-item" tabindex="0" data-video-id="${item.id}">
         <div class="result-thumb">
-          <img data-video-id="${item.id}" src="${item.thumbnail}" alt="" loading="lazy" decoding="async">
+          <img data-video-id="${item.id}" data-neo-src="${escapeHtml(item.thumbnail)}" alt="" loading="lazy" decoding="async">
           ${formatDuration(item.duration) ? `<span class="duration-badge">${formatDuration(item.duration)}</span>` : ''}
         </div>
         <div class="next-copy"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.uploaderName)}</p><p>${escapeHtml(metaLine(item))}</p></div>
@@ -778,7 +798,9 @@
     const embeddedRoute = embedded && history.state?.neoYouTubeRoute;
     const params = new URLSearchParams(embeddedRoute || source.search);
     const hashMatch = !embeddedRoute && source.hash.match(/^#watch=([\w-]{11})$/);
-    const videoId = params.get('v') || hashMatch?.[1];
+    // The shell used `?v=` as an old asset cache key. Only treat it as a
+    // playback route when it is an actual 11-character YouTube id.
+    const videoId = videoIdFrom(params.get('v') || '') || videoIdFrom(hashMatch?.[1] || '');
     const shortId = params.get('shorts');
     const query = params.get('q');
     const view = params.get('view');

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en" data-neo-app="youtube" data-neo-theme="oled">
 <head>
+  <script src="../neo-ad-shield.js?v=20260912-sitewide-v2"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0f0f0f">
@@ -10,9 +11,11 @@
   <title>YouTube</title>
   <link rel="icon" href="../assets/youtube.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../neo-theme-system.css?v=20260907-theme-system-v2">
-  <link id="neo-youtube-styles" rel="stylesheet" href="./app.css?v=20260911-youtube-fast-catalogue-v3">
-  <script src="../neo-app-theme.js?v=20260911-youtube-lite-v1" defer></script>
-  <script src="./app.js?v=20260911-youtube-fast-catalogue-v3" defer></script>
+  <link id="neo-youtube-styles" rel="stylesheet" href="./app.css?v=20260912-youtube-route-recovery-v1">
+  <script src="../neo-app-theme.js?v=20260912-acrylic-theme-v1" defer></script>
+  <script src="../neo-link-proxy.js?v=20260912-all-links-v2"></script>
+  <script src="../neo-proxy-client.js?v=20260912-resource-proxy-v1"></script>
+  <script src="./app.js?v=20260912-youtube-proxy-v2" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true">
@@ -68,10 +71,6 @@
       <button class="nav-item" type="button" data-view="you"><svg><use href="#i-you"/></svg><span>You</span></button>
       <button class="nav-item" type="button" data-view="history"><svg><use href="#i-history"/></svg><span>History</span></button>
     </nav>
-    <section class="signin-panel">
-      <p>Sign in to like videos, comment, and subscribe.</p>
-      <a class="sign-in" href="https://accounts.google.com/ServiceLogin?service=youtube" target="_blank" rel="noopener noreferrer"><svg><use href="#i-user"/></svg><span>Sign in</span></a>
-    </section>
     <section class="nav-section">
       <h2>Explore</h2>
       <button class="nav-item" type="button" data-search-preset="music"><svg><use href="#i-music"/></svg><span>Music</span></button>
