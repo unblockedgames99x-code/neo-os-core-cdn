@@ -275,7 +275,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@888dc0cbff7397ba15173b378fa64bddaf478c06/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@d45b537662807628924c714225038a7ecbc11c75/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -305,7 +305,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@c6b39bc7050858f7ec42b0732c405dc34b4ce04a/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@6eb5d074f3138fa614769416d0f85b588794aa53/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -631,21 +631,21 @@
 
   function iconMarkup(name) {
     if (name === "stream") {
-      return '<img class="app-image-icon spotify-vector" src="./assets/spotify-official.png?v=20260827-user-artwork-v1" width="512" height="512" alt="">';
+      return '<img class="app-image-icon spotify-vector" src="./assets/spotify-official.a2ea1afb0cd95abb.webp?v=20260827-user-artwork-v1" width="512" height="512" alt="">';
     }
     var imageIcons = {
-      code: "./assets/vscode-official.png",
-      duckduckgo: "./assets/duckduckgo.png",
-      chat: "./assets/imessage-logo.png?v=20260908-imessage-logo-v2",
-      "geometry-dash": "./assets/geometry-dash.png",
+      code: "./assets/vscode-official.cdd07e8086b48217.webp",
+      duckduckgo: "./assets/duckduckgo.1233e0f05f2c79e7.webp",
+      chat: "./assets/imessage-logo.3acd2a57e60c5fb9.webp?v=20260908-imessage-logo-v2",
+      "geometry-dash": "./assets/geometry-dash.1355963daaf6624a.webp",
       "google-drive": "./assets/google-drive.svg?v=20260824-drive-logo-v3",
       wallpaper: "./assets/wallpaper-engine.png",
       "media-player": "./assets/media-player.svg?v=20260827-high-resolution-v1",
       "html-games": "./assets/html-games.svg?v=20260827-blue-controller-v1",
       "neo-cloud": "./assets/neo-cloud.svg?v=20260901-cloud-logo-v2",
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
-      discord: "./assets/discord-official.png?v=20260828-user-artwork-v2",
-      youtube: "./assets/youtube-official.webp?v=20260828-user-artwork-v1",
+      discord: "./assets/discord-official.2910de11b970480d.webp?v=20260828-user-artwork-v2",
+      youtube: "./assets/youtube-official.8068a0be4bb21f6e.webp?v=20260828-user-artwork-v1",
       chatgpt: "./assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1"
     };
     if (imageIcons[name]) return '<img class="app-image-icon" src="' + imageIcons[name] + '" width="24" height="24" alt="">';
@@ -7242,29 +7242,18 @@
     }, 240);
   }
 
-  function waitForBootVideo(video, minimumDelay) {
-    var minimum = new Promise(function (resolve) { window.setTimeout(resolve, minimumDelay); });
-    if (!video || video.readyState >= 2) return minimum;
-    var videoReady = new Promise(function (resolve) {
-      var settled = false;
-      function done() {
-        if (settled) return;
-        settled = true;
-        video.removeEventListener("loadeddata", done);
-        video.removeEventListener("error", done);
-        resolve();
-      }
-      video.addEventListener("loadeddata", done, { once: true });
-      video.addEventListener("error", done, { once: true });
-    });
-    var videoGuard = new Promise(function (resolve) { window.setTimeout(resolve, 1800); });
-    return Promise.all([minimum, Promise.race([videoReady, videoGuard])]);
+  function waitForBootVideo() {
+    // The animation is feedback, not a dependency of the desktop. Shell scripts
+    // are deferred behind styles and initialization has finished at this point.
+    // Yield a paint without holding an otherwise ready desktop for 1.4 seconds
+    // (or waiting for a decorative video that may be offline).
+    return new Promise(function (resolve) { requestAnimationFrame(resolve); });
   }
 
   function performBoot() {
     var video = document.querySelector("[data-universal-loading-video]");
     playBootVideo(video, true);
-    waitForBootVideo(video, 1400).then(function () {
+    waitForBootVideo().then(function () {
       requestAnimationFrame(function () {
         root.dataset.boot = "complete";
         try { sessionStorage.setItem(BOOT_SESSION_KEY, "1"); } catch (error) {}
@@ -7301,7 +7290,7 @@
     }
 
     function waitForUniversalLoader() {
-      return waitForBootVideo(universalLoaderVideo, 1400);
+      return waitForBootVideo();
     }
 
     function finish(mode) {

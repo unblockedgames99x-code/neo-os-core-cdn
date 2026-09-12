@@ -764,7 +764,7 @@
         <button type="button" data-browser-forward aria-label="Go forward">${icon("arrow-right")}</button>
         <button type="button" data-browser-reload aria-label="Reload page">${icon("refresh")}</button>
         <form class="neo-browser-address" data-browser-address-form>
-          <span class="neo-browser-address-mark" aria-hidden="true"><img src="/neo-os/assets/duckduckgo.png" width="17" height="17" alt="" /></span>
+          <span class="neo-browser-address-mark" aria-hidden="true"><img src="/neo-os/assets/duckduckgo.1233e0f05f2c79e7.webp" width="17" height="17" alt="" /></span>
           <label class="sr-only" for="neo-runtime-address">Address or search</label>
           <input id="neo-runtime-address" data-browser-address autocomplete="off" spellcheck="false" placeholder="Search DuckDuckGo or type a URL" aria-label="Address or search" />
           <button type="submit" data-browser-submit aria-label="Open address">${icon("arrow-right")}</button>
@@ -1509,7 +1509,7 @@
 
     function updateTabIcon(tab) {
       if (!tab?.icon) return;
-      let iconHref = "/neo-os/assets/duckduckgo.png";
+      let iconHref = "/neo-os/assets/duckduckgo.1233e0f05f2c79e7.webp";
       try {
         const document = tab.frame.contentDocument;
         const icon = document?.querySelector('link[rel~="icon"][href], link[rel="shortcut icon"][href]');
@@ -1720,7 +1720,7 @@
       element.dataset.tabId = id;
       element.innerHTML = `
         <button class="neo-browser-tab" type="button" role="tab" aria-selected="false" tabindex="-1">
-          <img class="neo-browser-tab-icon" src="/neo-os/assets/duckduckgo.png" width="16" height="16" alt="" />
+          <img class="neo-browser-tab-icon" src="/neo-os/assets/duckduckgo.1233e0f05f2c79e7.webp" width="16" height="16" alt="" />
           <span class="neo-browser-tab-label"></span>
         </button>
         <button class="neo-browser-tab-close" type="button" aria-label="Close tab"><span aria-hidden="true">&times;</span></button>

@@ -390,7 +390,7 @@ html[data-neo-app="chat"] #aw .neo-avatar-placeholder {
 
 html[data-neo-app="chat"] #aw .titlebar .tbi {
   background-color: transparent !important;
-  background-image: url("./assets/imessage-logo.png?v=20260908-imessage-logo-v2") !important;
+  background-image: url("./assets/imessage-logo.3acd2a57e60c5fb9.webp?v=20260908-imessage-logo-v2") !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: contain !important;
