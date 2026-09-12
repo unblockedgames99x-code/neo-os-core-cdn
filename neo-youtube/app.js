@@ -5,28 +5,10 @@
     'https://pipedapi.ducks.party',
     'https://api.piped.private.coffee'
   ];
-  const CATALOGUE_TIMEOUT_MS = 4500;
+  const CATALOGUE_TIMEOUT_MS = 12000;
   const SEARCH_CACHE_MS = 10 * 60 * 1000;
   const HISTORY_KEY = 'neo_youtube_history_v2';
-  const CACHE_PREFIX = 'neo_youtube_search_v2:';
-  const FALLBACK_ITEMS = [
-    ['dYCLldrYMu4', 'OpenView featured video', 'OpenView', 0],
-    ['aqz-KE-bpKQ', 'Big Buck Bunny — short film', 'Blender Foundation', 596],
-    ['ScMzIvxBSi4', 'Creative Commons animation showcase', 'Blender Foundation', 76],
-    ['M7lc1UVf-VE', 'YouTube player demonstration', 'Google Developers', 284],
-    ['jNQXAC9IVRw', 'Me at the zoo', 'jawed', 19],
-    ['LXb3EKWsInQ', 'Costa Rica in 4K', 'Jacob + Katie Schwarz', 314]
-  ].map(([id, title, uploaderName, duration]) => ({
-    id,
-    title,
-    uploaderName,
-    duration,
-    views: '',
-    uploadedDate: 'Featured',
-    description: '',
-    isShort: duration > 0 && duration <= 60,
-    thumbnail: thumbnailUrl(id)
-  }));
+  const CACHE_PREFIX = 'neo_youtube_search_v3:';
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -126,7 +108,7 @@
       uploadedDate: String(item.uploadedDate || item.publishedText || item.uploaded || ''),
       duration,
       description: String(item.shortDescription || item.description || ''),
-      thumbnail: thumbnailUrl(id),
+      thumbnail: /^https:\/\//i.test(item.thumbnail || '') ? String(item.thumbnail) : thumbnailUrl(id),
       isShort: Boolean(item.isShort) || (duration > 0 && duration <= 60)
     };
   }
@@ -312,14 +294,13 @@
     parentSignal?.addEventListener('abort', abort, { once: true });
     const timer = window.setTimeout(() => controller.abort(), CATALOGUE_TIMEOUT_MS);
     try {
-      const options = {
+      const response = await fetch(base + path, {
         signal: controller.signal,
         headers: { Accept: 'application/json' },
-        cache: 'default'
-      };
-      const response = window.NEO_PROXY_CLIENT?.fetch
-        ? await window.NEO_PROXY_CLIENT.fetch(base + path, options)
-        : await fetch(base + path, options);
+        cache: 'no-store',
+        credentials: 'omit',
+        mode: 'cors'
+      });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } finally {
@@ -350,26 +331,17 @@
     }
   }
 
-  function fallbackResults(query) {
-    const words = String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
-    if (!words.length) return [...FALLBACK_ITEMS];
-    return [...FALLBACK_ITEMS].sort((a, b) => {
-      const score = item => {
-        const text = `${item.title} ${item.uploaderName}`.toLowerCase();
-        return words.reduce((total, word) => total + (text.includes(word) ? 1 : 0), 0);
-      };
-      return score(b) - score(a);
-    });
-  }
-
   function attachImageFallbacks(root = document) {
     $$('img[data-video-id]', root).forEach(image => {
-      const setSource = source => {
+      const setSource = (source, useProxy = true) => {
         if (!source) return;
-        const request = window.NEO_PROXY_CLIENT?.image
-          ? window.NEO_PROXY_CLIENT.image(source)
-          : Promise.resolve(source);
-        request.then(route => { if (image.isConnected) image.src = route; }).catch(() => { image.hidden = true; });
+        image.hidden = false;
+        image.src = source;
+        if (useProxy && window.NEO_PROXY_CLIENT?.image) {
+          window.NEO_PROXY_CLIENT.image(source).then(route => {
+            if (route && image.isConnected) image.src = route;
+          }).catch(() => {});
+        }
       };
       image.addEventListener('error', () => {
         if (image.dataset.fallbackApplied) {
@@ -377,17 +349,20 @@
           return;
         }
         image.dataset.fallbackApplied = '1';
-        setSource(thumbnailUrl(image.dataset.videoId, 'mqdefault'));
+        setSource(thumbnailUrl(image.dataset.videoId, 'mqdefault'), false);
       }, { once: false });
       setSource(image.dataset.neoSrc || thumbnailUrl(image.dataset.videoId));
     });
     $$('img[data-avatar]', root).forEach(image => {
       image.addEventListener('error', () => { image.hidden = true; }, { once: true });
       const source = image.dataset.neoSrc;
-      const request = source && window.NEO_PROXY_CLIENT?.image
-        ? window.NEO_PROXY_CLIENT.image(source)
-        : Promise.resolve(source);
-      request.then(route => { if (route && image.isConnected) image.src = route; }).catch(() => { image.hidden = true; });
+      if (!source) return;
+      image.src = source;
+      if (window.NEO_PROXY_CLIENT?.image) {
+        window.NEO_PROXY_CLIENT.image(source).then(route => {
+          if (route && image.isConnected) image.src = route;
+        }).catch(() => {});
+      }
     });
   }
 
@@ -473,7 +448,7 @@
     if (!q) return;
     const directId = videoIdFrom(q);
     if (directId) {
-      const existing = [...state.items, ...FALLBACK_ITEMS].find(item => item.id === directId)
+      const existing = state.items.find(item => item.id === directId)
         || normalize({ id: directId, title: 'YouTube video', uploaderName: 'YouTube' });
       openVideo(existing, options.replace);
       return;
@@ -498,9 +473,6 @@
       return;
     }
 
-    state.items = fallbackResults(q);
-    renderResults("Playable picks ready • Refreshing the live catalogue…");
-
     try {
       const data = await firstWorking(`/search?q=${encodeURIComponent(q)}&filter=videos`, state.request.signal);
       const items = (Array.isArray(data) ? data : data.items || [])
@@ -514,8 +486,10 @@
     } catch (error) {
       if (state.request.signal.aborted) return;
       state.provider = '';
-      state.items = fallbackResults(q);
-      renderResults('Live catalogue unavailable • Showing playable picks');
+      state.items = [];
+      dom.resultStatus.textContent = 'Live video search could not connect';
+      dom.resultsList.innerHTML = `
+        <div class="empty-state"><div><h2>Videos could not load</h2><p>Check the connection, then search again.</p></div></div>`;
     }
   }
 
@@ -634,7 +608,7 @@
   }
 
   function renderUpNext(current) {
-    const items = (state.items.length ? state.items : FALLBACK_ITEMS)
+    const items = state.items
       .filter(item => item.id !== current.id)
       .slice(0, 12);
     dom.upNext.innerHTML = items.map(item => `
@@ -648,7 +622,7 @@
     attachImageFallbacks(dom.upNext);
     $$('.next-item', dom.upNext).forEach(card => {
       const open = () => {
-        const item = [...state.items, ...FALLBACK_ITEMS].find(entry => entry.id === card.dataset.videoId);
+        const item = state.items.find(entry => entry.id === card.dataset.videoId);
         if (item) openVideo(item);
       };
       card.addEventListener('click', open);
@@ -683,7 +657,13 @@
     state.current = item;
     remember(item);
     destroyPlayer();
-    dom.shortPlayer.style.backgroundImage = `url("${thumbnailUrl(item.id)}")`;
+    const shortThumbnail = item.thumbnail || thumbnailUrl(item.id);
+    dom.shortPlayer.style.backgroundImage = `url("${shortThumbnail.replace(/"/g, '%22')}")`;
+    if (window.NEO_PROXY_CLIENT?.image) {
+      window.NEO_PROXY_CLIENT.image(shortThumbnail).then(route => {
+        if (state.current?.id === item.id) dom.shortPlayer.style.backgroundImage = `url("${String(route).replace(/"/g, '%22')}")`;
+      }).catch(() => {});
+    }
     dom.shortPlayer.replaceChildren(dom.shortPlay);
     dom.shortPlay.hidden = false;
     dom.shortTitle.textContent = item.title;
@@ -710,9 +690,9 @@
     if (!options.fromRoute) navigate({ shorts: startId || 'feed' }, options.replace);
 
     const existing = state.items.filter(item => item.isShort || (item.duration > 0 && item.duration <= 90));
-    if (existing.length >= 4) state.shortsItems = existing;
+    if (existing.length) state.shortsItems = existing;
     if (startId && !state.shortsItems.some(item => item.id === startId)) {
-      const start = [...state.items, ...FALLBACK_ITEMS].find(item => item.id === startId)
+      const start = state.items.find(item => item.id === startId)
         || normalize({ id: startId, title: 'YouTube Short', uploaderName: 'YouTube', isShort: true });
       if (start) state.shortsItems.unshift(start);
     }
@@ -732,7 +712,8 @@
     }
 
     if (!state.shortsItems.length) {
-      state.shortsItems = FALLBACK_ITEMS.filter(item => item.duration > 0 && item.duration <= 90);
+      dom.shortStatus.textContent = 'Shorts could not load. Check the connection and try again.';
+      return;
     }
     state.shortIndex = Math.max(0, state.shortsItems.findIndex(item => item.id === startId));
     renderShort(Boolean(options.autoplay));
@@ -800,7 +781,7 @@
     const query = params.get('q');
     const view = params.get('view');
     if (videoId) {
-      const item = [...state.items, ...FALLBACK_ITEMS].find(entry => entry.id === videoId)
+      const item = state.items.find(entry => entry.id === videoId)
         || normalize({ id: videoId, title: 'YouTube video', uploaderName: 'YouTube' });
       openVideo(item, true);
     } else if (shortId) {
