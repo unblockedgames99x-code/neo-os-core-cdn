@@ -292,7 +292,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@745ff21379b35225b41045566a0e37c613e6afad/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@adbba98ed291a843f394a5278796e50b4eb524f6/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -322,7 +322,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@c3134ce5c1a64fdc1b2ca4784f528539d054e3fb/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@314393fa5da6da920be825bfbb40e4b88150f6e9/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -620,6 +620,25 @@
     renderDock();
     renderDesktopShortcuts();
     renderLauncher();
+    return publicAppRecord(app);
+  }
+
+  function addCustomAppToTaskbarAndHomeScreen(input) {
+    input = input && typeof input === "object" ? input : {};
+    var url = normalizeCustomAppUrl(input.url);
+    var app = Object.keys(apps).map(function (id) { return apps[id]; }).find(function (candidate) {
+      return candidate && candidate.custom && candidate.sourceUrl === url;
+    });
+    if (!app) {
+      var installed = installCustomApp({ title: input.title, url: url, icon: input.icon, mode: "relay" });
+      app = apps[installed.id];
+    } else if (!app.installed) {
+      setAppInstalled(app.id, true);
+    }
+    hiddenDesktopShortcutIds.delete(app.id);
+    writeJson(DESKTOP_SHORTCUT_HIDDEN_KEY, Array.from(hiddenDesktopShortcutIds));
+    setAppPinned(app.id, true);
+    renderDesktopShortcuts();
     return publicAppRecord(app);
   }
 
@@ -5098,7 +5117,27 @@
 
   function handleProxyBridgeMessage(event) {
     var data = event.data;
-    if (!data || (data.type !== "neo-shell:proxy-open" && data.type !== "neo-shell:proxy-embed" && data.type !== "neo-shell:proxy-resource")) return;
+    if (!data || typeof data !== "object") return;
+    if (data.type === "neo-shell:add-game-shortcut") {
+      if (!ownsFrameWindow(event.source)) return;
+      var shortcutReply = function (payload) {
+        try {
+          event.source.postMessage(Object.assign({
+            type: "neo-shell:add-game-shortcut-result",
+            id: String(data.id || "")
+          }, payload), "*");
+        } catch (_error) {}
+      };
+      try {
+        var installedApp = addCustomAppToTaskbarAndHomeScreen(data.game);
+        showToast("Added to taskbar", installedApp.title + " was also added to the home screen.", "apps");
+        shortcutReply({ ok: true, app: installedApp });
+      } catch (error) {
+        shortcutReply({ ok: false, error: error && error.message ? error.message : "This game could not be added." });
+      }
+      return;
+    }
+    if (data.type !== "neo-shell:proxy-open" && data.type !== "neo-shell:proxy-embed" && data.type !== "neo-shell:proxy-resource") return;
     if (!ownsFrameWindow(event.source)) return;
     var target = normalizedProxyTarget(data.href);
     if (!target) return;
