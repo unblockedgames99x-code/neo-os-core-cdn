@@ -10,9 +10,9 @@
   <title>YouTube</title>
   <link rel="icon" href="../assets/youtube.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../neo-theme-system.css?v=20260907-theme-system-v2">
-  <link id="neo-youtube-styles" rel="stylesheet" href="./app.css?v=20260911-youtube-popout-v1">
+  <link id="neo-youtube-styles" rel="stylesheet" href="./app.css?v=20260911-youtube-seamless-popout-v2">
   <script src="../neo-app-theme.js?v=20260911-youtube-lite-v1" defer></script>
-  <script src="./app.js?v=20260911-youtube-popout-v1" defer></script>
+  <script src="./app.js?v=20260911-youtube-seamless-popout-v2" defer></script>
 </head>
 <body>
   <svg class="icon-library" aria-hidden="true">
@@ -165,14 +165,13 @@
   </main>
 
   <aside class="video-popout" data-video-popout hidden aria-label="Popped out video">
-    <div class="video-popout-bar" data-popout-drag>
-      <strong data-popout-title>YouTube video</strong>
-      <div>
-        <button type="button" data-popout-restore aria-label="Restore video" title="Restore video"><svg><use href="#i-popout"/></svg></button>
-        <button type="button" data-popout-close aria-label="Close video" title="Close video"><svg><use href="#i-close"/></svg></button>
-      </div>
+    <div class="video-popout-drag" data-popout-drag aria-label="Drag popped-out video" title="Drag video">
+      <span aria-hidden="true"></span>
     </div>
-    <div class="video-popout-stage" data-popout-stage></div>
+    <div class="video-popout-controls">
+      <button type="button" data-popout-restore aria-label="Restore video" title="Restore video"><svg><use href="#i-popout"/></svg></button>
+      <button type="button" data-popout-close aria-label="Close video" title="Close video"><svg><use href="#i-close"/></svg></button>
+    </div>
   </aside>
 
   <div class="toast" role="status" aria-live="polite" data-toast-region hidden></div>

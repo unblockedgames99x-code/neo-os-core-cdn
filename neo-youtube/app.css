@@ -535,22 +535,6 @@ svg {
 
 .player-placeholder svg { width: 64px; height: 64px; opacity: .75; }
 
-.popout-placeholder {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 10px;
-  border: 0;
-  background: #000;
-  color: #fff;
-  cursor: pointer;
-}
-
-.popout-placeholder svg { width: 34px; height: 34px; }
-.popout-placeholder span { font-size: 14px; font-weight: 600; }
 .watch-title { margin: 14px 0 10px; font-size: 20px; line-height: 1.35; }
 .watch-details { justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .channel-block { gap: 11px; min-width: 0; }
@@ -719,44 +703,57 @@ svg {
 
 .video-popout {
   position: fixed;
-  z-index: 90;
-  right: 20px;
-  bottom: 20px;
-  width: min(430px, calc(100vw - 40px));
-  overflow: hidden;
-  border: 1px solid var(--yt-line);
-  border-radius: 12px;
-  background: #000;
-  box-shadow: 0 14px 42px rgba(0, 0, 0, .55);
+  z-index: 100;
+  inset: 0;
+  pointer-events: none;
 }
 
-.video-popout[data-mode="shorts"] { width: min(264px, calc(100vw - 40px)); }
-
-.video-popout-bar {
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 6px 0 12px;
-  background: var(--yt-surface);
-  color: var(--yt-text);
+.video-popout-drag {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 88px;
+  left: 0;
+  height: 30px;
   cursor: move;
   touch-action: none;
   user-select: none;
+  pointer-events: auto;
 }
 
-.video-popout-bar strong {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
+.video-popout-drag span {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .62);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .75);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity .15s ease;
 }
 
-.video-popout-bar > div { display: flex; }
+.video-popout:hover .video-popout-drag span,
+.video-popout-drag:active span { opacity: 1; }
 
-.video-popout-bar button {
+.video-popout-controls {
+  position: absolute;
+  z-index: 3;
+  top: 7px;
+  right: 7px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity .15s ease;
+  pointer-events: auto;
+}
+
+.video-popout:hover .video-popout-controls,
+.video-popout-controls:focus-within { opacity: 1; }
+
+.video-popout-controls button {
   width: 34px;
   height: 34px;
   display: grid;
@@ -764,17 +761,67 @@ svg {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: transparent;
-  color: var(--yt-text);
+  background: rgba(0, 0, 0, .68);
+  color: #fff;
   cursor: pointer;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, .45);
 }
 
-.video-popout-bar button:hover { background: var(--yt-hover); }
-.video-popout-bar svg { width: 19px; height: 19px; }
+.video-popout-controls button:hover { background: rgba(32, 32, 32, .92); }
+.video-popout-controls svg { width: 19px; height: 19px; }
 
-.video-popout-stage { width: 100%; aspect-ratio: 16 / 9; background: #000; }
-.video-popout[data-mode="shorts"] .video-popout-stage { aspect-ratio: 9 / 16; max-height: min(66vh, 520px); }
-.video-popout-stage iframe { width: 100%; height: 100%; display: block; border: 0; }
+html.has-video-popout,
+html.has-video-popout body { background: #000; }
+
+body.has-video-popout .masthead,
+body.has-video-popout .sidebar { display: none !important; }
+
+body.has-video-popout .content {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+body.has-video-popout[data-popout-mode="watch"] .content > :not(.watch-view),
+body.has-video-popout[data-popout-mode="watch"] .watch-view > :not(.watch-layout),
+body.has-video-popout[data-popout-mode="watch"] .watch-layout > :not(.watch-primary),
+body.has-video-popout[data-popout-mode="watch"] .watch-primary > :not(.player-shell) { display: none !important; }
+
+body.has-video-popout[data-popout-mode="watch"] .watch-view,
+body.has-video-popout[data-popout-mode="watch"] .watch-layout,
+body.has-video-popout[data-popout-mode="watch"] .watch-primary,
+body.has-video-popout[data-popout-mode="watch"] .player-shell {
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  aspect-ratio: auto;
+}
+
+body.has-video-popout[data-popout-mode="shorts"] .content > :not(.shorts-view),
+body.has-video-popout[data-popout-mode="shorts"] .shorts-stage > :not(.short-card),
+body.has-video-popout[data-popout-mode="shorts"] .short-card > :not(.short-player) { display: none !important; }
+
+body.has-video-popout[data-popout-mode="shorts"] .shorts-view,
+body.has-video-popout[data-popout-mode="shorts"] .shorts-stage,
+body.has-video-popout[data-popout-mode="shorts"] .short-card,
+body.has-video-popout[data-popout-mode="shorts"] .short-player {
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
 
 .toast {
   position: fixed;
@@ -823,8 +870,7 @@ svg {
   .watch-actions span { display: none; }
   .watch-actions button,
   .watch-actions a { width: 38px; padding: 0; justify-content: center; }
-  .video-popout { right: 10px; bottom: 10px; width: min(390px, calc(100vw - 20px)); }
-  .video-popout[data-mode="shorts"] { width: min(240px, calc(100vw - 20px)); }
+  .video-popout-drag { right: 82px; }
   .shorts-view { padding: 8px; }
   .shorts-stage { min-height: calc(100vh - var(--yt-header-height) - 36px); gap: 8px; }
   .short-card { height: min(calc(100vh - var(--yt-header-height) - 48px), 730px); min-height: 360px; }

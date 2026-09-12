@@ -53,8 +53,6 @@
     shortChannel: $('[data-short-channel]'),
     shortStatus: $('[data-short-status]'),
     popout: $('[data-video-popout]'),
-    popoutStage: $('[data-popout-stage]'),
-    popoutTitle: $('[data-popout-title]'),
     popoutRestore: $('[data-popout-restore]'),
     popoutClose: $('[data-popout-close]'),
     searchForm: $('[data-search-form]'),
@@ -203,21 +201,38 @@
     announceMedia(Boolean(frame), false);
   }
 
+  function setPopoutPresentation(active, mode = state.popoutMode) {
+    const source = state.popoutOrigin;
+    dom.body.classList.toggle('has-video-popout', active);
+    document.documentElement.classList.toggle('has-video-popout', active);
+    if (active) {
+      dom.body.dataset.popoutMode = mode;
+      document.documentElement.dataset.popoutMode = mode;
+      source?.classList.add('is-popout-source');
+    } else {
+      delete dom.body.dataset.popoutMode;
+      delete document.documentElement.dataset.popoutMode;
+      source?.classList.remove('is-popout-source');
+    }
+    dom.popout.hidden = !active;
+    if (active) dom.popout.dataset.mode = mode;
+    else dom.popout.removeAttribute('data-mode');
+    postShell({
+      type: 'neo-shell:youtube-popout',
+      active,
+      mode: active ? mode : '',
+      title: state.current?.title || 'YouTube video'
+    });
+  }
+
   function destroyPlayer() {
     const popoutOrigin = state.popoutOrigin;
     const popoutMode = state.popoutMode;
     if (state.playerFrame) pauseFrame(state.playerFrame);
+    if (state.popoutActive) setPopoutPresentation(false, popoutMode);
     state.popoutActive = false;
     state.popoutMode = '';
     state.popoutOrigin = null;
-    dom.popout.hidden = true;
-    dom.popout.removeAttribute('data-mode');
-    dom.popoutStage.replaceChildren();
-    dom.popout.style.removeProperty('left');
-    dom.popout.style.removeProperty('top');
-    dom.popout.style.removeProperty('right');
-    dom.popout.style.removeProperty('bottom');
-    dom.body.classList.remove('has-video-popout');
     $$('[data-popout-video], [data-popout-short]').forEach(button => button.setAttribute('aria-pressed', 'false'));
     if (state.playerFrame) {
       state.playerFrame.remove();
@@ -499,16 +514,6 @@
     return iframe;
   }
 
-  function popoutPlaceholder(mode) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'popout-placeholder';
-    button.innerHTML = `${icon('popout')}<span>Playing in pop-out</span>`;
-    button.addEventListener('click', restorePopout);
-    if (mode === 'shorts') dom.shortPlayer.replaceChildren(button);
-    else dom.player.replaceChildren(button);
-  }
-
   function openPopout(mode = state.view) {
     if (!state.playerFrame && mode === 'shorts') playCurrentShort();
     const frame = state.playerFrame;
@@ -523,16 +528,7 @@
     state.popoutActive = true;
     state.popoutMode = mode === 'shorts' ? 'shorts' : 'watch';
     state.popoutOrigin = frame.parentElement;
-    dom.popoutTitle.textContent = state.current?.title || 'YouTube video';
-    dom.popout.style.removeProperty('left');
-    dom.popout.style.removeProperty('top');
-    dom.popout.style.removeProperty('right');
-    dom.popout.style.removeProperty('bottom');
-    dom.popout.dataset.mode = state.popoutMode;
-    dom.popoutStage.replaceChildren(frame);
-    dom.popout.hidden = false;
-    dom.body.classList.add('has-video-popout');
-    popoutPlaceholder(state.popoutMode);
+    setPopoutPresentation(true, state.popoutMode);
     const selector = state.popoutMode === 'shorts' ? '[data-popout-short]' : '[data-popout-video]';
     $(selector)?.setAttribute('aria-pressed', 'true');
     showToast('Video popped out');
@@ -549,16 +545,9 @@
     }
     state.popoutActive = false;
     state.popoutMode = '';
+    setPopoutPresentation(false, mode);
     state.popoutOrigin = null;
-    dom.popout.hidden = true;
-    dom.popout.removeAttribute('data-mode');
-    dom.popout.style.removeProperty('left');
-    dom.popout.style.removeProperty('top');
-    dom.popout.style.removeProperty('right');
-    dom.popout.style.removeProperty('bottom');
-    dom.body.classList.remove('has-video-popout');
     $$('[data-popout-video], [data-popout-short]').forEach(button => button.setAttribute('aria-pressed', 'false'));
-    origin.replaceChildren(state.playerFrame);
     if (mode === 'shorts') {
       dom.shortCard.classList.add('is-playing');
       state.shortPlaying = true;
@@ -573,23 +562,24 @@
 
   function beginPopoutDrag(event) {
     if (!state.popoutActive || event.button !== 0 || event.target.closest('button')) return;
-    const rect = dom.popout.getBoundingClientRect();
-    const offsetX = event.clientX - rect.left;
-    const offsetY = event.clientY - rect.top;
     const pointerId = event.pointerId;
     event.currentTarget.setPointerCapture?.(pointerId);
     event.preventDefault();
+    const send = (phase, pointerEvent) => postShell({
+      type: 'neo-shell:youtube-popout-drag',
+      phase,
+      pointerId,
+      screenX: Number(pointerEvent.screenX) || 0,
+      screenY: Number(pointerEvent.screenY) || 0
+    });
+    send('start', event);
     const move = moveEvent => {
       if (moveEvent.pointerId !== pointerId) return;
-      const left = Math.max(8, Math.min(innerWidth - rect.width - 8, moveEvent.clientX - offsetX));
-      const top = Math.max(8, Math.min(innerHeight - rect.height - 8, moveEvent.clientY - offsetY));
-      dom.popout.style.left = `${left}px`;
-      dom.popout.style.top = `${top}px`;
-      dom.popout.style.right = 'auto';
-      dom.popout.style.bottom = 'auto';
+      send('move', moveEvent);
     };
     const end = endEvent => {
       if (endEvent.pointerId !== pointerId) return;
+      send('end', endEvent);
       document.removeEventListener('pointermove', move);
       document.removeEventListener('pointerup', end);
       document.removeEventListener('pointercancel', end);
