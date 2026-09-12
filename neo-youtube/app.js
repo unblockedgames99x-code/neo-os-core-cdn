@@ -515,13 +515,34 @@
       params.set('playlist', item.id);
     }
     if (location.origin && location.origin !== 'null') params.set('origin', location.origin);
-    iframe.src = `https://www.youtube-nocookie.com/embed/${item.id}?${params}`;
+    const officialSource = `https://www.youtube-nocookie.com/embed/${item.id}?${params}`;
+    iframe.dataset.officialSource = officialSource;
+    iframe.src = officialSource;
     iframe.title = item.title;
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
     iframe.allowFullscreen = true;
     iframe.referrerPolicy = 'strict-origin-when-cross-origin';
     iframe.loading = 'eager';
     state.playerFrame = iframe;
+    window.setTimeout(() => {
+      if (state.playerFrame !== iframe || iframe.dataset.neoTrustedEmbed === 'youtube') return;
+      let rendered = false;
+      try {
+        const frameDocument = iframe.contentDocument;
+        rendered = Boolean(frameDocument?.querySelector('.html5-video-player, #movie_player, video'));
+      } catch {
+        rendered = true;
+      }
+      if (rendered) return;
+      iframe.dataset.neoTrustedEmbed = 'youtube';
+      iframe.dataset.neoPlaybackRecovered = 'true';
+      delete iframe.dataset.neoProxyReady;
+      delete iframe.dataset.neoProxyError;
+      delete iframe.dataset.neoProxyRequestId;
+      delete iframe.dataset.neoProxySource;
+      iframe.src = officialSource;
+      announceMedia(true, autoplay, item);
+    }, 4500);
     announceMedia(true, autoplay, item);
     return iframe;
   }
