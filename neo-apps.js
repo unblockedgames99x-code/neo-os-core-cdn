@@ -8,7 +8,7 @@
       subtitle: "Search, stream, queue, and organize your music",
       icon: "stream",
       template: "browser-template",
-      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@b63d73a816fd44d2f212b07a40c1dc13e3819ffe/music-v2/launch.svg",
+      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@ba4b9ce6cb5132cfde2dcec2cbf946ee7446e26b/music-v2/launch.svg",
       browserDirect: true,
       browserChrome: false,
       browserTheme: "stream-music",
@@ -25,7 +25,7 @@
       title: "Discord",
       subtitle: "Messages, calls, and communities",
       icon: "discord",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@fca446f8a408acee04ff61b2a8264cf4181e8dc6/NEO-BROWSER/index.html?neo-app-mode=1&neo-app-target=https%3A%2F%2Fdiscord.com%2Fapp",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@3329a419153b945f7046df0197b279375da75f37/NEO-BROWSER/index.html?neo-app-mode=1&neo-app-target=https%3A%2F%2Fdiscord.com%2Fapp",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -53,7 +53,7 @@
       title: "Games",
       subtitle: "4,292 games from the Greatest Greatest master list",
       icon: "xbox-games",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@605daa920183fbcb4df7d9197c287b9eebacf8be/neo-games/index.html?build=20260912-master-list-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@29ef42aa35d3f885d5574c63f3fafe4b2d36a8d6/neo-games/index.html?build=20260912-master-list-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -68,7 +68,7 @@
       title: "Movies",
       subtitle: "Profiles, full movie library, series, and My List",
       icon: "movies",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@605daa920183fbcb4df7d9197c287b9eebacf8be/neo-tv/index.html?build=20260912-media-fallback-v9",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@29ef42aa35d3f885d5574c63f3fafe4b2d36a8d6/neo-tv/index.html?build=20260912-media-fallback-v9",
       keepAlive: true,
       width: 1180,
       height: 760,
@@ -96,7 +96,7 @@
       title: "NEO Cloud",
       subtitle: "Cloud gaming",
       icon: "neo-cloud",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@605daa920183fbcb4df7d9197c287b9eebacf8be/neo-cloud/index.html?v=20260907-online-runtime-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@29ef42aa35d3f885d5574c63f3fafe4b2d36a8d6/neo-cloud/index.html?v=20260907-online-runtime-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -110,7 +110,7 @@
       title: "nowgg.fun",
       subtitle: "Cloud games through the NEO relay",
       icon: "gamepad",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@fca446f8a408acee04ff61b2a8264cf4181e8dc6/NEO-BROWSER/index.html?neo-app-mode=1&neo-custom-app=1&neo-app-target=https%3A%2F%2Fnowgg.fun%2F",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@3329a419153b945f7046df0197b279375da75f37/NEO-BROWSER/index.html?neo-app-mode=1&neo-custom-app=1&neo-app-target=https%3A%2F%2Fnowgg.fun%2F",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -124,7 +124,7 @@
       title: "NEO AI",
       subtitle: "Three fast chat models with web and study tools",
       icon: "chatgpt",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@fca446f8a408acee04ff61b2a8264cf4181e8dc6/neo-ai/index.html?build=20260912-serum-models-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@3329a419153b945f7046df0197b279375da75f37/neo-ai/index.html?build=20260912-serum-models-v1",
       keepAlive: true,
       width: 1120,
       height: 760,
@@ -188,20 +188,6 @@
       core: true,
       category: "Creativity",
       aliases: ["paint", "draw", "canvas", "sketch"]
-    },
-    clock: {
-      id: "clock",
-      title: "Clock",
-      subtitle: "Clock and stopwatch",
-      icon: "monitor",
-      lazy: true,
-      width: 560,
-      height: 520,
-      launcher: true,
-      pinned: false,
-      core: true,
-      category: "Utilities",
-      aliases: ["clock", "time", "stopwatch", "timer"]
     }
   });
 
@@ -356,6 +342,15 @@
         if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "manga"; })));
       });
       localStorage.setItem(removeMangaAppKey, "1");
+    }
+
+    var removeClockAppKey = "neo_os_remove_clock_app_v1";
+    if (localStorage.getItem(removeClockAppKey) !== "1") {
+      ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
+        var savedApps = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(savedApps)) localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return id !== "clock"; })));
+      });
+      localStorage.setItem(removeClockAppKey, "1");
     }
 
     var nowggMigrationKey = "neo_os_nowgg_app_v2";
