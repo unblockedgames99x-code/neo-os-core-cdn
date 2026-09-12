@@ -288,7 +288,7 @@
       accessibleName: "Web app",
       subtitle: "Private DuckDuckGo search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@9a2a46407398d26d4890a65290ce28321a47cd99/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@9219e79bbe2d4678c94b7cbbc6968044963f6a04/NEO-BROWSER/index.html?v=20260907-theme-tabs-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -318,7 +318,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@11c48e44cce4e097155b4f3b6dff6c3982c1a3b5/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@995e5b5c60fd1304cb4515e61783508e7482ff25/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1852,8 +1852,8 @@
     button.draggable = Boolean(settings.taskbarRunningApps && settings.taskbarAppDragging);
     button.classList.toggle("is-running", Boolean(win));
     button.classList.toggle("is-minimized", minimized);
-    button.setAttribute("aria-label", (minimized ? "Restore " : "Switch to ") + appAccessibleName(app));
-    button.setAttribute("aria-description", settings.taskbarRunningApps && settings.taskbarAppDragging ? "Drag to reorder running apps" : "Running app");
+    button.setAttribute("aria-label", (minimized ? "Restore " : win ? "Switch to " : "Open ") + appAccessibleName(app));
+    button.setAttribute("aria-description", settings.taskbarRunningApps && settings.taskbarAppDragging ? "Drag to reorder taskbar apps" : "Taskbar app");
     var label = button.querySelector(".dock-app-name");
     if (label) label.textContent = app.title;
   }
@@ -1877,13 +1877,12 @@
     return button;
   }
 
-  function runningTaskbarIds() {
-    var openIds = [];
-    openWindows.forEach(function (_, id) { if (apps[id]) openIds.push(id); });
+  function taskbarAppIds() {
+    var availableIds = launcherApps().map(function (app) { return app.id; });
     var next = runningTaskbarOrder.filter(function (id, index, ids) {
-      return openIds.indexOf(id) !== -1 && ids.indexOf(id) === index;
+      return availableIds.indexOf(id) !== -1 && ids.indexOf(id) === index;
     });
-    openIds.forEach(function (id) { if (next.indexOf(id) === -1) next.push(id); });
+    availableIds.forEach(function (id) { if (next.indexOf(id) === -1) next.push(id); });
     var changed = next.length !== runningTaskbarOrder.length || next.some(function (id, index) {
       return id !== runningTaskbarOrder[index];
     });
@@ -1929,7 +1928,7 @@
     if (!dock) return;
     var previousScrollLeft = dock.scrollLeft;
     var previousScrollTop = dock.scrollTop;
-    var visibleIds = settings.taskbarRunningApps ? runningTaskbarIds() : [];
+    var visibleIds = settings.taskbarRunningApps ? taskbarAppIds() : [];
     var visibleSet = new Set(visibleIds);
     Array.from(dock.querySelectorAll(".dock-button[data-app]")).forEach(function (button) {
       var id = button.dataset.app;
@@ -1941,7 +1940,7 @@
       button.classList.add("is-leaving");
       button.draggable = false;
       window.setTimeout(function () {
-        if (button.isConnected && (!settings.taskbarRunningApps || !openWindows.has(id))) button.remove();
+        if (button.isConnected && !visibleSet.has(id)) button.remove();
         fitDockToViewport(dock);
       }, 190);
     });
@@ -1975,7 +1974,7 @@
   }
 
   function moveRunningTaskbarApp(draggedId, targetId, placeAfter) {
-    var ids = runningTaskbarIds();
+    var ids = taskbarAppIds();
     var from = ids.indexOf(draggedId);
     var target = ids.indexOf(targetId);
     if (from === -1 || target === -1 || draggedId === targetId) return;
@@ -2042,7 +2041,7 @@
         : (event.key === "ArrowLeft" ? -1 : (event.key === "ArrowRight" ? 1 : 0));
       if (!direction) return;
       var button = event.target.closest(".dock-button[data-app]");
-      var ids = runningTaskbarIds();
+      var ids = taskbarAppIds();
       var index = button ? ids.indexOf(button.dataset.app) : -1;
       var swap = index + direction;
       if (index === -1 || swap < 0 || swap >= ids.length) return;
