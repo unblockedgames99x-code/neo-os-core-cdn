@@ -157,7 +157,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 20,
+    designVersion: 21,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -183,6 +183,7 @@
     taskbarOutline: true,
     taskbarRunningApps: true,
     taskbarAppDragging: true,
+    taskbarAppNames: false,
     windowBarStyle: "ultra",
     interfaceStyle: "modern",
     cursorTheme: "system",
@@ -241,6 +242,9 @@
   if (savedDesignVersion < 20) {
     savedSettings.windowBarStyle = "ultra";
   }
+  if (savedDesignVersion < 21) {
+    savedSettings.taskbarAppNames = false;
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -292,7 +296,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@7aa45bb16d8518d45ceb72565b1a85227a80a73c/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@c775b7ef2974105b8d58dd7e160acf01863d50fd/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -322,7 +326,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@1a43df8d36739f9002b2fe81a5013e9b80e8cdb6/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@8bff39fb767ee1c5f35c386905c0dbf8cfd646bb/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1418,6 +1422,7 @@
     var previousTaskbarPosition = normalizeTaskbarPosition(root.dataset.taskbarPosition);
     var previousTaskbarStyle = normalizeTaskbarStyle(root.dataset.taskbarStyle);
     var previousTaskbarRunningApps = root.dataset.taskbarRunningApps !== "false";
+    var previousTaskbarAppNames = root.dataset.taskbarAppNames === "true";
     var wallpaper = settings.wallpaper;
     var previousWallpaper = root.dataset.wallpaper || wallpaper || "we-steam-1403160205";
     var wallpaperSettings = Object.assign({}, settings, {
@@ -1471,6 +1476,7 @@
     root.dataset.taskbarOutline = settings.taskbarOutline ? "true" : "false";
     root.dataset.taskbarRunningApps = settings.taskbarRunningApps ? "true" : "false";
     root.dataset.taskbarAppDragging = settings.taskbarAppDragging ? "true" : "false";
+    root.dataset.taskbarAppNames = settings.taskbarAppNames ? "true" : "false";
     root.dataset.windowBarStyle = settings.windowBarStyle;
     root.dataset.interfaceStyle = settings.interfaceStyle;
     root.dataset.cursorTheme = settings.cursorTheme;
@@ -1541,14 +1547,14 @@
         detail: { theme: settings.cursorTheme, previousTheme: previousCursorTheme }
       }));
     }
-    if (previousTaskbarPosition !== settings.taskbarPosition || previousTaskbarStyle !== settings.taskbarStyle) {
+    if (previousTaskbarPosition !== settings.taskbarPosition || previousTaskbarStyle !== settings.taskbarStyle || previousTaskbarAppNames !== Boolean(settings.taskbarAppNames)) {
       window.requestAnimationFrame(function () {
         fitDockToViewport(document.getElementById("neo-dock"));
         layoutDesktopShortcuts();
         window.dispatchEvent(new CustomEvent("neo-taskbar-layout-change", {
           detail: {
-            previous: { position: previousTaskbarPosition, style: previousTaskbarStyle },
-            current: { position: settings.taskbarPosition, style: settings.taskbarStyle }
+            previous: { position: previousTaskbarPosition, style: previousTaskbarStyle, appNames: previousTaskbarAppNames },
+            current: { position: settings.taskbarPosition, style: settings.taskbarStyle, appNames: Boolean(settings.taskbarAppNames) }
           }
         }));
       });
