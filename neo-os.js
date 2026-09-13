@@ -334,7 +334,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@eb9f49685ac48f4f96aa13972e89d95473e040e8/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b8c50a77e9f4550cbf8a3993ce7b3974f1bfb74e/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -364,7 +364,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9e6012ff847d36f037961bf0bdad3cb225372068/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@1e3f52dadb4f58aa24e64b206d63f4dfb8650601/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -466,12 +466,14 @@
   };
   Object.assign(apps, window.NEO_EXTRA_APPS || {});
   restoreCustomApps(apps);
-  if (localOnly) {
+  if (localConfig && localConfig.browser) {
     apps.browser.route = localConfig.browser;
     apps.browser.subtitle = "Full NextNode web proxy";
     apps.browser.hideName = false;
     apps.browser.title = "Browser";
     apps.browser.accessibleName = "NEO Browser";
+  }
+  if (localOnly) {
     ["discord", "youtube-app", "geometry-dash", "neo-cloud", "report"].forEach(function (id) {
       if (!apps[id]) return;
       if (id === "report" && localConfig.support) {
@@ -3180,7 +3182,7 @@
   }
 
   function scheduleBrowsePrewarm() {
-    if (localOnly && localConfig && localConfig.browser) {
+    if (localConfig && localConfig.browser) {
       if (performanceActive() || browsePrewarmScheduled || navigator.onLine === false) return;
       var directConnection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       if (directConnection && (directConnection.saveData || /(^|-)2g$/.test(directConnection.effectiveType || ""))) return;
