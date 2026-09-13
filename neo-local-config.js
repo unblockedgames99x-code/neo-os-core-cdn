@@ -1,8 +1,7 @@
 (function () {
   "use strict";
-  // Local-first entry points. A later CDN migration changes configuredAssetBase / these routes,
-  // then deliberately updates the preview server CSP allowlist. No URL substitution
-  // or proxy is hidden inside the UI.
+  // Local-first entry points. The main Browser intentionally uses NextNode's complete
+  // hosted proxy build; installed app shortcuts keep the bundled NEO wrapper below.
   // Edit this relative path or absolute asset origin; routes and resolve() both use it.
   var configuredAssetBase = "./";
   var base = new URL(configuredAssetBase, document.currentScript.src);
@@ -13,15 +12,16 @@
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "neo-cloud", "nowgg", "neo-ai", "discord", "youtube-app", "games", "movies", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@98e07da3f60c70d808e99b0c7121a5a8b31d272e/music-v2/launch.svg?v=20260912-repeat-controls-v2" : new URL("music-v2/index.html?v=20260912-repeat-controls-v2&theme=system-v1&widgets=live-v1", base).href,
-    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@62d465da9a2f607f60d56c990176c86ed7dfa5f3/NEO-BROWSER/index.html?v=20260910-fast-browser-v2" : new URL("NEO-BROWSER/index.html?v=20260910-fast-browser-v2", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@7e710ca5f669a317f217f2a5c7388e276b8e8d1f/music-v2/launch.svg?v=20260912-repeat-controls-v2" : new URL("music-v2/index.html?v=20260912-repeat-controls-v2&theme=system-v1&widgets=live-v1", base).href,
+    browser: "https://nextnode9124.b-cdn.net/modules/browser/index.html",
+    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8fb7a153cfce50ea17fee2eda3696cea142ff9c3/NEO-BROWSER/index.html?v=20260910-fast-browser-v2" : new URL("NEO-BROWSER/index.html?v=20260910-fast-browser-v2", base).href,
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/covers.json" : new URL("../games/covers.json", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
     previewBrowser: new URL("NEO-BROWSER/", previewBase).href,
-    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@62d465da9a2f607f60d56c990176c86ed7dfa5f3/local-browser/support.html" : new URL("local-browser/support.html", base).href,
-    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@62d465da9a2f607f60d56c990176c86ed7dfa5f3/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
+    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8fb7a153cfce50ea17fee2eda3696cea142ff9c3/local-browser/support.html" : new URL("local-browser/support.html", base).href,
+    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8fb7a153cfce50ea17fee2eda3696cea142ff9c3/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });

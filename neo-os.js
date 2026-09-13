@@ -334,7 +334,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@62d465da9a2f607f60d56c990176c86ed7dfa5f3/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8fb7a153cfce50ea17fee2eda3696cea142ff9c3/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -364,7 +364,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@e0145ca97cafe9b5dfe01df6645b51534d039b6d/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@1e547e22869b72fac443aeabc8e0df4219f0cecf/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -468,7 +468,7 @@
   restoreCustomApps(apps);
   if (localOnly) {
     apps.browser.route = localConfig.browser;
-    apps.browser.subtitle = "Fast private tabs with automatic relay fallback";
+    apps.browser.subtitle = "Full NextNode web proxy";
     apps.browser.hideName = false;
     apps.browser.title = "Browser";
     apps.browser.accessibleName = "NEO Browser";
@@ -560,7 +560,7 @@
   }
 
   function customAppRoute(url, mode) {
-    var browserRoute = localConfig && localConfig.browser ? localConfig.browser : "./NEO-BROWSER/index.html";
+    var browserRoute = localConfig && localConfig.appProxy ? localConfig.appProxy : "./NEO-BROWSER/index.html";
     try {
       var route = new URL(browserRoute, document.baseURI);
       route.searchParams.set("neo-app-mode", "1");
