@@ -345,7 +345,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@44c55086c36438c299df2db22969f08311f27802/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f10e3903a9afff49951774ec1381d703061473f6/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -375,7 +375,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@830fd381f7e0834db57e78a13d5c37246f6bdba7/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@afdd7311c778cf546e318ec92a546b28f03a3f96/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5568,7 +5568,7 @@
     if (!frame || frame.closest(".neo-browser-runtime")) return;
     var windowHost = frame.closest(".neo-window");
     var app = windowHost && apps[windowHost.dataset.appId];
-    if (app && (app.id === "browser" || app.custom)) return;
+    if (app && (app.id === "browser" || app.id === "games" || app.custom)) return;
     try {
       var frameDocument = frame.contentDocument;
       if (!frameDocument || !frameDocument.documentElement || !frameDocument.head) return;
