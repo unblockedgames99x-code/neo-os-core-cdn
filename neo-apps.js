@@ -83,7 +83,7 @@
       title: "Geometry Dash (MORE LEVELS)",
       subtitle: "Web Dashers rhythm platformer",
       icon: "geometry-dash",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-core-cdn@8e8ddeae1a33e17822a02fd36f7bf10bb216e8c8/games/web-dashers.html",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-core-cdn@d8242aec4122903508cedc164d16d419a64734ee/games/web-dashers.html",
       width: 1180,
       height: 760,
       launcher: true,
