@@ -345,7 +345,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4975102d08c1819786175b4dd0c60e00477f8d2f/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@44c55086c36438c299df2db22969f08311f27802/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -375,7 +375,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@7ddc856bb8c1c413213c40aee7c67e22c34752c8/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@830fd381f7e0834db57e78a13d5c37246f6bdba7/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -585,22 +585,35 @@
     }
   }
 
+  function normalizeDirectGameUrl(value) {
+    var url;
+    try { url = new URL(String(value || "")); } catch (error) { throw new TypeError("This game address is invalid."); }
+    var directHost = /^(?:raw|rawcdn)\.githack\.com$/i.test(url.hostname);
+    var directPath = /^\/unblockedgames99x-code\/neo-os-games-\d+-cdn\/[^/]+\/games\/[A-Za-z0-9%._()\[\] -]+\.html$/i.test(url.pathname);
+    if (url.protocol !== "https:" || !directHost || !directPath) throw new TypeError("This game is not available from the direct game CDN.");
+    url.hostname = "rawcdn.githack.com";
+    url.username = "";
+    url.password = "";
+    url.hash = "";
+    return url.href;
+  }
+
   function customAppDefinition(record) {
     var id = String(record && record.id || "").replace(/[^a-z0-9_-]/gi, "");
     var title = String(record && record.title || "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 48);
     if (!/^custom-app-[a-z0-9_-]+$/i.test(id) || !title) return null;
+    var mode = record && record.mode === "direct-game" ? "direct-game" : "relay";
     var url;
-    try { url = normalizeCustomAppUrl(record.url); } catch (error) { return null; }
-    var mode = "relay";
+    try { url = mode === "direct-game" ? normalizeDirectGameUrl(record.url) : normalizeCustomAppUrl(record.url); } catch (error) { return null; }
     var icon = safeCustomAppIcon(record.icon) || "apps";
     var host = "Website";
     try { host = new URL(url).hostname.replace(/^www\./, "") || host; } catch (error) {}
     return {
       id: id,
       title: title,
-      subtitle: host + " · NEO web proxy",
+      subtitle: mode === "direct-game" ? "HTML game · Direct CDN" : host + " · NEO web proxy",
       icon: icon,
-      route: customAppRoute(url, mode),
+      route: mode === "direct-game" ? url : customAppRoute(url, mode),
       sourceUrl: url,
       launchMode: mode,
       keepAlive: false,
@@ -680,12 +693,13 @@
 
   function addCustomAppToTaskbarAndHomeScreen(input) {
     input = input && typeof input === "object" ? input : {};
-    var url = normalizeCustomAppUrl(input.url);
+    var mode = input.mode === "direct-game" ? "direct-game" : "relay";
+    var url = mode === "direct-game" ? normalizeDirectGameUrl(input.url) : normalizeCustomAppUrl(input.url);
     var app = Object.keys(apps).map(function (id) { return apps[id]; }).find(function (candidate) {
-      return candidate && candidate.custom && candidate.sourceUrl === url;
+      return candidate && candidate.custom && candidate.sourceUrl === url && candidate.launchMode === mode;
     });
     if (!app) {
-      var installed = installCustomApp({ title: input.title, url: url, icon: input.icon, mode: "relay" });
+      var installed = installCustomApp({ title: input.title, url: url, icon: input.icon, mode: mode });
       app = apps[installed.id];
     } else if (!app.installed) {
       setAppInstalled(app.id, true);
