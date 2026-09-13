@@ -122,7 +122,8 @@
   }
 
   function normalizeInterfaceStyle(value) {
-    return String(value || "").toLowerCase() === "retro" ? "retro" : "modern";
+    value = String(value || "").toLowerCase();
+    return value === "retro" || value === "windows11" ? value : "modern";
   }
 
   function normalizeCursorTheme(value) {
@@ -311,7 +312,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@c573116cfaa7d93084f6bc2052b023dc26f96dd1/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ac2d46f79d9f783cb37a3a62fcd43f4dbd142e17/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -341,7 +342,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@be97bf47b8bc9b8ac49a79e2ceb87a5f9c886c91/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@2cad16867fe5dfb4a64d42464cfdcea4c0fd5eba/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1396,7 +1397,7 @@
           var link = frameDocument.createElement("link");
           link.id = "neo-interface-styles";
           link.rel = "stylesheet";
-          link.href = new URL("./neo-interface-styles.css?v=20260907-launcher-picture-alignment-v12&settings=combined-v1", document.baseURI).href;
+          link.href = new URL("./neo-interface-styles.css?v=20260912-windows11-style-v1&settings=combined-v1", document.baseURI).href;
           frameDocument.head.appendChild(link);
         }
       }
@@ -8084,13 +8085,12 @@
         var nextInterfaceStyle = normalizeInterfaceStyle(interfaceStyleButton.getAttribute("data-interface-style-option"));
         if (nextInterfaceStyle !== settings.interfaceStyle) {
           setSetting("interfaceStyle", nextInterfaceStyle);
-          showToast(
-            nextInterfaceStyle === "retro" ? "Retro style enabled" : "Modern style restored",
-            nextInterfaceStyle === "retro"
-              ? "Windows, apps, widgets, menus, and the taskbar now use the classic desktop style."
-              : "The current NEO OS interface is active again.",
-            "settings"
-          );
+          var interfaceStyleToast = nextInterfaceStyle === "retro"
+            ? ["Retro style enabled", "Windows, apps, widgets, menus, and the taskbar now use the classic desktop style."]
+            : nextInterfaceStyle === "windows11"
+              ? ["Windows 11 style enabled", "The centered taskbar, Start menu, windows, controls, and flyouts now use the Windows 11 look."]
+              : ["Modern style restored", "The current NEO OS interface is active again."];
+          showToast(interfaceStyleToast[0], interfaceStyleToast[1], "settings");
         }
         return;
       }
