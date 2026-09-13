@@ -157,7 +157,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 22,
+    designVersion: 23,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -174,6 +174,9 @@
     weather: true,
     batterySaver: false,
     widgets: true,
+    desktopSystemWidget: false,
+    desktopActiveAppWidget: false,
+    desktopNowPlayingWidget: false,
     widgetLock: true,
     dockMagnify: false,
     dockIconSize: "normal",
@@ -251,6 +254,11 @@
       ? 100 - clamp(legacyTaskbarTintStrength, 0, 100)
       : 62;
   }
+  if (savedDesignVersion < 23) {
+    savedSettings.desktopSystemWidget = false;
+    savedSettings.desktopActiveAppWidget = false;
+    savedSettings.desktopNowPlayingWidget = false;
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -279,7 +287,7 @@
   delete savedSettings.taskbarOpacity;
   delete savedSettings.taskbarBlur;
   delete savedSettings.taskbarTintStrength;
-  savedSettings.designVersion = 22;
+  savedSettings.designVersion = 23;
   var settings = Object.assign({}, defaultSettings, savedSettings);
   var appliedTabAppearanceSignature = "";
   // Keep imported wallpapers and the local reactive scene. Remote workshop defaults
@@ -303,7 +311,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ce71c505d3ea7fb59f0ecae083acea04989df39e/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@c573116cfaa7d93084f6bc2052b023dc26f96dd1/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -333,7 +341,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@8046a3c2e77ec904be3acc7df02a211dfb38181d/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@be97bf47b8bc9b8ac49a79e2ceb87a5f9c886c91/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1445,6 +1453,9 @@
     root.dataset.motion = wallpaperSettings.motion ? "true" : "false";
     root.dataset.weather = settings.weather && mode === "normal" && !effectiveReducedMotion() ? "true" : "false";
     root.dataset.widgets = settings.widgets && mode !== "ultimate" ? "true" : "false";
+    root.dataset.desktopSystemWidget = settings.desktopSystemWidget ? "true" : "false";
+    root.dataset.desktopActiveAppWidget = settings.desktopActiveAppWidget ? "true" : "false";
+    root.dataset.desktopNowPlayingWidget = settings.desktopNowPlayingWidget ? "true" : "false";
     root.dataset.widgetLock = settings.widgetLock ? "true" : "false";
     settings.dockMagnify = false;
     settings.dockIconSize = "normal";
@@ -1586,6 +1597,11 @@
     if (!Object.prototype.hasOwnProperty.call(defaultSettings, name)) return;
     settings[name] = value;
     applySettings(options);
+    if (/^desktop(?:System|ActiveApp|NowPlaying)Widget$/.test(name)) {
+      window.dispatchEvent(new CustomEvent("neo-status-widgets-change", {
+        detail: { name: name, enabled: Boolean(settings[name]) }
+      }));
+    }
   }
 
   function setCustomTabAppearance(title, icon) {
@@ -3027,7 +3043,7 @@
         document.head.appendChild(style);
       }
       var script = document.createElement("script");
-      script.src = "./neo-os-features.js?v=20260911-proxy-only-v3&hover=bridge-v1";
+      script.src = "./neo-os-features.js?v=20260912-status-widget-toggles-v1&hover=bridge-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_FEATURES) {
