@@ -788,11 +788,10 @@ body.has-video-popout[data-popout-mode="watch"] .player-shell {
   aspect-ratio: auto;
 }
 
-/* The official player reserves chrome above and below a 16:9 video. In the
-   compact pop-out, enlarge that viewport by the same amount and clip those
-   chrome bands so the window contains the video itself. */
+/* Keep the official player exactly aligned to the 16:9 pop-out. Enlarging and
+   shifting this iframe creates a persistent black band on current embeds. */
 body.has-video-popout {
-  --yt-popout-chrome-crop: 96px;
+  --yt-popout-chrome-crop: 0px;
 }
 
 body.has-video-popout[data-popout-mode="watch"] .player-shell iframe,
