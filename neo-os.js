@@ -334,7 +334,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b4ee294567d1bebde9427266869c00e1f0a9d006/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@06ce3a515f00600f15f633f199c719b4327212e5/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -364,7 +364,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@a89f8e15a50ab7a7030fa7c3e9d8bb96c4001432/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@6cb96550b9dc9d152963601d61b7ed8fd2a41149/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -3200,18 +3200,21 @@
         if (event && event.target && !event.target.closest('[data-app="browser"]')) return;
         cleanupDirectTriggers();
         if (document.querySelector("link[data-neo-browser-prefetch]")) return;
-        var hint = document.createElement("link");
-        hint.rel = "prefetch";
-        hint.href = apps.browser.route;
-        hint.fetchPriority = "low";
-        hint.dataset.neoBrowserPrefetch = "";
-        document.head.appendChild(hint);
+        var warmTargets = [apps.browser.route].concat(Array.isArray(localConfig.browserWarmAssets) ? localConfig.browserWarmAssets : []);
+        warmTargets.forEach(function (target, index) {
+          var hint = document.createElement("link");
+          hint.rel = "prefetch";
+          hint.href = target;
+          hint.fetchPriority = index === 0 ? "auto" : "low";
+          hint.dataset.neoBrowserPrefetch = "";
+          document.head.appendChild(hint);
+        });
       }
       document.addEventListener("pointerover", prefetchDirectBrowser, { passive: true });
       document.addEventListener("focusin", prefetchDirectBrowser);
       document.addEventListener("touchstart", prefetchDirectBrowser, { passive: true });
-      if ("requestIdleCallback" in window) directIdleId = window.requestIdleCallback(prefetchDirectBrowser, { timeout: 2800 });
-      else directTimeoutId = window.setTimeout(prefetchDirectBrowser, 1600);
+      if ("requestIdleCallback" in window) directIdleId = window.requestIdleCallback(prefetchDirectBrowser, { timeout: 1800 });
+      else directTimeoutId = window.setTimeout(prefetchDirectBrowser, 1000);
       return;
     }
     if (localOnly) return;
