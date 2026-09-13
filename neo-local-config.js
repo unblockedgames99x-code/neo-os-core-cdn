@@ -8,30 +8,30 @@
   var previewBase = new URL("http://127.0.0.1:3092/neo-os/");
   var isCdnRunner = Boolean(document.querySelector('meta[name=\"neo-runner\"]'));
   var isSitesHost = /(?:^|\.)chatgpt\.site$/i.test(window.location.hostname);
-  var hostedBrowserRoot = new URL("https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/nextnode-browser/");
+  var hostedBrowserRoot = new URL("https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/nextnode-browser/");
   window.NEO_LOCAL_CONFIG = Object.freeze({
     enabled: !isCdnRunner,
     externalIntegrations: isCdnRunner,
     onlineApps: Object.freeze(["chat", "neo-cloud", "nowgg", "neo-ai", "discord", "youtube-app", "games", "movies", "geometry-dash"]),
     assetBase: base.href,
-    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@372eaee6a17e3313bb8e2d0dedbfa8aaa512e364/music-v2/launch.svg?v=20260912-repeat-controls-v2" : new URL("music-v2/index.html?v=20260912-repeat-controls-v2&theme=system-v1&widgets=live-v1", base).href,
-    browser: isCdnRunner || isSitesHost ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/nextnode-browser/launch.svg?v=20260913-browser-cdn-launch-v3" : new URL("nextnode-browser/index.html?v=20260913-nextnode-live-v3", base).href,
+    music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@4ab1f93fcb972b23892353d05c13923fe9cafec9/music-v2/launch.svg?v=20260912-repeat-controls-v2" : new URL("music-v2/index.html?v=20260912-repeat-controls-v2&theme=system-v1&widgets=live-v1", base).href,
+    browser: isCdnRunner || isSitesHost ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/nextnode-browser/launch.svg?v=20260913-browser-cdn-launch-v3" : new URL("nextnode-browser/index.html?v=20260913-nextnode-live-v3", base).href,
     browserWarmAssets: Object.freeze([
       "study/sf-engine.js",
       "study/sf-ctl.js",
       "study/sf-utils.js",
       "study/libcurl.js",
       "study/sf-engine.wasm"
-    ].map(function (asset) { return isCdnRunner || isSitesHost ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/nextnode-browser/" + asset : new URL("nextnode-browser/" + asset, base).href; })),
+    ].map(function (asset) { return isCdnRunner || isSitesHost ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/nextnode-browser/" + asset : new URL("nextnode-browser/" + asset, base).href; })),
     browserWisp: "wss://nextnode9124.b-cdn.net/w/",
-    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/NEO-BROWSER/index.html?v=20260910-fast-browser-v2" : new URL("NEO-BROWSER/index.html?v=20260910-fast-browser-v2", base).href,
+    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/NEO-BROWSER/index.html?v=20260910-fast-browser-v2" : new URL("NEO-BROWSER/index.html?v=20260910-fast-browser-v2", base).href,
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/covers.json" : new URL("../games/covers.json", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
     previewBrowser: new URL("NEO-BROWSER/", previewBase).href,
-    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/local-browser/support.html" : new URL("local-browser/support.html", base).href,
-    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@cfe5196674de64378442dfb3aa10f135a3d049cb/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
+    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/local-browser/support.html" : new URL("local-browser/support.html", base).href,
+    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a5fdf700ee788acea0af7c35711ba0f6be425ff8/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });
