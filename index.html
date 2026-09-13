@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:3092 http://localhost:3092; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: http://127.0.0.1:3092 http://localhost:3092 https://fastly.jsdelivr.net https://cdn.jsdelivr.net https://gcore.jsdelivr.net https://quantil.jsdelivr.net https://pipedapi.ducks.party https://api.piped.private.coffee https://lol.samidy.workers.dev https://lunchbreak.dyercountylawncare.workers.dev https://neo-stratus-api-w6nw.onrender.com wss://nextnode9124.b-cdn.net wss://support.pired.org wss://girlspreples.com wss://northstreetumc.org wss://pcesc.com wss://kcchallengevbc.com wss://slcbmooc.org wss://probuildingsupplies.com wss://wisp.mercurywork.shop wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app wss://reeyukiwisp.onrender.com; frame-src 'self' blob: https://nextnode9124.b-cdn.net https://fastly.jsdelivr.net https://cdn.jsdelivr.net https://gcore.jsdelivr.net https://quantil.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
-    <script src="./neo-boot.e3e4d26dc2db02ba.min.js" defer></script>
+    <script src="./neo-boot.f34cd3b56161eb0c.min.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#080a0d" />
     <meta
@@ -85,6 +85,7 @@
     <!-- neo-shell-styles:end -->
     <link rel="stylesheet" href="./neo-interface-styles.css?v=20260913-kali-style-v1&amp;launcher=centered-v3&amp;settings=combined-v1&amp;widgets=no-scrollbars-v1&amp;previews=current-state-v1&amp;widget-background=transparent-v1" />
     <link rel="stylesheet" href="./neo-xeno-taskbar.css?v=20260913-xeno-search-clean-v2" />
+    <link rel="stylesheet" href="./neo-yukios-parity.css?v=20260913-library-v1" />
   </head>
   <body>
     <a class="skip-link" href="#neo-desktop">Skip to desktop</a>
@@ -441,8 +442,19 @@
 
         <div class="launcher-scroll-region">
           <section class="launcher-section pinned-section" data-launcher-home>
-            <h3 class="sr-only">Applications</h3>
+            <div class="launcher-section-title"><h3>Pinned</h3><span>Favorite applications</span></div>
             <div id="launcher-grid" class="pinned-app-grid"></div>
+          </section>
+
+          <section class="launcher-section launcher-recent-section" data-launcher-home>
+            <div class="launcher-section-title"><h3>Recent</h3><span>Continue where you left off</span></div>
+            <div id="launcher-recent" class="launcher-recent"></div>
+            <p id="launcher-recent-empty" class="launcher-empty">Apps you open will appear here.</p>
+          </section>
+
+          <section class="launcher-section launcher-category-section" data-launcher-home>
+            <div class="launcher-section-title"><h3>Categories</h3><span>Browse the full library</span></div>
+            <div id="launcher-categories" class="launcher-categories"></div>
           </section>
 
           <section class="launcher-section launcher-results" data-launcher-results hidden aria-live="polite">
@@ -1399,6 +1411,6 @@
         <div class="calendar-note"><span></span><p><strong>NEO OS workspace</strong><small>Your local calendar and activity.</small></p></div>
       </div>
     </template>
-    <script src="./neo-shell.400bec964b03fae3.min.js" defer></script>
+    <script src="./neo-shell.1f6245e3d9f6f0ca.min.js" defer></script>
   </body>
 </html>
