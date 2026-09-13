@@ -334,8 +334,8 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8fb7a153cfce50ea17fee2eda3696cea142ff9c3/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
-      keepAlive: false,
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@eb9f49685ac48f4f96aa13972e89d95473e040e8/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+      keepAlive: true,
       width: 1080,
       height: 720,
       launcher: true,
@@ -364,7 +364,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@1e547e22869b72fac443aeabc8e0df4219f0cecf/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9e6012ff847d36f037961bf0bdad3cb225372068/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1530,6 +1530,7 @@
     root.dataset.taskbarAppNames = settings.taskbarAppNames ? "true" : "false";
     root.dataset.windowBarStyle = settings.windowBarStyle;
     root.dataset.interfaceStyle = settings.interfaceStyle;
+    if (typeof window.__neoSyncInterfaceCss === "function") window.__neoSyncInterfaceCss();
     root.dataset.cursorTheme = settings.cursorTheme;
     if (settings.customCursorData) {
       root.style.setProperty("--neo-custom-cursor-arrow", customCursorDeclaration("auto"));
@@ -3179,6 +3180,38 @@
   }
 
   function scheduleBrowsePrewarm() {
+    if (localOnly && localConfig && localConfig.browser) {
+      if (performanceActive() || browsePrewarmScheduled || navigator.onLine === false) return;
+      var directConnection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (directConnection && (directConnection.saveData || /(^|-)2g$/.test(directConnection.effectiveType || ""))) return;
+      browsePrewarmScheduled = true;
+      var directIdleId = 0;
+      var directTimeoutId = 0;
+      function cleanupDirectTriggers() {
+        document.removeEventListener("pointerover", prefetchDirectBrowser);
+        document.removeEventListener("focusin", prefetchDirectBrowser);
+        document.removeEventListener("touchstart", prefetchDirectBrowser);
+        if (directIdleId && "cancelIdleCallback" in window) window.cancelIdleCallback(directIdleId);
+        if (directTimeoutId) window.clearTimeout(directTimeoutId);
+      }
+      function prefetchDirectBrowser(event) {
+        if (event && event.target && !event.target.closest('[data-app="browser"]')) return;
+        cleanupDirectTriggers();
+        if (document.querySelector("link[data-neo-browser-prefetch]")) return;
+        var hint = document.createElement("link");
+        hint.rel = "prefetch";
+        hint.href = apps.browser.route;
+        hint.fetchPriority = "low";
+        hint.dataset.neoBrowserPrefetch = "";
+        document.head.appendChild(hint);
+      }
+      document.addEventListener("pointerover", prefetchDirectBrowser, { passive: true });
+      document.addEventListener("focusin", prefetchDirectBrowser);
+      document.addEventListener("touchstart", prefetchDirectBrowser, { passive: true });
+      if ("requestIdleCallback" in window) directIdleId = window.requestIdleCallback(prefetchDirectBrowser, { timeout: 2800 });
+      else directTimeoutId = window.setTimeout(prefetchDirectBrowser, 1600);
+      return;
+    }
     if (localOnly) return;
     if (performanceActive() || browsePrewarmScheduled || window.NEO_BROWSER_ENGINE) return;
     if (!("serviceWorker" in navigator) || navigator.onLine === false) return;
