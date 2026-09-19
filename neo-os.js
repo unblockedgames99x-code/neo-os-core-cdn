@@ -362,7 +362,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f86521c2023dcd813335305fa1141b89d9f7b0c4/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8414d593af6a920da8833a798bc281fe398281df/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -392,7 +392,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@93b1dbe60d2e86bca8ce952f1688708fa916a04a/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@634feffda7f2a3d886b131dc2925267b67c794ef/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -611,7 +611,8 @@
     var stableSnowRiderHost = /^(?:cdn|fastly|gcore|quantil)\.jsdelivr\.net$/i.test(url.hostname);
     var stableSnowRiderMatch = url.pathname.match(/^\/gh\/unblockedgames99x-code\/neo-os-chat-tv-cdn@([0-9a-f]{40})\/neo-games\/snow-rider-stable\.html$/i);
     var localStableSnowRider = url.origin === location.origin && /\/neo-games\/snow-rider-stable\.html$/i.test(url.pathname);
-    if (!localStableSnowRider && (url.protocol !== "https:" || !((githackHost && githackPath) || luminRoute || (stableSnowRiderHost && stableSnowRiderMatch)))) throw new TypeError("This game is not available from the direct game service.");
+    var localCustomGamePlayer = url.origin === location.origin && /\/neo-games\/local-player\.html$/i.test(url.pathname) && /^[a-zA-Z0-9_-]{1,100}$/.test(url.searchParams.get("id") || "");
+    if (!localStableSnowRider && !localCustomGamePlayer && (url.protocol !== "https:" || !((githackHost && githackPath) || luminRoute || (stableSnowRiderHost && stableSnowRiderMatch)))) throw new TypeError("This game is not available from the direct game service.");
     if (githackHost) url.hostname = "rawcdn.githack.com";
     url.username = "";
     url.password = "";
