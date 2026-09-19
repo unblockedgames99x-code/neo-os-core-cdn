@@ -14,14 +14,14 @@
     onlineApps: Object.freeze(["chat", "games", "movies"]),
     assetBase: base.href,
     music: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@68939faad0168a73c1d0116f171d7ee1152a80e4/music-v2/launch.svg?v=20260918-proxy-only-v1" : new URL("music-v2/index.html?v=20260918-proxy-only-v1&theme=system-v1&widgets=live-v1", base).href,
-    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e0cfe62f1643723a3406391aecc9a1aae03459ff/nextnode-browser/launch.svg?v=20260914-official-wisp-v2" : new URL("nextnode-browser/index.html?v=20260914-official-wisp-v2", base).href,
+    browser: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2420397bca31d1ec763481e3f42930f8187ae951/nextnode-browser/launch.svg?v=20260914-official-wisp-v2" : new URL("nextnode-browser/index.html?v=20260914-official-wisp-v2", base).href,
     browserWarmAssets: Object.freeze([
       "study/sf-engine.js",
       "study/sf-ctl.js",
       "study/sf-utils.js",
       "study/libcurl.js",
       "study/sf-engine.wasm"
-    ].map(function (asset) { return isCdnRunner ? new URL("nextnode-browser/" + asset, "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e0cfe62f1643723a3406391aecc9a1aae03459ff/").href : new URL("nextnode-browser/" + asset, base).href; })),
+    ].map(function (asset) { return isCdnRunner ? new URL("nextnode-browser/" + asset, "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2420397bca31d1ec763481e3f42930f8187ae951/").href : new URL("nextnode-browser/" + asset, base).href; })),
     browserWisp: "wss://probuildingsupplies.com/w/",
     browserWispServers: Object.freeze([
       Object.freeze({ name: "Probuilding Wisp", url: "wss://probuildingsupplies.com/w/" }),
@@ -29,15 +29,15 @@
       Object.freeze({ name: "Reeyuki Wisp", url: "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/" }),
       Object.freeze({ name: "Reeyuki Wisp 2", url: "wss://reeyukiwisp.onrender.com/" })
     ]),
-    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e0cfe62f1643723a3406391aecc9a1aae03459ff/NEO-BROWSER/index.html?v=20260913-yukios-wisp-v1" : new URL("NEO-BROWSER/index.html?v=20260913-yukios-wisp-v1", base).href,
+    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2420397bca31d1ec763481e3f42930f8187ae951/NEO-BROWSER/index.html?v=20260913-yukios-wisp-v1" : new URL("NEO-BROWSER/index.html?v=20260913-yukios-wisp-v1", base).href,
     gameDocumentRelay: "https://neo-stratus-api-w6nw.onrender.com/games/v1/document",
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/covers.json" : new URL("../games/covers.json", base).href,
     preview: previewBase.href,
     previewMusic: new URL("music-v2/", previewBase).href,
     previewBrowser: new URL("NEO-BROWSER/", previewBase).href,
-    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e0cfe62f1643723a3406391aecc9a1aae03459ff/local-browser/support.html" : new URL("local-browser/support.html", base).href,
-    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e0cfe62f1643723a3406391aecc9a1aae03459ff/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
+    support: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2420397bca31d1ec763481e3f42930f8187ae951/local-browser/support.html" : new URL("local-browser/support.html", base).href,
+    unavailable: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2420397bca31d1ec763481e3f42930f8187ae951/local-browser/unavailable.html" : new URL("local-browser/unavailable.html", base).href,
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });
