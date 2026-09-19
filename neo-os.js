@@ -362,7 +362,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@6a41227af56a2e5acbaad5c629952ea8770aa362/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@700a3be619b06dc1438b227b0d803db545a2d22f/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -392,7 +392,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@443d407cad4fe7d017a5bb2663a75e55a5994002/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9ce85477af23cbb6ebb1af02fc971add7696e10f/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5206,7 +5206,19 @@
   function mountFrame(app, body) {
     var browserBacked = app.id === "browser" || Boolean(app.custom);
     var directGame = app.launchMode === "direct-game";
-    var fetchedDirectGame = directGame && /^(?:https:\/\/)(?:cdn|fastly|gcore|quantil)\.jsdelivr\.net\/gh\/unblockedgames99x-code\/neo-os-chat-tv-cdn@[0-9a-f]{40}\/neo-games\/snow-rider-stable\.html(?:[?#]|$)/i.test(app.route);
+    var fetchedDirectGame = directGame;
+    function directGameDocumentRoute(route) {
+      if (!directGame || !localConfig.gameDocumentRelay) return route;
+      try {
+        var source = new URL(route, document.baseURI);
+        if (source.protocol !== "https:" || source.hostname.toLowerCase() !== "a.luminsdk.com" || !/^\/g\/[A-Za-z0-9_-]+\//.test(source.pathname)) return route;
+        var relay = new URL(localConfig.gameDocumentRelay, document.baseURI);
+        relay.searchParams.set("url", source.href);
+        return relay.href;
+      } catch (_error) {
+        return route;
+      }
+    }
     if (browserBacked && location.protocol === "file:") {
       body.innerHTML = '<div class="feature-loader is-error" role="alert"><strong>Browser needs the NEO web runtime</strong><p>Tabs and website loading require the local secure context; they cannot run from a raw file.</p><a class="button primary" data-browser-runtime-link>Open working NEO OS</a></div>';
       var browserRuntimeLink = body.querySelector("[data-browser-runtime-link]");
@@ -5224,7 +5236,9 @@
     var retry = document.createElement("button");
     var direct = document.createElement("button");
     fallbackTitle.textContent = "This page is taking longer than expected";
-    fallbackCopy.textContent = "You can retry the embedded page or open the existing route directly.";
+    fallbackCopy.textContent = directGame
+      ? "Retry the protected game document. NEO will not fall back to an ad-enabled page."
+      : "You can retry the embedded page or open the existing route directly.";
     fallbackActions.className = "upload-actions";
     retry.className = "button primary";
     retry.type = "button";
@@ -5234,7 +5248,8 @@
     direct.type = "button";
     direct.setAttribute("data-frame-direct", app.route);
     direct.innerHTML = iconMarkup("external") + "Open directly";
-    fallbackActions.append(retry, direct);
+    fallbackActions.append(retry);
+    if (!directGame) fallbackActions.append(direct);
     fallback.append(fallbackTitle, fallbackCopy, fallbackActions);
     var frame = document.createElement("iframe");
     frame.title = app.title;
@@ -5245,11 +5260,11 @@
       "allow-same-origin",
       "allow-scripts",
       "allow-forms",
-      "allow-popups",
       "allow-downloads",
       "allow-pointer-lock",
       "allow-presentation"
     ];
+    if (!directGame) frameSandbox.push("allow-popups");
     if (app.id !== "browser") frameSandbox.push("allow-modals");
     frame.sandbox = frameSandbox.join(" ");
     frame.allow = "fullscreen; autoplay; picture-in-picture; gamepad; clipboard-read; clipboard-write; display-capture";
@@ -5477,14 +5492,21 @@
         loader.classList.add("is-complete");
         fallback.classList.add("is-visible");
       }, 9000);
-      var frameLoad = directGame && !fetchedDirectGame
-        ? Promise.resolve().then(function () {
-            frame.removeAttribute("srcdoc");
-            frame.referrerPolicy = "no-referrer";
-            frame.src = app.route;
+      var protectedRoute = fetchedDirectGame ? directGameDocumentRoute(app.route) : app.route;
+      if (directGame) frame.referrerPolicy = "no-referrer";
+      var frameLoad = window.NEOFrameLoader
+        ? window.NEOFrameLoader.load(frame, protectedRoute, {
+            forceFetch: directGame || !browserBacked,
+            gameDocumentFallback: directGame ? function (gameUrl, signal) {
+              if (signal && signal.aborted) throw new DOMException("The request was aborted.", "AbortError");
+              return loadBrowseRuntime().then(function (engine) {
+                if (!engine || typeof engine.fetchDocument !== "function") throw new Error("The protected game transport is unavailable.");
+                return engine.fetchDocument(gameUrl);
+              });
+            } : null
           })
-        : window.NEOFrameLoader
-          ? window.NEOFrameLoader.load(frame, app.route, { forceFetch: !browserBacked })
+        : directGame
+          ? Promise.reject(new Error("The protected game loader is unavailable."))
           : Promise.resolve().then(function () { frame.src = app.route; });
       frameLoad.catch(function (error) {
         if (error && error.name === "AbortError") return;

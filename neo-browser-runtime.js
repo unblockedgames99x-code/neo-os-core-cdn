@@ -13,7 +13,7 @@
   })();
   const browserAsset = (path) => new URL(path, BROWSER_BASE_URL).href;
   const OS_SCOPE = CORE_BASE_URL.pathname;
-  const ROUTE_PREFIX = new URL(`browse-v69/`, BROWSER_BASE_URL).pathname;
+  const ROUTE_PREFIX = new URL(`browse-v70/`, BROWSER_BASE_URL).pathname;
   const RUNTIME_ROOT = browserAsset("browser-runtime").replace(/\/$/, "");
   const NEW_TAB_DESTINATION = "neo://newtab";
   const NEW_TAB_PAGE = `${browserAsset("browser-newtab.html")}?v=${ENGINE_VERSION}`;
@@ -382,6 +382,26 @@
     await withTimeout(warmed, 15000, "The web app could not reach its relay.");
   }
 
+  function requestGameDocument(worker, target) {
+    const channel = new MessageChannel();
+    const request = new Promise((resolve, reject) => {
+      channel.port1.onmessage = (event) => {
+        if (event.data?.ok && typeof event.data.html === "string") {
+          resolve({ html: event.data.html, fetchedUrl: event.data.url || target });
+          return;
+        }
+        reject(new Error(event.data?.message || "The protected game document could not be loaded."));
+      };
+      channel.port1.onmessageerror = () => reject(new Error("The protected game response was invalid."));
+    });
+    worker.postMessage({
+      type: "neo-browser:game-document",
+      engine: ENGINE_VERSION,
+      url: target,
+    }, [channel.port2]);
+    return withTimeout(request, 25000, "The protected game document took too long to load.");
+  }
+
   async function configureTransportNow() {
     await loadScript(
       "neo-baremux-runtime",
@@ -602,9 +622,13 @@
 
     installTransportRecoveryListener();
     await configureTransport();
-    await activateWorker().then((worker) => warmWorker(worker));
+    const worker = await activateWorker();
+    await warmWorker(worker);
     return {
       config: window.__uv$config,
+      fetchDocument(target) {
+        return requestGameDocument(worker, target);
+      },
       routeFor(target) {
         return `${ROUTE_PREFIX}${window.__uv$config.encodeUrl(target)}`;
       },
@@ -2130,6 +2154,13 @@
       const runtime = await getRuntime();
       await ensureNavigationTransport(target);
       return runtime.routeFor(target);
+    },
+    async fetchDocument(value) {
+      const target = normalizeDestination(value);
+      if (!externalDestination(target)) throw new TypeError("Only http and https pages can use the web proxy.");
+      const runtime = await getRuntime();
+      await ensureNavigationTransport(target);
+      return runtime.fetchDocument(target);
     },
     async openQuery(options) {
       if (!options?.container) throw new Error("The web app has no page container.");
