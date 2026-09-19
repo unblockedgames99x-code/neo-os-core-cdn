@@ -387,7 +387,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@2e692e9a053c5b29c8cfbe9df8d6ff1e2206c49d/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@f777ee71c79a1ddc07ee345fbfc30b4faca3d279/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -417,7 +417,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@5d7cdc7e014d89c654b15f4c1c28cd3def709021/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@6328b44c84bd1ed6da71879f59c2208a71fe29b0/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -850,7 +850,7 @@
       "media-player": "./assets/media-player.svg?v=20260827-high-resolution-v1",
       "html-games": "./assets/html-games.svg?v=20260827-blue-controller-v1",
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
-      steam: "./assets/steam.svg?v=20260918-steam-brand-v1",
+      steam: "./assets/steam.svg?v=20260919-current-steam-logo-v2",
       "xbox-games": "./assets/xbox-games.svg?v=20260912-official-shape-v2",
       movies: "./assets/movies-icon.webp?v=20260912-user-artwork-v1"
     };
