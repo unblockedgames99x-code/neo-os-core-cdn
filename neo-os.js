@@ -387,7 +387,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@da0c9f87505e2d5d6722d3500f55089eae70f4e2/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4a98de12039715fe795e08b51290d95c5eb7f356/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -417,7 +417,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@a303b01374e44775e2e44a17c5e3994d836411a6/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@bf0dd0b88041ca919f4181479cd45959c36288a8/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1619,6 +1619,13 @@
     root.dataset.dockIconSize = "normal";
     settings.taskbarPosition = normalizeTaskbarPosition(settings.taskbarPosition);
     settings.taskbarStyle = normalizeTaskbarStyle(settings.taskbarStyle);
+    // The clear-rail preset is intentionally a vertical dock. Older builds
+    // rendered it as a row of separate outlined tiles when Bottom was saved.
+    // Keep the preset deterministic and match its settings preview.
+    if (settings.taskbarStyle === "transparent") {
+      settings.taskbarPosition = "left";
+      settings.taskbarAppNames = false;
+    }
     settings.taskbarSurface = normalizeTaskbarSurface(settings.taskbarSurface);
     settings.windowBarStyle = normalizeWindowBarStyle(settings.windowBarStyle);
     settings.interfaceStyle = normalizeInterfaceStyle(settings.interfaceStyle);
@@ -1896,7 +1903,7 @@
     });
     host.querySelectorAll("[data-taskbar-options-summary]").forEach(function (summary) {
       var position = settings.taskbarPosition.charAt(0).toUpperCase() + settings.taskbarPosition.slice(1);
-      var style = settings.taskbarStyle === "current" ? "Floating" : settings.taskbarStyle === "typical" ? "Full edge" : settings.taskbarStyle === "xeno" ? "XENO" : "Transparent";
+      var style = settings.taskbarStyle === "current" ? "Floating" : settings.taskbarStyle === "typical" ? "Full edge" : settings.taskbarStyle === "xeno" ? "XENO" : "Clear rail";
       var surface = settings.taskbarSurface.charAt(0).toUpperCase() + settings.taskbarSurface.slice(1);
       summary.textContent = settings.taskbarStyle === "xeno" ? "Bottom center · XENO · Theme adaptive" : position + " · " + style + " · " + surface;
     });
@@ -8789,7 +8796,7 @@
         var style = normalizeTaskbarStyle(taskbarStyle.getAttribute("data-taskbar-style-option"));
         if (style !== settings.taskbarStyle) {
           setSetting("taskbarStyle", style);
-          showToast("Taskbar style changed", style === "current" ? "The floating dock layout is active." : style === "transparent" ? "Only the taskbar icons remain visible." : style === "xeno" ? "Running apps now use XENO pills. Press Space to search or Ctrl for all apps." : "The taskbar now fills the selected edge.", "settings");
+          showToast("Taskbar style changed", style === "current" ? "The floating dock layout is active." : style === "transparent" ? "The vertical clear-glass rail is active on the left." : style === "xeno" ? "Running apps now use XENO pills. Press Space to search or Ctrl for all apps." : "The taskbar now fills the selected edge.", "settings");
         }
         return;
       }
