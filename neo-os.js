@@ -184,7 +184,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 26,
+    designVersion: 27,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -296,19 +296,24 @@
   }
   if (savedDesignVersion < 25) {
     var savedWallpaperId = String(savedSettings.wallpaper || "");
-    if (savedWallpaperId && savedWallpaperId !== "we-steam-1403160205" && savedWallpaperId !== "neo-reactive" && savedWallpaperId !== "custom" && !/^(?:local|steam|commons)-/.test(savedWallpaperId)) {
+    if (savedWallpaperId && savedWallpaperId !== "we-steam-1403160205" && savedWallpaperId !== "custom" && !/^(?:local|steam|commons)-/.test(savedWallpaperId)) {
       savedSettings.wallpaper = "we-steam-1403160205";
     }
     savedSettings.wallpaperFavorites = savedSettings.wallpaperFavorites.filter(function (id) {
-      return id === "we-steam-1403160205" || id === "neo-reactive" || /^(?:local|steam|commons)-/.test(String(id || ""));
+      return id === "we-steam-1403160205" || /^(?:local|steam|commons)-/.test(String(id || ""));
     });
     savedSettings.wallpaperRecent = savedSettings.wallpaperRecent.filter(function (id) {
-      return id === "we-steam-1403160205" || id === "neo-reactive" || /^(?:local|steam|commons)-/.test(String(id || ""));
+      return id === "we-steam-1403160205" || /^(?:local|steam|commons)-/.test(String(id || ""));
     });
   }
   if (savedDesignVersion < 26) {
     if (savedSettings.devtoolsEnabled === undefined) savedSettings.devtoolsEnabled = true;
     if (!savedSettings.devtoolsPosition) savedSettings.devtoolsPosition = "right";
+  }
+  if (savedDesignVersion < 27) {
+    if (savedSettings.wallpaper === "neo-reactive") savedSettings.wallpaper = "we-steam-1403160205";
+    savedSettings.wallpaperFavorites = savedSettings.wallpaperFavorites.filter(function (id) { return id !== "neo-reactive"; });
+    savedSettings.wallpaperRecent = savedSettings.wallpaperRecent.filter(function (id) { return id !== "neo-reactive"; });
   }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
@@ -351,7 +356,7 @@
   delete savedSettings.taskbarOpacity;
   delete savedSettings.taskbarBlur;
   delete savedSettings.taskbarTintStrength;
-  savedSettings.designVersion = 26;
+  savedSettings.designVersion = 27;
   var settings = Object.assign({}, defaultSettings, savedSettings);
   var appliedTabAppearanceSignature = "";
   // Preserve explicit wallpaper sound/pause choices across reloads.
@@ -372,7 +377,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@18fec64a5c9f7851a9ae802beb5a27206a337a7c/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@5e63849d9bd1ae47e80e25e2d0881b61cf3a4603/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -402,7 +407,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@dbdda79bc99069f06436745824d18c2847beb13d/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@b6a33dee16fb2b33d3f6baf5672128998d6eff3d/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -7795,7 +7800,7 @@
     var isActive = Boolean(state && state.id === selected);
     var isBundled = Boolean(record && wallpaperEngine && wallpaperEngine.isBundled && wallpaperEngine.isBundled(selected));
     var isPreview = Boolean(record && record.previewFallback);
-    var isCanvas = selected === "signal" || selected === "neo-reactive" || isPreview;
+    var isCanvas = selected === "signal" || isPreview;
     var isVideo = Boolean(record && (record.type === "video" || record.type === "youtube"));
     var isWeb = Boolean(record && record.type === "web");
     var isAnimatedImage = Boolean(record && record.type === "animated-image");
