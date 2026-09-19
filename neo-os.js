@@ -387,7 +387,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@9d5e376db81df4239ec252306ebbe090c06d29eb/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@05def4812e9d98bcf4ba08bd55bd74d5a8a674e3/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -417,7 +417,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@6d14eeceb8f8f826d700b1e71c6cb4e13bf1e42c/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@e61f3560fe8ea2ac191c629b240d694da31a75e2/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5779,6 +5779,17 @@
     };
     loadBrowseRuntime().then(function (engine) {
       if (!engine || typeof engine.proxyUrl !== "function") throw new Error("The web proxy is unavailable.");
+      var resourceKind = String(data.kind || "").toLowerCase();
+      if (
+        data.type === "neo-shell:proxy-resource" &&
+        typeof engine.fetchResource === "function" &&
+        ["fetch", "image", "search"].indexOf(resourceKind) !== -1
+      ) {
+        var accept = resourceKind === "image" ? "image/avif,image/webp,image/*,*/*;q=0.8" : "*/*";
+        return engine.fetchResource(target, accept).then(function (resource) {
+          return URL.createObjectURL(new Blob([resource.bytes], { type: resource.type || "application/octet-stream" }));
+        });
+      }
       return engine.proxyUrl(target);
     }).then(function (route) {
       reply({ ok: true, route: route });
