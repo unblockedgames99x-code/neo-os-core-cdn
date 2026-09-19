@@ -183,8 +183,13 @@
     return tabAppearancePresets.some(function (preset) { return preset.id === value; }) ? value : "neo";
   }
 
+  function normalizeBrowserSearchEngine(value) {
+    value = String(value || "").toLowerCase();
+    return ["google", "bing", "duckduckgo", "brave", "searxng"].indexOf(value) >= 0 ? value : "duckduckgo";
+  }
+
   var defaultSettings = {
-    designVersion: 27,
+    designVersion: 28,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -228,6 +233,7 @@
     taskbarAccent: "#ffffff",
     reduceMotion: false,
     animationSpeed: 100,
+    browserSearchEngine: "duckduckgo",
     devtoolsEnabled: true,
     devtoolsPosition: "right",
     performanceMode: "normal",
@@ -315,6 +321,9 @@
     savedSettings.wallpaperFavorites = savedSettings.wallpaperFavorites.filter(function (id) { return id !== "neo-reactive"; });
     savedSettings.wallpaperRecent = savedSettings.wallpaperRecent.filter(function (id) { return id !== "neo-reactive"; });
   }
+  if (savedDesignVersion < 28 && !savedSettings.browserSearchEngine) {
+    savedSettings.browserSearchEngine = "duckduckgo";
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -348,6 +357,7 @@
     ? clamp(Math.round(savedAnimationSpeed / 25) * 25, 50, 200)
     : 100;
   savedSettings.devtoolsEnabled = savedSettings.devtoolsEnabled !== false;
+  savedSettings.browserSearchEngine = normalizeBrowserSearchEngine(savedSettings.browserSearchEngine);
   savedSettings.devtoolsPosition = ["right", "left", "bottom", "top"].indexOf(String(savedSettings.devtoolsPosition || "").toLowerCase()) >= 0
     ? String(savedSettings.devtoolsPosition).toLowerCase()
     : "right";
@@ -356,7 +366,7 @@
   delete savedSettings.taskbarOpacity;
   delete savedSettings.taskbarBlur;
   delete savedSettings.taskbarTintStrength;
-  savedSettings.designVersion = 27;
+  savedSettings.designVersion = 28;
   var settings = Object.assign({}, defaultSettings, savedSettings);
   var appliedTabAppearanceSignature = "";
   // Preserve explicit wallpaper sound/pause choices across reloads.
@@ -377,7 +387,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@8341e1545f12abd812887d0d02f04e9706707b09/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@7955b9813bb5debf393703904d056831cffb3982/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -407,7 +417,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@2d9c8d4da34bed299fb3354cf7a9e8d85dec9c92/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@7dc994f5823b8345ffbe7b1b41e6e3316eb4f08c/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -762,16 +772,17 @@
 
   function openGameInWindow(input, owner) {
     input = input && typeof input === "object" ? input : {};
-    var url = normalizeDirectGameUrl(input.url);
+    var mode = input.mode === "direct-game" ? "direct-game" : "relay";
+    var url = mode === "direct-game" ? normalizeDirectGameUrl(input.url) : normalizeCustomAppUrl(input.url);
     var title = String(input.title || "Game").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 48) || "Game";
     var icon = safeCustomAppIcon(input.icon) || "steam";
     var app = Object.keys(apps).map(function (id) { return apps[id]; }).find(function (candidate) {
-      return candidate && candidate.custom && candidate.sourceUrl === url && candidate.launchMode === "direct-game";
+      return candidate && candidate.custom && candidate.sourceUrl === url && candidate.launchMode === mode;
     });
     if (!app) {
       var id = "custom-app-game-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       while (apps[id]) id += "x";
-      app = customAppDefinition({ id: id, title: title, url: url, icon: icon, mode: "direct-game" });
+      app = customAppDefinition({ id: id, title: title, url: url, icon: icon, mode: mode });
       if (!app) throw new TypeError("This game window could not be created.");
       app.launcher = false;
       app.installed = false;
@@ -1628,6 +1639,7 @@
     settings.animationSpeed = Number.isFinite(Number(settings.animationSpeed))
       ? clamp(Math.round(Number(settings.animationSpeed) / 25) * 25, 50, 200)
       : 100;
+    settings.browserSearchEngine = normalizeBrowserSearchEngine(settings.browserSearchEngine);
     var animationDurationScale = 100 / settings.animationSpeed;
     var taskbarTintChannels = colorToRgb(settings.taskbarTint).split(", ").map(Number);
     var taskbarTintLuminance = taskbarTintChannels[0] * 0.299 + taskbarTintChannels[1] * 0.587 + taskbarTintChannels[2] * 0.114;
@@ -1704,6 +1716,7 @@
         }
       } catch (error) {}
       try { frame.contentWindow.postMessage({ type: "neo-shell:performance-mode", mode: mode }, "*"); } catch (error) {}
+      try { frame.contentWindow.postMessage({ type: "neo:browser-settings-change", searchEngine: settings.browserSearchEngine }, "*"); } catch (error) {}
     });
     if (wallpaperEngine) {
       wallpaperEngine.apply(wallpaper, wallpaperSettings).catch(function () {
@@ -5691,6 +5704,16 @@
   function handleProxyBridgeMessage(event) {
     var data = event.data;
     if (!data || typeof data !== "object") return;
+    if (data.type === "neo-browser:settings-request") {
+      if (!ownsFrameWindow(event.source)) return;
+      try {
+        event.source.postMessage({
+          type: "neo:browser-settings-change",
+          searchEngine: normalizeBrowserSearchEngine(settings.browserSearchEngine)
+        }, "*");
+      } catch (_error) {}
+      return;
+    }
     if (data.type === "neo-shell:open-game-window") {
       if (!ownsFrameWindow(event.source)) return;
       var gameWindowReply = function (payload) {
