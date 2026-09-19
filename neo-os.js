@@ -377,7 +377,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@5e63849d9bd1ae47e80e25e2d0881b61cf3a4603/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@87f3e9fb8b676001154ddddeb187ed684a064b94/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -407,7 +407,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@b6a33dee16fb2b33d3f6baf5672128998d6eff3d/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@78b432a961358b34bba47d93310eb78b65c5bace/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -1672,6 +1672,11 @@
     root.style.setProperty("--neo-window-open-duration", Math.round(300 * animationDurationScale) + "ms");
     root.style.setProperty("--neo-window-restore-duration", Math.round(260 * animationDurationScale) + "ms");
     root.style.setProperty("--neo-window-close-duration", Math.round(210 * animationDurationScale) + "ms");
+    root.style.setProperty("--neo-command-open-duration", Math.round(340 * animationDurationScale) + "ms");
+    root.style.setProperty("--neo-command-close-duration", Math.round(210 * animationDurationScale) + "ms");
+    root.style.setProperty("--neo-command-content-duration", Math.round(250 * animationDurationScale) + "ms");
+    root.style.setProperty("--neo-command-stagger-one", Math.round(28 * animationDurationScale) + "ms");
+    root.style.setProperty("--neo-command-stagger-two", Math.round(52 * animationDurationScale) + "ms");
     root.style.setProperty("--neo-taskbar-foreground", taskbarUsesLightSurface ? "#111317" : "#ffffff");
     root.style.setProperty("--neo-accent", accent.visible);
     root.style.setProperty("--neo-accent-visible", accent.visible);
@@ -3333,7 +3338,7 @@
       xenoCommandMotionTimer = window.setTimeout(function () {
         xenoCommand.classList.remove("is-opening");
         if (xenoCommandDismiss) xenoCommandDismiss.classList.remove("is-opening");
-      }, 260);
+      }, Math.round(370 * (100 / settings.animationSpeed)));
       return;
     }
     if (xenoCommand.hidden || xenoCommand.classList.contains("is-closing")) {
@@ -3351,7 +3356,7 @@
     if (xenoCommandReturnFocus && document.contains(xenoCommandReturnFocus)) xenoCommandReturnFocus.focus({ preventScroll: true });
     xenoCommandReturnFocus = null;
     if (effectiveReducedMotion()) finishXenoCommandClose();
-    else xenoCommandMotionTimer = window.setTimeout(finishXenoCommandClose, 220);
+    else xenoCommandMotionTimer = window.setTimeout(finishXenoCommandClose, Math.round(235 * (100 / settings.animationSpeed)));
   }
 
   function xenoDesktopShortcutAllowed(target) {
