@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const ENGINE_VERSION = "neo-browse-v69";
+  const ENGINE_VERSION = "neo-browse-v70";
   const RUNTIME_SCRIPT_URL = document.currentScript?.src || document.baseURI;
   const CORE_BASE_URL = new URL("./", RUNTIME_SCRIPT_URL);
   const BROWSER_BASE_URL = (() => {
@@ -22,20 +22,18 @@
   const PRIMARY_TRANSPORT_URL = `${RUNTIME_ROOT}/epoxy/index.mjs?engine=${ENGINE_VERSION}`;
   const FALLBACK_TRANSPORT_URL = `${RUNTIME_ROOT}/libcurl/index.mjs?engine=${ENGINE_VERSION}`;
   const NEXTNODE_PROXY_ORIGIN = "https://nextnode9124.b-cdn.net/";
-  const PREFERRED_WISP_RELAY = "wss://nextnode9124.b-cdn.net/w/";
-  const WISP_RELAYS = [
+  // These are the published endpoints supplied by the YukiOS server choices.
+  // A selected server is deliberately never replaced by an unrelated fallback.
+  const PREFERRED_WISP_RELAY = "wss://probuildingsupplies.com/w/";
+  const OFFICIAL_WISP_RELAYS = Object.freeze([
     PREFERRED_WISP_RELAY,
     "wss://probuildingsupplies.com/w/",
     "wss://wisp.mercurywork.shop/",
     "wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app/",
     "wss://reeyukiwisp.onrender.com/",
-    "wss://cdn.northstreetumc.org/adblock/",
-    "wss://cdn.pcesc.org/adblock/",
-    "wss://girlspreples.org/wi/",
-    "wss://mages.io/wisp/",
-  ];
+  ]);
   const WISP_PREFERENCE_KEY = "neo:browser:wisp:v1";
-  const WISP_RELAY_CACHE_KEY = `neo-wisp-relay:${ENGINE_VERSION}:nextnode-v1`;
+  const WISP_RELAY_CACHE_KEY = `neo-wisp-relay:${ENGINE_VERSION}:selected-v1`;
   let runtimePromise = null;
   let stylesPromise = null;
   let transportConnection = null;
@@ -144,10 +142,24 @@
     });
   }
 
+  function normalizeWispRelay(value) {
+    const text = String(value || "").trim();
+    if (!/^wss?:\/\//i.test(text)) return "";
+    try {
+      const relay = new URL(text);
+      return (relay.protocol === "wss:" || relay.protocol === "ws:")
+        ? (relay.href.endsWith("/") ? relay.href : `${relay.href}/`)
+        : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
   function preferredWispRelay() {
     try {
-      const selected = String(window.localStorage.getItem(WISP_PREFERENCE_KEY) || "").trim();
-      if (WISP_RELAYS.includes(selected)) return selected;
+      const selected = normalizeWispRelay(window.localStorage.getItem(WISP_PREFERENCE_KEY));
+      // A custom relay is valid only when explicitly saved through Custom.
+      if (selected) return selected;
     } catch (error) {}
     return PREFERRED_WISP_RELAY;
   }
@@ -155,28 +167,10 @@
   function selectWispRelay() {
     if (wispRelayPromise) return wispRelayPromise;
     wispRelayPromise = (async () => {
-      let cached = "";
-      try { cached = window.sessionStorage.getItem(WISP_RELAY_CACHE_KEY) || ""; } catch (error) {}
       const preferred = preferredWispRelay();
-      let selectedRelay = "";
-      try {
-        await probeWispRelay(preferred, 1800);
-        selectedRelay = preferred;
-      } catch (preferredError) {}
-      if (!selectedRelay && cached && cached !== preferred && WISP_RELAYS.includes(cached)) {
-        try {
-          await probeWispRelay(cached, 1400);
-          selectedRelay = cached;
-        } catch (cachedError) {}
-      }
-      if (!selectedRelay) {
-        const remaining = WISP_RELAYS.filter(
-          (relay) => relay !== preferred && relay !== cached,
-        );
-        selectedRelay = await firstResponsiveWispRelay(remaining, 3800);
-      }
-      try { window.sessionStorage.setItem(WISP_RELAY_CACHE_KEY, selectedRelay); } catch (error) {}
-      return selectedRelay;
+      await probeWispRelay(preferred, 3600);
+      try { window.sessionStorage.setItem(WISP_RELAY_CACHE_KEY, preferred); } catch (error) {}
+      return preferred;
     })().catch((error) => {
       wispRelayPromise = null;
       throw error;

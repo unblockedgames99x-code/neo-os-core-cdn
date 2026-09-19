@@ -362,7 +362,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ed4ed6a1cb6bc6c6a50da08f8245fc779f987258/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@a64106fd6ed21217f8e4330d59f49e19f097b0ff/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: true,
       width: 1080,
       height: 720,
@@ -392,7 +392,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@5c801bd1d69290b47044a147855f818ecc05996a/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@443d407cad4fe7d017a5bb2663a75e55a5994002/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -502,7 +502,7 @@
     apps.browser.accessibleName = "NEO Browser";
   }
   if (localOnly) {
-    ["discord", "youtube-app", "geometry-dash", "neo-cloud", "report"].forEach(function (id) {
+    ["report"].forEach(function (id) {
       if (!apps[id]) return;
       if (id === "report" && localConfig.support) {
         apps[id].route = localConfig.support;
@@ -803,16 +803,11 @@
       code: "./assets/vscode-official.cdd07e8086b48217.webp",
       duckduckgo: "./assets/duckduckgo.1233e0f05f2c79e7.webp",
       chat: "./assets/imessage-logo.3acd2a57e60c5fb9.webp?v=20260908-imessage-logo-v2",
-      "geometry-dash": "./assets/geometry-dash.1355963daaf6624a.webp",
       "google-drive": "./assets/google-drive.svg?v=20260824-drive-logo-v3",
       wallpaper: "./assets/wallpaper-engine.png",
       "media-player": "./assets/media-player.svg?v=20260827-high-resolution-v1",
       "html-games": "./assets/html-games.svg?v=20260827-blue-controller-v1",
-      "neo-cloud": "./assets/neo-cloud.svg?v=20260901-cloud-logo-v2",
       widgets: "./assets/widgets.svg?v=20260907-widgets-logo-v1",
-      discord: "./assets/discord-official.2910de11b970480d.webp?v=20260828-user-artwork-v2",
-      youtube: "./assets/youtube-official.8068a0be4bb21f6e.webp?v=20260828-user-artwork-v1",
-      chatgpt: "./assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1",
       steam: "./assets/steam.svg?v=20260918-steam-brand-v1",
       "xbox-games": "./assets/xbox-games.svg?v=20260912-official-shape-v2",
       movies: "./assets/movies-icon.webp?v=20260912-user-artwork-v1"
@@ -1471,7 +1466,7 @@
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
     if (app.custom) return "bridge";
-    if (["browser", "stream", "chat", "discord", "youtube-app", "neo-cloud", "nowgg", "neo-ai", "games", "movies"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "games", "movies"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
