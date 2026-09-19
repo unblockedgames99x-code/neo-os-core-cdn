@@ -387,7 +387,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e192505b3f7ebae3bf492a26be1b05fd88fc3d5c/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@9d5e376db81df4239ec252306ebbe090c06d29eb/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -417,7 +417,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@dad8aa36532e75e10935bafc3f810b65c55c963b/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@6d14eeceb8f8f826d700b1e71c6cb4e13bf1e42c/neo-chat/index.html?v=20260910-sharp-photos-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5696,9 +5696,18 @@
   }
 
   function ownsFrameWindow(source) {
-    return Array.prototype.some.call(document.querySelectorAll("iframe"), function (frame) {
-      try { return frame.contentWindow === source; } catch (_error) { return false; }
-    });
+    function ownsInDocument(frameDocument, depth) {
+      if (!frameDocument || depth < 0) return false;
+      return Array.prototype.some.call(frameDocument.querySelectorAll("iframe"), function (frame) {
+        try {
+          if (frame.contentWindow === source) return true;
+          return depth > 0 && ownsInDocument(frame.contentDocument, depth - 1);
+        } catch (_error) {
+          return false;
+        }
+      });
+    }
+    return ownsInDocument(document, 5);
   }
 
   function handleProxyBridgeMessage(event) {
