@@ -8,7 +8,7 @@
       subtitle: "Search, stream, queue, and organize your music",
       icon: "stream",
       template: "browser-template",
-      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@6ec0ee95f804d09dfe69ea476d657f3d2979672e/music-v2/launch.svg",
+      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@b8747a3523c8b25799f8e24b36e965c6cc179fa5/music-v2/launch.svg",
       browserDirect: true,
       browserChrome: false,
       browserTheme: "stream-music",
@@ -25,7 +25,7 @@
       title: "Steam",
       subtitle: "Browse and play the Fern game library",
       icon: "steam",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@09e899927f48eaa722f5d9bc9cf93d6cc637eda4/neo-games/index.html?build=20260918-steam-brand-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@dbdda79bc99069f06436745824d18c2847beb13d/neo-games/index.html?build=20260918-steam-brand-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -40,7 +40,7 @@
       title: "Movies",
       subtitle: "Profiles, full movie library, series, and My List",
       icon: "movies",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@09e899927f48eaa722f5d9bc9cf93d6cc637eda4/neo-tv/index.html?build=20260912-media-fallback-v9",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@dbdda79bc99069f06436745824d18c2847beb13d/neo-tv/index.html?build=20260912-media-fallback-v9",
       keepAlive: true,
       width: 1180,
       height: 760,
@@ -122,6 +122,28 @@
   };
 
   try {
+    var removeYukiAppsKey = "neo_os_remove_yukios_apps_v1";
+    if (localStorage.getItem(removeYukiAppsKey) !== "1") {
+      var yukiAppIds = [
+        "itch-io", "crazy-games", "newgrounds", "geforce-now", "flashpoint", "roblox", "js-dos", "ruffle", "lavat",
+        "slack", "gmail", "outlook", "zoom", "x-twitter", "instagram", "pinterest", "proton-mail", "yahoo-mail", "maps", "torrent-web",
+        "chatgpt-web", "deepseek", "grok", "notion", "google-docs", "office-web", "figma", "canva", "pixlr", "github", "gitlab", "codepen",
+        "twitch", "soundcloud", "deezer", "tiktok", "aniwatch", "aquarium-web", "markdown", "file-converter", "clock-tools", "camera",
+        "color-picker", "emoji-selector", "screenshot-studio", "clipboard-manager", "magnifier", "system-monitor", "storage-editor", "developer-tools",
+        "virtual-machine-manager", "app-creator", "rhythms", "cmatrix", "mode-switcher", "shortcuts", "default-apps", "session-manager",
+        "neo-guide", "intro-tour", "whats-new"
+      ];
+      ["neo_os_pinned_apps_v1", "neo_os_installed_apps_v1"].forEach(function (key) {
+        var savedApps = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(savedApps)) {
+          localStorage.setItem(key, JSON.stringify(savedApps.filter(function (id) { return yukiAppIds.indexOf(id) === -1; })));
+        }
+      });
+      if (typeof localStorage.removeItem === "function") localStorage.removeItem("neo_extended_settings_v1");
+      if (typeof sessionStorage !== "undefined") sessionStorage.removeItem("neo_autostart_completed_v1");
+      localStorage.setItem(removeYukiAppsKey, "1");
+    }
+
     var searchMigrationKey = "neo_os_unpin_search_v1";
     if (localStorage.getItem(searchMigrationKey) !== "1") {
       var existingPins = JSON.parse(localStorage.getItem("neo_os_pinned_apps_v1") || "null");
