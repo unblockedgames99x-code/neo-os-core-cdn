@@ -400,7 +400,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@42229e70113099fbab9fc01940e8bb3a8a628e77/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@57459789f000a1dec0a666b44291d6cf231aa977/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -430,7 +430,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@aa002ed2366231f664841bbc16389bf513087a05/neo-chat/index.html?v=20260910-sharp-photos-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@9937a04e7c426fade5163ef8565c780ccb23c9d3/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -9269,6 +9269,16 @@
     wireWidgetDrag();
     bindGlobalEvents();
     window.addEventListener("neo-auth-changed", updateTopbarAccount);
+    window.addEventListener("message", function (event) {
+      if (event.origin !== location.origin || !event.data || event.data.type !== "neo-chat:account-sync") return;
+      var chatFrame = Array.from(document.querySelectorAll("iframe")).find(function (frame) {
+        if (frame.contentWindow !== event.source) return false;
+        try { return /\/neo-chat\//i.test(new URL(frame.src, location.href).pathname); }
+        catch (error) { return false; }
+      });
+      if (!chatFrame) return;
+      window.dispatchEvent(new CustomEvent("neo-auth-changed", { detail: { user: event.data.user || null } }));
+    });
     initCustomWallpaper();
     initStartScreen(initAccountGate);
     performBoot();
