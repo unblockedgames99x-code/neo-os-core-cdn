@@ -402,7 +402,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b04ea5bf21d30314465d4a6d942cd6e29cb6c64f/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e17ca526d7ea26f92446be907895db810ef65f60/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -432,7 +432,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@f177c56d9b5c3ccdae0f3d9f6cd98b8d529f07a4/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@e53c77d08d98e3e260589d2b827c8554026da759/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5972,6 +5972,8 @@
     root.dataset.taskbarAppState = state;
     var taskbar = document.querySelector(".taskbar");
     if (taskbar) taskbar.setAttribute("aria-hidden", state === "hidden" ? "true" : "false");
+    var topbar = document.querySelector(".topbar");
+    if (topbar) topbar.setAttribute("aria-hidden", state === "hidden" ? "true" : "false");
   }
 
   function activateWindow(win) {
