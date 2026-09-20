@@ -55,6 +55,6 @@
     playableGames: Object.freeze(["grandmaster-chess", "quantum-clicker", "tetris"]),
     resolve: function (path) { return new URL(path, base).href; }
   });
-  if (localRuntime) if (!isCdnRunner) document.documentElement.dataset.localPreview = "true";
+  if (localRuntime && !isCdnRunner) document.documentElement.dataset.localPreview = "true";
   else document.documentElement.dataset.deployment = "production";
 })();
