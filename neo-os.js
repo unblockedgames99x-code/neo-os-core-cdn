@@ -402,7 +402,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@ac81155c24be0ec7b072f8bf84df2d50ce82f8f0/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@712fc643d9fc36755dd08b20cc2f67065bcb0cf6/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -432,7 +432,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@8b406b402548c1ae2f33d7bf3c4eae764337e05f/neo-chat/index.html?v=20260920-shared-message-actions-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@951a68fe88960584b0ee99167209f8745945653b/neo-chat/index.html?v=20260920-shared-message-actions-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -860,6 +860,7 @@
       code: "./assets/vscode-official.cdd07e8086b48217.webp",
       duckduckgo: "./assets/duckduckgo.1233e0f05f2c79e7.webp",
       chat: "./assets/imessage-logo.3acd2a57e60c5fb9.webp?v=20260908-imessage-logo-v2",
+      chatgpt: "./assets/neo-ai-logo.svg?v=20260920-ai-restored-v1",
       "google-drive": "./assets/google-drive.svg?v=20260824-drive-logo-v3",
       wallpaper: "./assets/wallpaper-engine.png",
       "media-player": "./assets/media-player.svg?v=20260827-high-resolution-v1",
@@ -1590,7 +1591,7 @@
   function interfaceStyleScopeForApp(app) {
     if (!app) return "shell";
     if (app.custom) return "bridge";
-    if (["browser", "stream", "chat", "games", "movies"].indexOf(app.id) !== -1) return "bridge";
+    if (["browser", "stream", "chat", "games", "movies", "neo-ai"].indexOf(app.id) !== -1) return "bridge";
     if (["skins", "vscode", "terminal"].indexOf(app.id) !== -1) return "native";
     if (app.template || app.lazy || app.runtime) return "native";
     return "shell";
