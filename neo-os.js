@@ -402,7 +402,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4abfe7f53ee39c218a680b31be6a8045e899c8b7/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@51baf4522a31f87e0b4492a916a8a6636cd43636/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -432,7 +432,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@a9e500d1968ee99761255a62cba5f4f26ada5035/neo-chat/index.html?v=20260920-shared-message-actions-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@53885b297c725906c78ef94f6b72d309441e3813/neo-chat/index.html?v=20260920-shared-message-actions-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -2027,6 +2027,13 @@
     return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
   }
 
+  var rainmeterReferenceGlyphs = {
+    A: "卂", B: "乃", C: "匚", D: "ᗪ", E: "乇", F: "千", G: "Ꮆ",
+    H: "卄", I: "丨", J: "ﾌ", K: "Ҝ", L: "ㄥ", M: "爪", N: "几",
+    O: "ㄖ", P: "卩", Q: "Ɋ", R: "尺", S: "丂", T: "ㄒ", U: "ㄩ",
+    V: "ᐯ", W: "山", X: "乂", Y: "ㄚ", Z: "乙"
+  };
+
   function updateClock() {
     var now = new Date();
     var dayName = new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(now);
@@ -2052,6 +2059,9 @@
       }
       if (rainmeterWeekday) {
         delete rainmeterWeekday.dataset.rainmeterGlyphDay;
+        rainmeterWeekday.dataset.rainmeterReferenceDay = Array.from(dayName.toUpperCase()).map(function (letter) {
+          return rainmeterReferenceGlyphs[letter] || letter;
+        }).join("");
         var weekdayLetters = document.createDocumentFragment();
         Array.from(dayName.toUpperCase()).forEach(function (letter) {
           var glyph = document.createElement("span");
