@@ -400,7 +400,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@501ee53d19b2e839062a9d5a622e5c120bc4d5c4/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b5a6b099eb9a9e082ec119a84ab4bd462201281c/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -430,7 +430,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@659dba56cd679c632e838516e55f771a9b07eee6/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@3dbbb1b8b8adf031b7e137a01647a746945a79d9/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -3146,7 +3146,15 @@
       var browse = document.createElement("button");
       browse.type = "button";
       browse.className = "launcher-category-browse";
-      browse.textContent = "View all";
+      var browseLabel = document.createElement("span");
+      browseLabel.textContent = "View all";
+      var browseIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      browseIcon.setAttribute("class", "icon launcher-category-browse-icon");
+      browseIcon.setAttribute("aria-hidden", "true");
+      var browseIconUse = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      browseIconUse.setAttribute("href", "#i-arrow-right");
+      browseIcon.appendChild(browseIconUse);
+      browse.append(browseLabel, browseIcon);
       browse.setAttribute("aria-label", "View all " + category + " applications");
       browse.addEventListener("click", function () {
         launcherSearch.value = category;
