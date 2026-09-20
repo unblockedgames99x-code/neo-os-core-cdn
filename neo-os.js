@@ -400,7 +400,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b5a6b099eb9a9e082ec119a84ab4bd462201281c/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4ff880fd559f63a0847cdae23f64bcc02d221514/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -430,7 +430,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@79735d8092dc368e2213b19e47af39bbdf9df464/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@c7101173f4775e1243de39b9a31fccaea8496092/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -4396,7 +4396,7 @@
       if (!file) return;
       var localOnly = window.NEO_CHAT_TRANSPORT && window.NEO_CHAT_TRANSPORT.mode() === "local";
       var maximum = localOnly ? 750 * 1024 : 6 * 1024 * 1024;
-      if (file.size > maximum) { feedback.textContent = localOnly ? "Local preview attachments can be up to 750 KB." : "Attachments can be up to 6 MB."; return; }
+      if (file.size > maximum) { feedback.textContent = localOnly ? "On-device attachments can be up to 750 KB." : "Attachments can be up to 6 MB."; return; }
       var allowed = /^(image|video|audio)\//.test(file.type) || /^(application\/pdf|text\/plain|application\/(zip|x-zip-compressed))$/.test(file.type);
       if (!allowed) { feedback.textContent = "Choose a photo, video, audio, PDF, text, or ZIP file."; return; }
       var reader = new FileReader();
@@ -4452,7 +4452,7 @@
       title.textContent = name;
       var localOnly = window.NEO_CHAT_TRANSPORT && window.NEO_CHAT_TRANSPORT.mode() === "local";
       subtitle.textContent = state.error ? "Unavailable" : (state.selected === "global"
-        ? (localOnly ? "Device-only preview · Slow mode 5s" : "Shared public conversation · Slow mode 5s")
+        ? (localOnly ? "On-device fallback · Slow mode 5s" : "Shared public conversation · Slow mode 5s")
         : (isServerRoom(room) ? "Shared space · Slow mode 5s" : "Private conversation · Slow mode 5s"));
       thread.setAttribute("aria-label", name + " messages");
       headingAvatar.classList.toggle("is-global", state.selected === "global");
