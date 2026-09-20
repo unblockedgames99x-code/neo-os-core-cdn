@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fastly.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://127.0.0.1:3092 http://localhost:3092; media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: http://127.0.0.1:3092 http://localhost:3092 https://a.luminsdk.com https://fastly.jsdelivr.net https://cdn.jsdelivr.net https://gcore.jsdelivr.net https://quantil.jsdelivr.net https://pipedapi.ducks.party https://api.piped.private.coffee https://lol.samidy.workers.dev https://lunchbreak.dyercountylawncare.workers.dev https://neo-stratus-api-w6nw.onrender.com wss://nextnode9124.b-cdn.net wss://support.pired.org wss://girlspreples.com wss://northstreetumc.org wss://pcesc.com wss://kcchallengevbc.com wss://slcbmooc.org wss://probuildingsupplies.com wss://wisp.mercurywork.shop wss://hurt-agata-liventcord-api-7072e9a6.koyeb.app wss://reeyukiwisp.onrender.com wss://w2.qwq.sh wss://api.personalloanonline.net wss://www.goldenbasketballacademy.space wss://www.atlantaclassical.info wss://www.booksforschool.online; frame-src 'self' blob: https://a.luminsdk.com https://nextnode9124.b-cdn.net https://fastly.jsdelivr.net https://cdn.jsdelivr.net https://gcore.jsdelivr.net https://quantil.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'" />
-    <script src="./neo-boot.e39c0e32908db4ce.min.js" defer></script>
+    <script src="./neo-boot.55fdd17d72d12dbc.min.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#080a0d" />
     <meta
@@ -93,8 +93,9 @@
     <!-- neo-shell-styles:end -->
     <link rel="stylesheet" href="./neo-interface-styles.css?v=20260919-rounded-restored-windows-v1&amp;launcher=centered-v3&amp;settings=combined-v1&amp;widgets=no-scrollbars-v1&amp;previews=current-state-v1&amp;widget-background=transparent-v1" />
     <link rel="stylesheet" href="./neo-xeno-taskbar.css?v=20260919-command-motion-v2" />
-    <link rel="stylesheet" href="./neo-figure-taskbar.css?v=20260919-figure-v1" />
+    <link rel="stylesheet" href="./neo-figure-taskbar.css?v=20260919-thin-rail-v2" />
     <link rel="stylesheet" href="./neo-taskbar-app-visibility.css?v=20260919-adaptive-overlay-v1" />
+    <link rel="stylesheet" href="./neo-taskbar-now-playing.css?v=20260919-compact-player-v1" />
   </head>
   <body>
     <a class="skip-link" href="#neo-desktop">Skip to desktop</a>
@@ -501,6 +502,24 @@
           </button>
           <div class="dock" id="neo-dock" aria-label="Apps"></div>
         </div>
+        <section class="taskbar-now-playing" data-taskbar-now-playing aria-label="Now playing" aria-live="polite" hidden>
+          <button class="taskbar-now-playing-open" type="button" data-taskbar-now-playing-open>
+            <span class="taskbar-now-playing-art">
+              <img data-taskbar-now-playing-cover width="32" height="32" alt="" referrerpolicy="no-referrer" hidden />
+              <span class="taskbar-now-playing-fallback app-icon-stream" data-taskbar-now-playing-fallback><img class="app-image-icon" src="./assets/spotify-official.a2ea1afb0cd95abb.webp?v=20260827-user-artwork-v1" width="32" height="32" alt="" /></span>
+            </span>
+            <span class="taskbar-now-playing-copy">
+              <strong data-taskbar-now-playing-title>Nothing playing</strong>
+              <small data-taskbar-now-playing-subtitle>NEO Music</small>
+            </span>
+          </button>
+          <span class="taskbar-now-playing-controls" aria-label="Playback controls">
+            <button type="button" data-now-playing-action="previous" aria-label="Previous track"><svg class="icon" aria-hidden="true"><use href="#i-skip-back"></use></svg></button>
+            <button type="button" data-now-playing-action="toggle" data-taskbar-now-playing-toggle aria-label="Play"><svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg></button>
+            <button type="button" data-now-playing-action="next" aria-label="Next track"><svg class="icon" aria-hidden="true"><use href="#i-skip-forward"></use></svg></button>
+            <button type="button" data-taskbar-now-playing-volume aria-label="Mute"><svg class="icon" aria-hidden="true"><use href="#i-volume"></use></svg></button>
+          </span>
+        </section>
         <div class="taskbar-tray" aria-label="System status">
           <button class="taskbar-network taskbar-quick-button" id="taskbar-network" type="button" data-taskbar-quick-toggle aria-label="Open quick settings" aria-expanded="false" aria-controls="taskbar-quick-settings" title="Quick settings">
             <span aria-hidden="true"></span><svg class="icon" aria-hidden="true"><use href="#i-wifi"></use></svg><svg class="icon" aria-hidden="true"><use href="#i-volume"></use></svg>
@@ -1422,6 +1441,6 @@
         <div class="calendar-note"><span></span><p><strong>NEO OS workspace</strong><small>Your local calendar and activity.</small></p></div>
       </div>
     </template>
-    <script src="./neo-shell.16ce37817fe65ede.min.js" defer></script>
+    <script src="./neo-shell.4bf9b5adc48f4e1a.min.js" defer></script>
   </body>
 </html>
