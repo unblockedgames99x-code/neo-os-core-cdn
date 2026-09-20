@@ -127,8 +127,7 @@
   }
 
   function normalizeTaskbarAppMode(value) {
-    value = String(value || "").toLowerCase();
-    return value === "always" ? "always" : "fullscreen";
+    return "desktop";
   }
 
   function normalizeDockIconSize(value) {
@@ -227,7 +226,7 @@
     taskbarRunningApps: true,
     taskbarAppDragging: true,
     taskbarAppNames: false,
-    taskbarAppMode: "fullscreen",
+    taskbarAppMode: "desktop",
     windowBarStyle: "ultra",
     interfaceStyle: "modern",
     cursorTheme: "system",
@@ -334,7 +333,7 @@
     savedSettings.browserSearchEngine = "duckduckgo";
   }
   if (savedDesignVersion < 29 && !savedSettings.taskbarAppMode) {
-    savedSettings.taskbarAppMode = "fullscreen";
+    savedSettings.taskbarAppMode = "desktop";
   }
   if (savedDesignVersion < 30) {
     savedSettings.taskbarAppMode = normalizeTaskbarAppMode(savedSettings.taskbarAppMode);
@@ -403,7 +402,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@c2feeccf11c957aa7d7a11a7d315f96c1e51fa53/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@b04ea5bf21d30314465d4a6d942cd6e29cb6c64f/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -433,7 +432,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@1ae56501f96f20639ff55945e976a0b3db5725ac/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@f177c56d9b5c3ccdae0f3d9f6cd98b8d529f07a4/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5965,23 +5964,10 @@
     return win;
   }
 
-  function appWindowFullscreen(win) {
-    return Boolean(
-      win &&
-      !win.classList.contains("is-minimized") &&
-      !win.classList.contains("is-closing") &&
-      win.classList.contains("is-tab-fullscreen")
-    );
-  }
-
   function syncTaskbarAppVisibility() {
-    var active = windowLayer && windowLayer.querySelector(".neo-window.is-active:not(.is-minimized):not(.is-closing)");
+    var visibleApp = windowLayer && windowLayer.querySelector(".neo-window:not(.is-minimized):not(.is-closing)");
     var mode = normalizeTaskbarAppMode(settings.taskbarAppMode);
-    var state = "desktop";
-    if (active) {
-      if (mode === "fullscreen" && appWindowFullscreen(active)) state = "hidden";
-      else state = "overlay";
-    }
+    var state = visibleApp ? "hidden" : "desktop";
     root.dataset.taskbarAppMode = mode;
     root.dataset.taskbarAppState = state;
     var taskbar = document.querySelector(".taskbar");
@@ -6173,6 +6159,7 @@
       window.clearTimeout(win._neoResizeTimer);
       window.clearTimeout(win._neoCloseTimer);
       win.remove();
+      syncTaskbarAppVisibility();
     }
     win.classList.remove("is-open", "is-active");
     win.setAttribute("aria-hidden", "true");
@@ -6211,6 +6198,7 @@
     else win.removeAttribute("aria-hidden");
     syncAutoPerformanceMode();
     renderDock();
+    syncTaskbarAppVisibility();
     window.dispatchEvent(new CustomEvent("neo-window-state-change", {
       detail: { id: win.dataset.appId || "", minimized: Boolean(minimized), closed: false }
     }));
