@@ -8,11 +8,12 @@
   <title>NEO AI</title>
   <link rel="icon" href="../assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1">
   <link rel="stylesheet" href="../neo-theme-system.css?v=20260910-ai-v1">
-  <link rel="stylesheet" href="app.css?v=20260912-default-20b-v1">
+  <link rel="stylesheet" href="app.css?v=20260920-ai-restored-v2">
   <script defer src="../neo-app-theme.js?v=20260910-ai-v1"></script>
   <script defer src="../neo-link-proxy.js?v=20260912-all-links-v2"></script>
   <script defer src="../neo-proxy-client.js?v=20260919-nested-bridge-v1"></script>
-  <script defer src="app.js?v=20260912-default-20b-v1"></script>
+  <script async data-neo-puter-sdk src="https://js.puter.com/v2/"></script>
+  <script defer src="app.js?v=20260920-ai-restored-v2"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -51,7 +52,7 @@
         </button>
         <button class="model-badge" id="model-badge" type="button" data-action="models" aria-label="Choose AI model" title="Choose AI model">
           <img src="../assets/neo-ai-logo.svg?v=20260910-chatgpt-white-v1" alt="">
-          <span><strong id="active-model-name">GPT-OSS 120B</strong><small id="active-model-provider">Serum</small></span>
+          <span><strong id="active-model-name">GPT-OSS 20B (Fast)</strong><small id="active-model-provider">Puter</small></span>
           <svg><use href="#i-chevron"></use></svg>
         </button>
         <div class="top-actions">

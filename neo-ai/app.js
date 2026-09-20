@@ -7,14 +7,13 @@
   var DEFAULT_MODEL_MIGRATION_KEY = "neo_ai_default_model_20b_v1";
   var DEFAULT_MODEL_ID = "gpt-oss-20b";
   var AI_MODELS = [
-    { id: "gpt-oss-120b", name: "GPT-OSS 120B", provider: "Serum", description: "High quality", vision: false, type: "text" },
-    { id: "gpt-oss-20b", name: "GPT-OSS 20B (Fast)", provider: "Serum", description: "Fast responses", vision: false, type: "text" },
-    { id: "qwen3-27b", name: "Qwen3 27B", provider: "Serum", description: "Balanced chat", vision: false, type: "text" },
-    
+    { id: "gpt-oss-120b", puterId: "openai/gpt-oss-120b", name: "GPT-OSS 120B", provider: "Puter", description: "High quality", vision: false, type: "text" },
+    { id: "gpt-oss-20b", puterId: "openai/gpt-oss-20b", name: "GPT-OSS 20B (Fast)", provider: "Puter", description: "Fast responses", vision: false, type: "text" },
+    { id: "qwen3-32b", puterId: "alibaba:qwen/qwen3-32b", name: "Qwen3 32B", provider: "Puter", description: "Balanced chat", vision: false, type: "text" }
   ];
-  var COWORK_MODEL_IDS = ["gpt-oss-120b", "gpt-oss-20b", "qwen3-27b"];
+  var COWORK_MODEL_IDS = ["gpt-oss-120b", "gpt-oss-20b", "qwen3-32b"];
   var AUTO_COWORK_MODELS = COWORK_MODEL_IDS.slice();
-  var REFERENCE_API_URL = "https://nextnode9124.b-cdn.net/api/ai/chat";
+  var PUTER_SDK_URL = "https://js.puter.com/v2/";
   var SEARCH_URL = "https://api.duckduckgo.com/";
   var MAX_IMAGE_BYTES = 4 * 1024 * 1024;
   var MAX_TEXT_BYTES = 1024 * 1024;
@@ -24,6 +23,7 @@
   var pendingFiles = [];
   var modelFilter = "all";
   var toastTimer = 0;
+  var puterSdkPromise = null;
 
   function byId(id) { return document.getElementById(id); }
   var appShell = document.querySelector(".app-shell");
@@ -175,7 +175,7 @@
       var checked = selectedIds.includes(model.id);
       return '<label class="cowork-model' + (checked ? ' selected' : '') + '"><input type="checkbox" data-cowork-model="' + escapeHtml(model.id) + '"' + (checked ? ' checked' : '') + (state.settings.cowork.auto ? ' disabled' : '') + '><span class="provider-mark">' + escapeHtml(model.provider.slice(0, 1)) + '</span><span><strong>' + escapeHtml(model.name) + '</strong><small>' + escapeHtml(model.provider) + '</small></span></label>';
     }).join("");
-    byId("cowork-summary").textContent = state.settings.cowork.auto ? "Auto team: GPT-OSS 120B, GPT-OSS 20B, and Qwen3 27B." : selectedIds.length + " of 3 models selected.";
+    byId("cowork-summary").textContent = state.settings.cowork.auto ? "Auto team: GPT-OSS 120B, GPT-OSS 20B, and Qwen3 32B." : selectedIds.length + " of 3 models selected.";
   }
 
   function showToast(text) {
@@ -513,116 +513,80 @@
     catch (_error) { var fallback = new Error("Generation stopped"); fallback.name = "AbortError"; return fallback; }
   }
 
-  function retryableStatus(status) {
-    return status === 408 || status === 425 || status === 429 || status >= 500;
-  }
-
-  function retryPause(milliseconds, signal) {
-    return new Promise(function (resolve, reject) {
-      if (signal.aborted) { reject(abortError()); return; }
-      var timer = setTimeout(done, milliseconds);
-      function done() {
-        signal.removeEventListener("abort", cancelled);
-        resolve();
+  function loadPuterSdk() {
+    if (window.puter && window.puter.ai && typeof window.puter.ai.chat === "function") return Promise.resolve(window.puter);
+    if (puterSdkPromise) return puterSdkPromise;
+    puterSdkPromise = new Promise(function (resolve, reject) {
+      var script = document.querySelector("script[data-neo-puter-sdk]");
+      var timeout = window.setTimeout(function () { reject(new Error("The AI provider took too long to load.")); }, 20000);
+      function finish() {
+        window.clearTimeout(timeout);
+        if (window.puter && window.puter.ai && typeof window.puter.ai.chat === "function") resolve(window.puter);
+        else reject(new Error("The AI provider did not initialize."));
       }
-      function cancelled() {
-        clearTimeout(timer);
-        signal.removeEventListener("abort", cancelled);
-        reject(abortError());
+      function failed() {
+        window.clearTimeout(timeout);
+        reject(new Error("The AI provider could not load."));
       }
-      signal.addEventListener("abort", cancelled, { once: true });
-    });
-  }
-
-  async function fetchWithTimeout(url, options, signal, timeoutMilliseconds) {
-    if (signal.aborted) throw abortError();
-    var controller = new AbortController();
-    var timedOut = false;
-    var timeout = setTimeout(function () { timedOut = true; controller.abort(); }, timeoutMilliseconds);
-    function cancel() { controller.abort(); }
-    signal.addEventListener("abort", cancel, { once: true });
-    try {
-      return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
-    } catch (error) {
-      if (signal.aborted) throw abortError();
-      if (timedOut) {
-        var timeoutError = new Error("The AI route took too long to respond.");
-        timeoutError.retryable = true;
-        throw timeoutError;
+      if (!script) {
+        script = document.createElement("script");
+        script.src = PUTER_SDK_URL;
+        script.async = true;
+        script.dataset.neoPuterSdk = "true";
+        document.head.appendChild(script);
       }
+      script.addEventListener("load", finish, { once: true });
+      script.addEventListener("error", failed, { once: true });
+      if (window.puter && window.puter.ai) finish();
+    }).catch(function (error) {
+      puterSdkPromise = null;
       throw error;
-    } finally {
-      clearTimeout(timeout);
-      signal.removeEventListener("abort", cancel);
-    }
+    });
+    return puterSdkPromise;
   }
 
-  async function requestReference(messages, modelId, signal, onProgress) {
-    var model = getModel(modelId);
-    if (signal.aborted) throw abortError();
-    var attachedImage = null;
-    var preparedMessages = messages.map(function (message) {
-      var content = message.content;
-      if (Array.isArray(content)) {
-        content = content.map(function (part) {
-          if (part && part.type === "image_url" && part.image_url && /^data:image\//i.test(part.image_url.url || "")) {
-            if (!attachedImage) attachedImage = part.image_url.url;
-            return "[Image attached]";
-          }
-          return part && part.type === "text" ? String(part.text || "") : "";
-        }).filter(Boolean).join("\n");
-      }
-      return { role: message.role, content: String(content || "") };
-    });
-    var payload = { messages: preparedMessages, model: model.id, image: attachedImage };
-    var route = REFERENCE_API_URL;
-    var lastError = null;
-    for (var attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        var response = await fetchWithTimeout(route, {
-          method: "POST",
-          mode: "cors",
-          cache: "no-store",
-          credentials: "omit",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        }, signal, 20000);
-        if (!response.ok) {
-          var routeError = new Error(model.name + " could not connect (" + response.status + ").");
-          routeError.status = response.status;
-          throw routeError;
-        }
-        var data = await response.json();
-        var answer = String(data && data.reply || "").trim();
-        if (!answer) throw new Error(model.name + " returned an empty response.");
-        if (onProgress) onProgress(answer);
-        return answer;
-      } catch (error) {
-        if (signal.aborted || error.name === "AbortError") throw abortError();
-        lastError = error;
-        var directTransportFailed = attempt === 0
-          && route === REFERENCE_API_URL
-          && !Number.isFinite(error.status)
-          && window.NEO_PROXY_CLIENT
-          && window.parent !== window;
-        if (directTransportFailed) {
-          try {
-            route = await window.NEO_PROXY_CLIENT.resolve(REFERENCE_API_URL, "ai", signal);
-            continue;
-          } catch (proxyError) {
-            if (signal.aborted || proxyError.name === "AbortError") throw abortError();
-            lastError = proxyError;
-          }
-        }
-        if (attempt === 1 || (Number.isFinite(error.status) && !retryableStatus(error.status))) break;
-        await retryPause(650, signal);
-      }
+  function puterResponseText(response) {
+    if (typeof response === "string") return response;
+    if (!response) return "";
+    if (typeof response.text === "string") return response.text;
+    if (typeof response.content === "string") return response.content;
+    var messageContent = response.message && response.message.content;
+    if (typeof messageContent === "string") return messageContent;
+    if (Array.isArray(messageContent)) {
+      return messageContent.map(function (part) { return typeof part === "string" ? part : String(part && (part.text || part.content) || ""); }).join("");
     }
-    throw lastError || new Error(model.name + " could not connect.");
+    var choice = response.choices && response.choices[0];
+    var choiceContent = choice && ((choice.delta && choice.delta.content) || (choice.message && choice.message.content));
+    if (typeof choiceContent === "string") return choiceContent;
+    return "";
   }
 
   async function requestModel(messages, modelId, signal, onProgress) {
-    return requestReference(messages, modelId, signal, onProgress);
+    if (signal.aborted) throw abortError();
+    var puter = await loadPuterSdk();
+    if (signal.aborted) throw abortError();
+    var model = getModel(modelId);
+    var response = await puter.ai.chat(messages, false, {
+      model: model.puterId || model.id,
+      stream: true,
+      normalize: true
+    });
+    var answer = "";
+    if (response && typeof response[Symbol.asyncIterator] === "function") {
+      for await (var part of response) {
+        if (signal.aborted) throw abortError();
+        var chunk = puterResponseText(part);
+        if (!chunk) continue;
+        answer += chunk;
+        if (onProgress) onProgress(answer);
+      }
+    } else {
+      answer = puterResponseText(response);
+      if (onProgress && answer) onProgress(answer);
+    }
+    answer = String(answer || "").trim();
+    if (!answer) throw new Error(model.name + " returned an empty response.");
+    return answer;
   }
 
   async function runCowork(requestMessages, sourceMessage, controller, typing) {
