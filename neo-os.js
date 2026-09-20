@@ -400,7 +400,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4ff880fd559f63a0847cdae23f64bcc02d221514/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@994e4bd80abf8c9c6918009fe7a119a689d7fcbd/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -430,7 +430,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@bd7b2668a81637fdddce99bfd7cdb28eea8617a2/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@5773ed78df425df07199af3162bd1bbe56ffc8ad/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -5968,13 +5968,19 @@
     return Boolean(app && (app.launchMode === "direct-game" || app.gameId || /^custom-app-game-/.test(String(app.id || ""))));
   }
 
+  function taskbarAvoidanceWindowActive(win) {
+    if (!win || win.classList.contains("is-minimized") || win.classList.contains("is-closing")) return false;
+    if (String(win.dataset.appId || "") === "chat") return true;
+    return gameWindowActive(win);
+  }
+
   function syncTaskbarAppVisibility() {
     var active = windowLayer && windowLayer.querySelector(".neo-window.is-active:not(.is-minimized):not(.is-closing)");
     var mode = normalizeTaskbarAppMode(settings.taskbarAppMode);
     var state = "desktop";
     if (active) {
       if (mode === "desktop") state = "hidden";
-      else if (mode === "adaptive" && gameWindowActive(active)) state = "hidden";
+      else if (mode === "adaptive" && taskbarAvoidanceWindowActive(active)) state = "hidden";
       else state = "overlay";
     }
     root.dataset.taskbarAppMode = mode;
