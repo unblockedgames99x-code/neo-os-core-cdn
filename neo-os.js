@@ -118,7 +118,7 @@
 
   function normalizeTaskbarStyle(value) {
     value = String(value || "").toLowerCase();
-    return value === "transparent" || value === "typical" || value === "xeno" || value === "figure" ? value : "current";
+    return value === "transparent" || value === "typical" || value === "xeno" ? value : "current";
   }
 
   function normalizeTaskbarSurface(value) {
@@ -400,7 +400,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@994e4bd80abf8c9c6918009fe7a119a689d7fcbd/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@6d111d314d24171b5061824598116d079f3bf3b6/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -430,7 +430,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@5773ed78df425df07199af3162bd1bbe56ffc8ad/neo-chat/index.html?v=20260919-messages-sync-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@26610ae0c91f8dec9b7ba0d3eada69b1486dc207/neo-chat/index.html?v=20260919-messages-sync-v1",
       width: 1180,
       height: 760,
       launcher: true,
