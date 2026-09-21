@@ -187,7 +187,7 @@
 
   function normalizeTabAppearance(value) {
     value = String(value || "").toLowerCase();
-    return tabAppearancePresets.some(function (preset) { return preset.id === value; }) ? value : "neo";
+    return tabAppearancePresets.some(function (preset) { return preset.id === value; }) ? value : "classroom";
   }
 
   function normalizeBrowserSearchEngine(value) {
@@ -196,7 +196,7 @@
   }
 
   var defaultSettings = {
-    designVersion: 30,
+    designVersion: 31,
     wallpaper: "we-steam-1403160205",
     wallpaperFavorites: [],
     wallpaperRecent: [],
@@ -232,7 +232,7 @@
     cursorTheme: "system",
     customCursorData: "",
     customCursorName: "",
-    tabAppearance: "neo",
+    tabAppearance: "classroom",
     customTabTitle: "My tab",
     customTabIcon: "",
     taskbarTint: "#767c84",
@@ -338,6 +338,9 @@
   if (savedDesignVersion < 30) {
     savedSettings.taskbarAppMode = normalizeTaskbarAppMode(savedSettings.taskbarAppMode);
   }
+  if (savedDesignVersion < 31 && (!savedSettings.tabAppearance || savedSettings.tabAppearance === "neo")) {
+    savedSettings.tabAppearance = "classroom";
+  }
   savedSettings.performanceMode = normalizePerformanceMode(savedSettings.performanceMode);
   savedSettings.taskbarPosition = normalizeTaskbarPosition(savedSettings.taskbarPosition);
   savedSettings.taskbarStyle = normalizeTaskbarStyle(savedSettings.taskbarStyle);
@@ -402,7 +405,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e2a68a95200f43d37030f66cdcdcd08fef96fd36/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@82291ea4ec41fdebf9255a839d6ed52f1f3c6e94/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -432,7 +435,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@d180611717c5e73a36b1fd43f4d35fd148fd7aee/neo-chat/index.html?v=20260920-shared-message-actions-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@b670b48fe5f3c32b68ca9d2a4c7e676dd2dc6f52/neo-chat/index.html?v=20260920-shared-message-actions-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -8473,7 +8476,7 @@
       }
       try {
         popup.document.open();
-        popup.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEO OS</title><style>html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#050505;color:#fff;font:16px Arial,sans-serif}body{display:grid;place-items:center}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#050505}</style></head><body><p id="neo-blank-status">Loading NEO OS…</p></body></html>');
+        popup.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home - Classroom</title><style>html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#050505;color:#fff;font:16px Arial,sans-serif}body{display:grid;place-items:center}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#050505}</style></head><body><p id="neo-blank-status">Loading NEO OS…</p></body></html>');
         popup.document.close();
         var frame = popup.document.createElement("iframe");
         frame.title = "NEO OS";
