@@ -402,7 +402,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@4ffeed3a8fe34579d21ae17588a695a60e529bd5/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@e2a68a95200f43d37030f66cdcdcd08fef96fd36/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -432,7 +432,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@4532ec38a334efadc04076e6fae81b7b62418705/neo-chat/index.html?v=20260920-shared-message-actions-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@d180611717c5e73a36b1fd43f4d35fd148fd7aee/neo-chat/index.html?v=20260920-shared-message-actions-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -6043,9 +6043,10 @@
   }
 
   function syncTaskbarAppVisibility() {
-    var visibleApp = windowLayer && windowLayer.querySelector(".neo-window:not(.is-minimized):not(.is-closing)");
+    var activeApp = windowLayer && windowLayer.querySelector(".neo-window.is-active:not(.is-minimized):not(.is-closing)");
+    var fullscreenApp = activeApp && activeApp.matches(".is-maximized, .is-tab-fullscreen");
     var mode = normalizeTaskbarAppMode(settings.taskbarAppMode);
-    var state = visibleApp ? "hidden" : "desktop";
+    var state = fullscreenApp ? "hidden" : "desktop";
     root.dataset.taskbarAppMode = mode;
     root.dataset.taskbarAppState = state;
     var taskbar = document.querySelector(".taskbar");
