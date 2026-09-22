@@ -405,7 +405,7 @@
       accessibleName: "Web app",
       subtitle: "Private web search",
       icon: "duckduckgo",
-    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@82291ea4ec41fdebf9255a839d6ed52f1f3c6e94/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
+    route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@eb0d0893b788f4746a0701f7edda04ae7627ced8/NEO-BROWSER/index.html?v=20260912-proxy-ready-v2",
       keepAlive: false,
       width: 1080,
       height: 720,
@@ -435,7 +435,7 @@
       title: "NEO Chat",
       subtitle: "Rooms, friends, forums, direct messages, and profiles",
       icon: "chat",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@b670b48fe5f3c32b68ca9d2a4c7e676dd2dc6f52/neo-chat/index.html?v=20260920-shared-message-actions-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@bd89aa6a68be06d5afd9a5c29664625c51839152/neo-chat/index.html?v=20260920-shared-message-actions-v1",
       width: 1180,
       height: 760,
       launcher: true,
@@ -3726,14 +3726,13 @@
   }
 
   function loadBrowseRuntime() {
-    if (localOnly) return Promise.reject(new Error("Internet browsing is disabled in local preview. Open Browser for installed pages and local files."));
     if (window.NEO_BROWSER_ENGINE) return Promise.resolve(window.NEO_BROWSER_ENGINE);
     if (browseRuntimePromise) return browseRuntimePromise;
     browseRuntimePromise = new Promise(function (resolve, reject) {
       var existing = document.getElementById("neo-browse-runtime-script");
       var script = existing || document.createElement("script");
       script.id = "neo-browse-runtime-script";
-      script.src = "./neo-browser-runtime.js?v=20260918-chromebook-failover-v1";
+      script.src = "./neo-browser-runtime.js?v=20260921-cleanhost-v1";
       script.async = true;
       script.onload = function () {
         if (!window.NEO_BROWSER_ENGINE) {
