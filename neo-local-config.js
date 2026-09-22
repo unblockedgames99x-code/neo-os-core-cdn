@@ -38,7 +38,7 @@
       Object.freeze({ name: "Probuilding Wisp", url: "wss://probuildingsupplies.com/w/" }),
       Object.freeze({ name: "Mercury Wisp", url: "wss://wisp.mercurywork.shop/" })
     ]),
-    appProxy: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@29a19cb7da75451e98a30f7e902ac3fca07af32e/NEO-BROWSER/launch.svg?v=20260921-cleanhost-v2" : new URL("NEO-BROWSER/index.html?v=20260921-cleanhost-v2", base).href,
+    appProxy: isCdnRunner ? "https://cdn.jsdelivr.net/gh/unblockedgames99x-code/neo-os-browser-cdn@29a19cb7da75451e98a30f7e902ac3fca07af32e/NEO-BROWSER/launch.svg?v=20260921-cleanhost-v2" : new URL("NEO-BROWSER/index.html?v=20260921-cleanhost-v2", base).href,
     gameDocumentRelay: "https://neo-stratus-api-w6nw.onrender.com/games/v1/document",
     gamesCatalog: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/index.json" : new URL("../games/index.json", base).href,
     gamesCovers: isCdnRunner ? "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-games-catalog-cdn@main/covers.json" : new URL("../games/covers.json", base).href,
