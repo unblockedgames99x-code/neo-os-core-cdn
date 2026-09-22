@@ -17,7 +17,7 @@
       subtitle: "Search, stream, queue, and organize your music",
       icon: "stream",
       template: "browser-template",
-      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@b9f09fa5a2e632ef70af052ebc039979da8987ac/music-v2/launch.svg",
+      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@2cac4181233162ca3b904f86f728ba11c8765d29/music-v2/launch.svg",
       browserDirect: true,
       browserChrome: false,
       browserTheme: "stream-music",
@@ -34,7 +34,7 @@
       title: "Steam",
       subtitle: "Browse and play your complete Steam library",
       icon: "steam",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@eefefd7d68e6d2dd9a300feb7d39ef61d81606bb/neo-games/index.html?build=20260921-fern-only-v1",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@923c456694a68c8634079a94659395fed5645308/neo-games/index.html?build=20260921-fern-only-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -71,6 +71,7 @@
       height: 760,
       launcher: true,
       pinned: false,
+      core: true,
       category: "Media",
       aliases: ["youtube", "videos", "video", "channels", "shorts", "youtube shorts"]
     },
@@ -226,7 +227,7 @@
       localStorage.setItem(retiredVideoMigrationKey, "1");
     }
 
-    var restoredYouTubeMigrationKey = "neo_os_restore_youtube_app_v3";
+    var restoredYouTubeMigrationKey = "neo_os_restore_youtube_app_v4";
     if (localStorage.getItem(restoredYouTubeMigrationKey) !== "1") {
       var installedYouTubeApps = JSON.parse(localStorage.getItem("neo_os_installed_apps_v1") || "null");
       if (Array.isArray(installedYouTubeApps) && installedYouTubeApps.indexOf("youtube-app") === -1) {
