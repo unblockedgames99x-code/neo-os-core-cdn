@@ -1,6 +1,15 @@
 (function () {
   "use strict";
 
+  function proxiedAppRoute(target) {
+    var browserRoute = window.NEO_LOCAL_CONFIG && window.NEO_LOCAL_CONFIG.appProxy
+      ? window.NEO_LOCAL_CONFIG.appProxy
+      : "./NEO-BROWSER/index.html?v=20260921-cleanhost-v2";
+    var separator = browserRoute.indexOf("?") === -1 ? "?" : "&";
+    return browserRoute + separator +
+      "neo-app-mode=1&neo-custom-app=1&neo-app-target=" + encodeURIComponent(target);
+  }
+
   window.NEO_EXTRA_APPS = Object.assign({}, window.NEO_EXTRA_APPS || {}, {
     stream: {
       id: "stream",
@@ -8,7 +17,7 @@
       subtitle: "Search, stream, queue, and organize your music",
       icon: "stream",
       template: "browser-template",
-      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@754c1ef271212e19edacd26562d4625f8a2dfd0c/music-v2/launch.svg",
+      browserTarget: window.NEO_LOCAL_CONFIG ? window.NEO_LOCAL_CONFIG.music : "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-music-two-cdn@5d06e9d604e9c404aae83c39620672e9cbf910ed/music-v2/launch.svg",
       browserDirect: true,
       browserChrome: false,
       browserTheme: "stream-music",
@@ -25,7 +34,7 @@
       title: "Steam",
       subtitle: "Browse and play your complete Steam library",
       icon: "steam",
-      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@46b489254abb0ab598ef70791873cf8e746ae579/neo-games/index.html?build=20260919-steam-client-v2",
+      route: "https://fastly.jsdelivr.net/gh/unblockedgames99x-code/neo-os-chat-tv-cdn@08d4b921a00e0ec5cc51a8cc8f164318efbf311c/neo-games/index.html?build=20260921-fern-only-v1",
       keepAlive: false,
       width: 1180,
       height: 760,
@@ -40,10 +49,8 @@
       title: "Movies",
       subtitle: "Movies and series through NEO's private web connection",
       icon: "movies",
-      template: "browser-template",
-      browserTarget: "https://cinecat.eu/",
-      browserDirect: false,
-      browserChrome: false,
+      route: proxiedAppRoute("https://cinecat.eu/"),
+      proxyApp: true,
       keepAlive: false,
       width: 1180,
       height: 760,
